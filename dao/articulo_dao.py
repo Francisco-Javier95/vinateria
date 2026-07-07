@@ -6,7 +6,7 @@ from models.articulo import Articulo
 
 class ArticuloDAO:
 
-    #SELECT * FROM articulo
+    #SELECT * FROM articulos
     def obtener_todos(self):
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()

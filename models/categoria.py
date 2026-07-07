@@ -1,11 +1,16 @@
 class Categoria:
 
     # constructor
-    def __init__(self, categoria_id, categoria_nombre, categoria_tipo, categoria_descripcion):
+    def __init__(self, categoria_id, categoria_categoria, categoria_tipo, categoria_descripcion):
         self.categoria_id = categoria_id
-        self.categoria_nombre = categoria_nombre
+        self.categoria_categoria = categoria_categoria
         self.categoria_tipo = categoria_tipo
         self.categoria_descripcion = categoria_descripcion
 
     def mostrar_info(self):
-        return f"Nombre: {self.categoria_nombre}, Tipo: {self.categoria_tipo}, Descripción: {self.categoria_descripcion}"
+        return f"Nombre: {self.categoria_categoria}, Tipo: {self.categoria_tipo}, Descripción: {self.categoria_descripcion}"
+    
+class Categoria_eliminar:
+    # Constructor
+    def __init__(self, categoria_id):
+        self.categoria_id = categoria_id

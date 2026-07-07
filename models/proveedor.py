@@ -12,3 +12,8 @@ class Proveedor:
 
     def mostrar_info (self):
         return f"Nombre: {self.proveedor_proveedor}, Apellido paterno: {self.proveedor_aPaterno}, Apellido materno: {self.proveedor_aMaterno}, Telefóno: {self.proveedor_telefono}, Dirección: {self.proveedor_direccion}, Correo: {self.proveedor_correo}"
+    
+class Proveedor_eliminar:
+    # Constructor
+    def __init__(self, proveedor_id):
+        self.proveedor_id = proveedor_id
