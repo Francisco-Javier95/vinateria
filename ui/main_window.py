@@ -1,7 +1,10 @@
 import flet as ft
+
 from ui.articulo_form import articulo_form
+from ui.articulos_list import articulos_list
 
 def main_window(page: ft.Page):
+    # Definir configuración de la página principal
     page.title = "Sistema de Punto de Venta 'La Vinata'"
     page.window_width = 1100
     page.window_height = 700
@@ -42,8 +45,12 @@ def main_window(page: ft.Page):
         page.update()
 
     # Reaccionala click del botón en el menú lateral
-    def mostrar_insertar_articulo(e=None):
+    def insertar_articulo(e=None):
         contenido.content = articulo_form(mostrar_inicio)
+        page.update()
+
+    def mostrar_lista_articulos(e=None):
+        contenido.content = articulos_list(mostrar_inicio)
         page.update()
 
     menu_lateral = ft.Container(
@@ -62,7 +69,7 @@ def main_window(page: ft.Page):
                     "Inventario",
                     icon = ft.Icons.INVENTORY,
                     width = 180,
-                    on_click = mostrar_insertar_articulo # No se le coloca () ya que esto indica que es una acción que se eejecutra de forma automatica, sin la opión de que el usuario oprima el botón de "Invetario"
+                    on_click = mostrar_lista_articulos # No se le coloca () ya que esto indica que es una acción que se eejecutra de forma automatica, sin la opión de que el usuario oprima el botón de "Invetario"
                 ),
                 ft.ElevatedButton(
                     "Proveedores",
