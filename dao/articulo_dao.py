@@ -11,12 +11,12 @@ class ArticuloDAO:
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
 
-        cursor.execute("SELECT * FROM articulos")
+        cursor.execute("SELECT * FROM articulos_1")
         registros = cursor.fetchall()
 
         articulos = []
         for registro in registros:
-            articulo = Articulo (articulo_id = registro[0], articulo_articulo = registro[1], articulo_categoria = registro[2], articulo_imagen = registro[3], articulo_precio = registro[4], articulo_stock = registro[5], articulo_proveedor = registro[6])
+            articulo = Articulo (articulo_id = registro[0], articulo_articulo = registro[1], articulo_codigo = registro[2], articulo_categoria = registro[3], articulo_imagen = registro[4], articulo_precio = registro[5], articulo_stock = registro[6], articulo_proveedor = registro[7])
             articulos.append(articulo)
         cursor.close()
         conexion.close()
@@ -26,14 +26,15 @@ class ArticuloDAO:
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
         sql= """
-            INSERT INTO articulos (articulo_articulo, articulo_categoria, articulo_imagen, articulo_precio, articulo_stock, articulo_proveedor)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO articulos_1 (articulo_articulo, articulo_codigo, articulo_categoria, articulo_imagen, articulo_precio, articulo_stock, articulo_proveedor)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
 
         cursor.execute(
             sql,
             (
                 articulo.articulo_articulo,
+                articulo.articulo_codigo,
                 articulo.articulo_categoria,
                 articulo.articulo_imagen,
                 articulo.articulo_precio,
@@ -50,14 +51,15 @@ class ArticuloDAO:
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
         sql= """
-            UPDATE articulos 
-            SET articulo_articulo = %s, articulo_categoria = %s, articulo_imagen = %s, articulo_precio = %s, articulo_stock = %s, articulo_proveedor = %s
+            UPDATE articulos_1 
+            SET articulo_articulo = %s, articulo_codigo = %s, articulo_categoria = %s, articulo_imagen = %s, articulo_precio = %s, articulo_stock = %s, articulo_proveedor = %s
             WHERE articulo_id = %s
         """
         cursor.execute(
             sql,
             (
                 articulo.articulo_articulo,
+                articulo.articulo_codigo,
                 articulo.articulo_categoria,
                 articulo.articulo_imagen,
                 articulo.articulo_precio,
@@ -75,7 +77,7 @@ class ArticuloDAO:
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
         cursor.execute(
-            "DELETE FROM articulos WHERE articulo_id = %s",
+            "DELETE FROM articulos_1 WHERE articulo_id = %s",
             (articulo_id.articulo_id,)
         )
 

@@ -1,8 +1,9 @@
 class Articulo:
     # constructor
-    def __init__(self, articulo_id, articulo_articulo, articulo_categoria, articulo_imagen, articulo_precio, articulo_stock, articulo_proveedor):
+    def __init__(self, articulo_id, articulo_articulo, articulo_codigo, articulo_categoria, articulo_imagen, articulo_precio, articulo_stock, articulo_proveedor):
         self.articulo_id = articulo_id
         self.articulo_articulo = articulo_articulo
+        self.articulo_codigo = articulo_codigo
         self.articulo_categoria = articulo_categoria
         self.articulo_imagen = articulo_imagen
         self.articulo_precio = articulo_precio
@@ -10,7 +11,7 @@ class Articulo:
         self.articulo_proveedor = articulo_proveedor
 
     def mostrar_info (self):
-        return f"Nombre: {self.articulo_articulo}, Categoría: {self.articulo_categoria}, Imagen: {self.articulo_imagen}, Precio: {self.articulo_precio}, Stock: {self.articulo_stock}, Proveedor: {self.articulo_proveedor}"
+        return f"Nombre: {self.articulo_articulo}, Categoría: {self.articulo_categoria}, Codigo: {self.articulo_codigo}, Imagen: {self.articulo_imagen}, Precio: {self.articulo_precio}, Stock: {self.articulo_stock}, Proveedor: {self.articulo_proveedor}"
     
 class Articulo_eliminar:
     # Constructor

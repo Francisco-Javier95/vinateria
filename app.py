@@ -1,3 +1,6 @@
+import flet as ft
+from ui.main_window import main_window
+
 from dao.articulo_dao import ArticuloDAO
 from dao.categoria_dao import CategoriaDAO
 from dao.proveedor_dao import ProveedorDAO
@@ -11,11 +14,14 @@ from models.categoria import Categoria_eliminar
 from models.proveedor import Proveedor_eliminar
 from models.usuario import Usuario_eliminar
 
+from datetime import datetime
+
 
 # ------------------------------------CRUD Artículos------------------------------------
 def insertar_articulo():
     articulo_id = None
     articulo_articulo = input("\nEscribe el nombre del artículo: ")
+    articulo_codigo = input("\nEscribe el código del artículo: ")
     
     ver_categorias()
          
@@ -27,7 +33,7 @@ def insertar_articulo():
 
     try:
         articulo_dao = ArticuloDAO()
-        articulo = Articulo(articulo_id ,articulo_articulo, articulo_categoria, articulo_imagen, articulo_precio, articulo_stock, articulo_proveedor)
+        articulo = Articulo(articulo_id ,articulo_articulo, articulo_codigo, articulo_categoria, articulo_imagen, articulo_precio, articulo_stock, articulo_proveedor)
         articulo_dao.insertar(articulo)
         print("Producto agregado exitosamente")
     except Exception as e:
@@ -50,6 +56,7 @@ def ver_articulos():
                 print(
                     f"ID: {articulo.articulo_id}   "
                     f"Nombre: {articulo.articulo_articulo}   "
+                    f"Código: {articulo.articulo_codigo}   "
                     f"Categoría: {articulo.articulo_categoria}   "
                     f"Imagen: {articulo.articulo_imagen}   "
                     f"Precio: {articulo.articulo_precio}   "
@@ -72,13 +79,14 @@ def modificar_articulo():
         id_modificado = str(articulo_id)
 
         articulo_articulo = input("\nEscribe el nuevo nombre del producto: ")
+        articulo_codigo = input("\nEscribe el nuevo código del producto: ")
         articulo_categoria = int(input("Escribe la nueva categoria del producto: "))
         articulo_imagen = input("Escribe la nueva imagen del producto: ")
         articulo_precio = float(input("Escribe el nuevo precio del producto: "))
         articulo_stock = int(input("Escribe el nuevo stock del producto: "))
         articulo_proveedor = int(input("Escribe el nuevo ID del proveedor: "))
 
-        articulo = Articulo(articulo_id, articulo_articulo, articulo_categoria, articulo_imagen, articulo_precio, articulo_stock, articulo_proveedor)
+        articulo = Articulo(articulo_id, articulo_articulo, articulo_codigo, articulo_categoria, articulo_imagen, articulo_precio, articulo_stock, articulo_proveedor)
         articulo_dao.actualizar(articulo)    
 
         print("\nProducto "+id_modificado+" modificado exitosamente")
@@ -102,6 +110,7 @@ def eliminar_articulo():
                 print(
                     f"ID: {articulo.articulo_id}   "
                     f"Nombre: {articulo.articulo_articulo}   "
+                    f"Código: {articulo.articulo_codigo}    "
                     f"Categoría: {articulo.articulo_categoria}   "
                     f"Imagen: {articulo.articulo_imagen}   "
                     f"Precio: {articulo.articulo_precio}   "
@@ -427,6 +436,51 @@ def eliminar_usuario():
         print(e)
 # ----------------------------------Fin CRUD Usuarios-----------------------------------
 
+# -----------------------------------Lista de compras-----------------------------------
+def lista_de_compras():
+    valor = 1
+
+    venta_id = None
+    venta_venta = f"No.1 - Prueba"
+    venta_usuario = 'Francisco Javier'
+    venta_ganancia = 0
+
+    ahora = datetime.now()
+    venta_fecha = ahora.strptime("%d-%m-%Y")
+    venta_articulo = []
+    
+    while valor >= 1:
+        try:
+            opcion = int(input(f"{valor}.- "))
+            venta_articulo.append(opcion)
+            valor += 1
+        except Exception as e:
+            if opcion == 'GUARDAR':
+                try:
+                    venta_dao = VentaDAO()
+                    venta = Venta(venta_id, venta_venta, venta_usuario, venta_ganancia, venta_fecha, venta_articulo)
+                    venta_dao.guardar()
+
+                    print("Venta guardada exitosamente")
+                except Exception as e:
+                    print("Error al guardar la venta")
+                    print(e)
+            else:
+                if opcion == 'CANCELAR':
+                    print("Venta cancelada")
+                else:
+                    if opcion == 'CONFIRMAR':
+                        try:
+                            venta_dao = VentaDAO()
+                            venta = Venta(venta_id, venta_venta, venta_usuario, venta_ganancia, venta_fecha, venta_articulo)
+                            venta_dao.confirmar()
+
+                            print("Venta confirmada exitosamente")
+                        except Exception as e:
+                            print("Error al cofirmar la venta")
+                            print(e)
+# ---------------------------------Fin Lista de compras---------------------------------
+
 
 def menu_articulos():
     print("\n================Productos================")
@@ -503,28 +557,42 @@ def menu_usuario():
             modificar_usuario()
         case 4:
             eliminar_usuario()
+        
+def punto_de_venta():
+    print("\n================Punto de venta================")
+    print("\n--------------Menú de opciones--------------")
+    print("Núm - Agregar un producto a la lista")
+    print("GUARDAR")
+    print("CANCELAR")
+    print("CONFIRMAR")
+
+    print("\n--------------Lista de productos--------------")
+
+    lista_de_compras()
     
-def main():
-    print("\n=============== La Vinata | Vinos y Licores ===============")
-    print("\nBienvenido a La Vinata, ¿qué deseas hacer?")
-    print("1 - Gestionar productos")
-    print("2 - Gestionar categorías")
-    print("3 - Gestionar proveedores")
-    print("4 - Gestionar usuarios")
-    print("5 - Gestionar ventas")
-    opcion = int(input("Selecciona en una opción: "))
+# def main():
+#     print("\n=============== La Vinata | Vinos y Licores ===============")
+#     print("\nBienvenido a La Vinata, ¿qué deseas hacer?")
+#     print("1 - Gestionar productos")
+#     print("2 - Gestionar categorías")
+#     print("3 - Gestionar proveedores")
+#     print("4 - Gestionar usuarios")
+#     print("5 - Gestionar ventas")
+#     opcion = int(input("Selecciona en una opción: "))
 
-    match opcion:
-        case 1:
-            menu_articulos()
-        case 2:
-            menu_categorias()
-        case 3:
-            menu_proveedor()
-        case 4:
-            menu_usuario()
-        case 5:
-            menu_venta()
+#     match opcion:
+#         case 1:
+#             menu_articulos()
+#         case 2:
+#             menu_categorias()
+#         case 3:
+#             menu_proveedor()
+#         case 4:
+#             menu_usuario()
+#         case 5:
+#             punto_de_venta()
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
+
+ft.app(target = main_window)
