@@ -7,37 +7,37 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
     # ------------ Campos del formulario ------------------
     articulo_input = ft.TextField(
         label = "Nombre: ",
-        width = 400,
+        expand = True,
         color = "#424955"
     )
     codigo_input = ft.TextField(
         label = "Código: ",
-        width = 400,
+        expand = True,
         color = "#424955"
     )
     categoria_input = ft.TextField(
         label = "Categoría: ",
-        width = 400,
+        expand = True,
         color = "#424955"
     )
     imagen_input = ft.TextField(
         label = "Imagen: ",
-        width = 400,
+        expand = True,
         color = "#424955"
     )
     precio_input = ft.TextField(
         label = "Precio: ",
-        width = 400,
+        expand = True,
         color = "#424955"
     )
     stock_input = ft.TextField(
         label = "Stock: ",
-        width = 400,
+        expand = True,
         color = "#424955"
     )
     proveedor_input = ft.TextField(
         label = "Proveedor: ",
-        width = 400,
+        expand = True,
         color = "#424955"
     )
 
@@ -95,13 +95,11 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
             
             limpiar_formualrio()
 
-            # ---------------------- Si el modal esta activo y si existe la función para cerrar
-            if formulario_visible and cerrando_modal:
-                evento.page.update()
-                import time
-                time.sleep(0.5)
-                cerrando_modal()
-                return
+            # # ---------------------- Si el modal esta activo y si existe la función para cerrar
+            # if formulario_visible and cerrando_modal:
+            #     evento.page.update()
+            #     cerrando_modal()
+            #     return
 
         except ValueError:
             mensaje.value = "El campo 'categoria' debe ser un número entero"
@@ -121,22 +119,44 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
         controles_encabezado.append(
             ft.Row(
                 controls = [
-                    ft.Text(
-                        "Crear producto",
-                        size = 24,
-                        weight = ft.FontWeight.BOLD,
-                        color = "#c9a03d"
-                    ),
                     ft.IconButton(
                         icon = ft.Icons.CLOSE,
+                        style = ft.ButtonStyle(
+                            # Borde sólido vino-caramelo de 2 píxeles por defecto
+                            side = {
+                                ft.ControlState.DEFAULT: 
+                                    ft.BorderSide(
+                                        width = 2,
+                                        color = "#a11e2f"
+                                    ),
+                                # Borde rojo de 2 píxeles al pasar el mouse
+                                ft.ControlState.HOVERED: 
+                                    ft.BorderSide(
+                                        width = 2,
+                                        color = "#6b1d41"
+                                    )
+                            }
+                        ),
                         bgcolor = "#6b1d41",
                         icon_color = "#ffffff",
                         on_click = lambda e: cerrando_modal(),
 
                         tooltip = "Cerrar" # Texto que aparece al pasar el cursor
+                    ),
+                    ft.Row(
+                        controls = [
+                            ft.Text(
+                                "Crear producto",
+                                size = 24,
+                                weight = ft.FontWeight.BOLD,
+                                color = "#c9a03d"
+                            )
+                        ],
+                        expand = True,
+                        alignment = ft.MainAxisAlignment.CENTER
                     )
                 ],
-                alignment = ft.MainAxisAlignment.SPACE_BETWEEN 
+                # alignment = ft.MainAxisAlignment.SPACE_BETWEEN 
             )
         )
     else:
@@ -168,11 +188,35 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
         controls = [
             *controles_encabezado, # El * desempaqueta la lista
 
-            ft.Text(
-                "Crea nuevas tarjetas de productos en tu inventario",
-                size = 16,
-                weight = ft.FontWeight.BOLD,
-                color = "#9095a0"
+            ft.Row(
+                controls = [
+                    ft.Text(
+                        spans=[
+                            ft.TextSpan(
+                                "Crea",
+                                ft.TextStyle(weight=ft.FontWeight.BOLD)  # Estilo en negrita
+                            ),
+                            ft.TextSpan(
+                                " nuevas tarjetas de",
+                                ft.TextStyle() # Este texto es normal
+                            ),
+                            ft.TextSpan(
+                                " productos",
+                                ft.TextStyle(weight=ft.FontWeight.BOLD)  # Estilo en negrita
+                            ),
+                            ft.TextSpan(
+                                " en tu inventario",
+                                ft.TextStyle()  # Este texto es normal
+                            )
+                        ],
+                        text_align=ft.TextAlign.CENTER,
+                        size = 16,
+                        width = 200,
+                        color = "#9095a0"
+                    ),
+                ],        
+                expand = True,
+                alignment = ft.MainAxisAlignment.CENTER
             ),
 
             articulo_input,
@@ -187,9 +231,28 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
             ft.Row(
                 controls = [
                     ft.ElevatedButton(
-                        "Crear",
+                        "Guardar",
+                        style = ft.ButtonStyle(
+                            # Borde sólido vino-caramelo de 2 píxeles por defecto
+                            side = {
+                                ft.ControlState.DEFAULT: 
+                                    ft.BorderSide(
+                                        width = 2,
+                                        color = "#a11e2f"
+                                    ),
+                                # Borde rojo de 2 píxeles al pasar el mouse
+                                ft.ControlState.HOVERED: 
+                                    ft.BorderSide(
+                                        width = 2,
+                                        color = "#6b1d41"
+                                    )
+                            },
+                            padding = 20,
+                        ),
                         bgcolor = "#6b1d41",
-                        on_click= guardar_articulo
+                        color = "#ffffff",
+                        expand = True,
+                        on_click = guardar_articulo
                     ),
                 ],
                 spacing = 10

@@ -154,6 +154,24 @@ def articulos_list(regresar):
                                 ),
                                 ft.OutlinedButton(
                                     "Crear",
+                                    style=ft.ButtonStyle(
+                                        bgcolor = "#6b1d41",  # <--- Color de fondo que quieras
+                                        side = {
+                                            ft.ControlState.DEFAULT: 
+                                                ft.BorderSide(
+                                                    width = 2,
+                                                    color = "#a11e2f"
+                                                ),
+                                            # Borde rojo de 2 píxeles al pasar el mouse
+                                            ft.ControlState.HOVERED: 
+                                                ft.BorderSide(
+                                                    width = 2,
+                                                    color = "#6b1d41"
+                                                )
+                                        },
+                                        color = "#ffffff",
+                                    ),
+                                    
                                     icon = ft.Icons.WINE_BAR,
                                     on_click = abrir_modal # Al hacer clic, sobre el boton de "Crear" se abrira el modal
                                 )
