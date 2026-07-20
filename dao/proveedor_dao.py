@@ -3,6 +3,7 @@
 
 from database.conexion import Conexion
 from models.proveedor import Proveedor
+from models.proveedor import Proveedor_nombre
 
 class ProveedorDAO:
 
@@ -21,6 +22,22 @@ class ProveedorDAO:
         cursor.close()
         conexion.close()
         return proveedores
+    
+    # SELECT proveedor_proveedor FROM proveedores
+    def nombres_proveedores(self):
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+
+        cursor.execute("SELECT proveedor_proveedor FROM proveedores")
+        registros = cursor.fetchall()
+
+        nombres = []
+        for registro in registros:
+            proveedor = Proveedor_nombre(proveedor_proveedor = registro[0])
+            nombres.append(proveedor)
+        cursor.close()
+        conexion.close()
+        return nombres
     
     def insertar(self, proveedor):
         conexion = Conexion.obtener_conexion()

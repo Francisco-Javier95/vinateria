@@ -23,7 +23,7 @@ def insertar_articulo():
     articulo_articulo = input("\nEscribe el nombre del artículo: ")
     articulo_codigo = input("\nEscribe el código del artículo: ")
     
-    ver_categorias()
+    ver_nombres_categorias()
          
     articulo_categoria = int(input("\nEscribe el número correspondiente a la categoria: "))
     articulo_imagen = input("Escribe el nombre de la imagen: ")
@@ -183,6 +183,25 @@ def ver_categorias():
     except Exception as e:
         print("Error: ")
         print(e)
+
+def ver_nombres_categorias():
+    try:
+        categoria_dao = CategoriaDAO()
+
+        categorias = categoria_dao.nombres_categorias()
+
+        print("\n------Categorias------")
+
+        if len(categorias) == 0:
+            print("No hay categorias registradas")
+        else:
+            for categoria in categorias:
+                print(categoria.categoria_categoria)
+            print("\nConexion exitosa a la base de datos")
+    except Exception as e:
+        print("Error: ")
+        print(e)
+
 
 def modificar_categoria():
     ver_categorias() # Mandar a traer todos los registros de las categorías

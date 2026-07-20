@@ -22,14 +22,16 @@ def articulos_list(regresar):
             ft.DataColumn(ft.Text("Nombre")),
             ft.DataColumn(ft.Text("Categoría")),
             ft.DataColumn(ft.Text("Stock")),
-            ft.DataColumn(ft.Text("Precio"))
+            ft.DataColumn(ft.Text("Proveedor")),
+            ft.DataColumn(ft.Text("Precio")),
         ],
+        expand = True,
         rows = []
     )
 
     mensaje = ft.Text()
 
-    # -----------------Función para cargar los productos/articulos
+    # -----------------Función para cargar los productos/articulos----------------------
     def cargar_articulos():
         try:
             articulo_dao = ArticuloDAO()
@@ -45,6 +47,7 @@ def articulos_list(regresar):
                             ft.DataCell(ft.Text(articulo.articulo_articulo)),
                             ft.DataCell(ft.Text(str(articulo.articulo_categoria))),
                             ft.DataCell(ft.Text(str(articulo.articulo_stock))),
+                            ft.DataCell(ft.Text(str(articulo.articulo_proveedor))),
                             ft.DataCell(ft.Text(f"${articulo.articulo_precio:.2f}")) # ':.2f significa 2 decimales', siendo que el formato es, ejemplo: $1999.99)
                         ]
                     )
@@ -185,15 +188,16 @@ def articulos_list(regresar):
                     ],
                     alignment = ft.MainAxisAlignment.SPACE_BETWEEN
                 ),
+                
                 ft.Divider(),
-
+                
                 ft.Container(
                     content = tabla,
                     border = ft.Border.all(
                         1,
-                        ft.Colors.BLUE_GREY_200
+                        ft.Colors.BLUE_900
                     ),
-
+                    expand = True,
                     border_radius = 10,
                     padding = 10
                 ),
@@ -223,6 +227,7 @@ def articulos_list(regresar):
                         ft.DataCell(ft.Text(articulo.articulo_articulo)),
                         ft.DataCell(ft.Text(str(articulo.articulo_categoria))),
                         ft.DataCell(ft.Text(str(articulo.articulo_stock))),
+                        ft.DataCell(ft.Text(str(articulo.articulo_proveedor))),
                         ft.DataCell(ft.Text(f"${articulo.articulo_precio:.2f}")) # ':.2f significa 2 decimales', siendo que el formato es, ejemplo: $1999.99)
                     ]
                 )

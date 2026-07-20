@@ -11,7 +11,7 @@ class ArticuloDAO:
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
 
-        cursor.execute("SELECT * FROM articulos_1")
+        cursor.execute("SELECT a.articulo_id, a.articulo_articulo, a.articulo_codigo, c.categoria_categoria, a.articulo_imagen, a.articulo_precio, a.articulo_stock, p.proveedor_proveedor FROM articulos_1 a INNER JOIn categorias c ON a.articulo_categoria = c.categoria_id INNER JOIN proveedores p ON a.articulo_proveedor = p.proveedor_id")
         registros = cursor.fetchall()
 
         articulos = []

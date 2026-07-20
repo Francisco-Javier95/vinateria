@@ -2,163 +2,167 @@ import flet as ft
 
 from models.articulo import Articulo
 from dao.articulo_dao import ArticuloDAO
-import base64
-import os
-import asyncio
+from dao.categoria_dao import CategoriaDAO
+from dao.proveedor_dao import ProveedorDAO
 
 def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = None):
+    # Estilos de los label
+    estilo_de_label = ft.TextStyle(
+        color = "#926600", 
+        weight = ft.FontWeight.BOLD,
+        size = 14
+    )
+    estilo_del_label_focus = ft.TextStyle(
+        color = "#424955", 
+        weight = ft.FontWeight.BOLD,
+        size = 14
+    )
+
     # ------------ Campos del formulario ------------------
     articulo_input = ft.TextField(
         label = "Nombre: ",
+        label_style = estilo_de_label,
+        on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(),
+        on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(),
+        hint_text = "Champagne",  # Esto es el placeholder
+        focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
         color = "#424955"
     )
     codigo_input = ft.TextField(
         label = "Código: ",
+        label_style = estilo_de_label,
+        on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(),
+        on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(),
+        hint_text = "123-456-789",  # Esto es el placeholder
+        focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
         color = "#424955"
     )
-    categoria_input = ft.TextField(
+
+    # --------- Dropdown para categorìas ---------
+    categoria_input = ft.Dropdown(
         label = "Categoría: ",
+        on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(),
+        tooltip = "Selecciona una categoría...",
+        options = [], # Mostrar las categorias
         expand = True,
-        color = "#424955"
-    )
-    
-    # -------------- Campo imagen ------------------
-    # Variable para almacenar la imagen seleccionada
-    imagen_seleccionada = None
-    imagen_previa = ft.Image(
-        src = "",
-        width = 150,
-        height = 150,
-        border_radius = 10,
-        visible = False # Oculto inicialmente
+        menu_height = 200, # ALTURA MÁXIMA (5 items aprox)
+
+        color = "#6b1d41", # Color del texto
+        fill_color = ft.Colors.WHITE, # Fondo del campo (requiere filled=True o estilo)
+        filled = True, # Activa el relleno
+        border_color = "#916500", # Color del borde
+        focused_border_color = "#c9a03d", # Borde al enfocar
+        bgcolor = "#f9f6f0", # Fondo del menú desplegable
     )
 
-    # Texto que muestra el nombre del archivo
-    nombre_archivo = ft.Text(
-        "Ningún archivo seleccionado",
-        size = 12,
-        color = ft.Colors.GREY_600
-    )
-
-    file_picker = ft.FilePicker()
-
-    # -------------- Función para manejar la seleccion de la imagen ----------
-    def on_archivo_seleccionado(e: ft.filePickerResultEvent):
-        nonlocal imagen_seleccionada
-
-        if e.files and len(e.files) > 0:
-            # Obtener el arcghivo seleccionado
-            archivo = e.files[0]
-            ruta_archivo = archivo.path
-
-            # Mostrar el nombre del archivo
-            nombre_archivo.value = f"{archivo.name}"
-
-            try:
-                # Leer la imagen y convertirla a base64 para mostrarla
-                with open(ruta_archivo, "rb") as f:
-                    datos_imagen = f.read()
-                    # Codificar en base64 para mostrar
-                    imagen_base64 = base64.b64encode(datos_imagen).decode('utf-8')
-
-                    # Guardar la imagen para usarla al guardar
-                    imagen_seleccionada = imagen_base64
-
-                    # Mostrar la vista previa
-                    imagen_previa.src_base64 = imagen_base64
-                    imagen_previa.visible = True
-
-                    #Actualizar la interfaz
-                    e.page.update()
-
-            except Exception as error:
-                nombre_archivo.value = f"Error al cargar: {error}"
-                nombre_archivo.color = ft.Colors.RED
-                e.page.update()
-        else:
-            # Si el usuario cancela la selección
-            nombre_archivo.value = "Ningun archivo seleccionado"
-            imagen_previa.visible = False
-            imagen_seleccionada = None
-            e.page.update()
-
-    # --------- Crear el file picker -----------
-    file_picker.on_result = on_archivo_seleccionado
-
-    # --------- Boton para seleccionar imagen ---------
-    def seleccionar_imagen(e):
-        # Permitir solo imagenes
+    # Metodo para cargar las categorias desde la Base de Datos
+    def cargar_categorias():
         try:
-            e.page.run_task(
-                file_picker.pick_files,
-                allow_multiple = False, # Solo una imagen
-                allowed_extensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp"],
-                dialog_title = "Seleccionar imagen" 
-            )
-        except Exception as error:
-            print(f"Error al seleccionar imagen: {error}")
-    
-    def eliminar_imagen(e):
-        # Eliminar la imagen seleccionada
-        nonlocal imagen_seleccionada
-        imagen_seleccionada = None
-        nombre_archivo.value = "Ningún archivo seleccionado"
-        nombre_archivo.color = ft.Colors.GREY_600
-        imagen_previa.visible = False
-        e.page.update()
+            categoria_nombre_dao = CategoriaDAO()
+            categorias = categoria_nombre_dao.nombres_categorias()
 
-    # Contenedor de la imagen (selector + vista previa)
-    imagen_input = ft.Column(
-        controls = [
-            ft.Row(
-                controls = [
-                    ft.OutlinedButton(
-                        "Seleccionar imagen",
-                        icon = ft.Icons.IMAGE,
-                        on_click = seleccionar_imagen,
-                        style = ft.ButtonStyle(
-                            bgcolor = ft.Colors.BLUE_50,
-                            side = ft.BorderSide(color = ft.Colors.BLUE_400, width = 1) 
+            categoria_input.options.clear() # Limpia las opciones del dropdown
+
+            valor = 1
+            for categoria in categorias:
+                categoria_input.options.append(
+                    ft.dropdown.Option(
+                        key = valor,
+                        text = categoria.categoria_categoria,
+                        style=ft.TextStyle(
+                            color="#6b1d41",
+                            size=14
                         )
                     ),
-                    ft.IconButton(
-                        icon = ft.Icons.DELETE,
-                        icon_color = ft.Colors.RED_400,
-                        tooltip = "Eliminar imagen",
-                        on_click = eliminar_imagen,
-                        visible = False # Se mostrara solo cuando haya imagen
-                    )
-                ],
-                alignment = ft.MainAxisAlignment.START,
-                spacing = 10
-            ),
-            nombre_archivo,
-            ft.Container(
-                content = imagen_previa,
-            )
-        ],
-        spacing = 5
+                )
+                valor = valor + 1
+            # Si hay categorias, seleccionar la primera por defecto
+            if categoria_input.options:
+                categoria_input.value = categoria_input.options[0].key
+
+        except Exception as error:
+            mensaje.value = f"Error al consultar las categorías: {error}"
+            mensaje.color = ft.Colors.RED
+            # Actualizar la interfaz para mostrar el mensaje
+    
+    imagen_input = ft.TextField(
+        label = "Imagen: ",
+        label_style = estilo_de_label,
+        on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(),
+        on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(),
+        hint_text = "imagen.jpg",  # Esto es el placeholder
+        focused_border_color = "#c9a03d", # Borde al enfocar
+        expand = True,
+        color = "#424955"
     )
-    # -------------- FIN Campo imagen ------------------
-
-
     precio_input = ft.TextField(
         label = "Precio: ",
+        label_style = estilo_de_label,
+        on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(),
+        on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(),
+        hint_text = "0.00",  # Esto es el placeholder
+        focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
         color = "#424955"
     )
     stock_input = ft.TextField(
         label = "Stock: ",
+        label_style = estilo_de_label,
+        on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(),
+        on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(),
+        hint_text = "0",  # Esto es el placeholder
+        focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
         color = "#424955"
     )
-    proveedor_input = ft.TextField(
+    proveedor_input = ft.Dropdown(
         label = "Proveedor: ",
+        on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(),
+        tooltip = "Selecciona un proveedor...",
+        options = [], # Mostrar los proveedores
         expand = True,
-        color = "#424955"
+        menu_height = 200, # ALTURA MÁXIMA (5 items aprox)
+
+        color = "#6b1d41", # Color del texto
+        fill_color = ft.Colors.WHITE, # Fondo del campo (requiere filled=True o estilo)
+        filled = True, # Activa el relleno
+        border_color = "#916500", # Color del borde
+        focused_border_color = "#c9a03d", # Borde al enfocar
+        bgcolor = "#f9f6f0", # Fondo del menú desplegable
     )
+
+    # Metodo para cargar los proveedores desde la Base de Datos
+    def cargar_proveedores():
+        try:
+            proveedor_nombre_dao = ProveedorDAO()
+            proveedores = proveedor_nombre_dao.nombres_proveedores()
+
+            proveedor_input.options.clear() # Limpia las opciones del dropdown
+
+            valor = 1
+            for proveedor in proveedores:
+                proveedor_input.options.append(
+                    ft.dropdown.Option(
+                        key = valor,
+                        text = proveedor.proveedor_proveedor,
+                        style=ft.TextStyle(
+                            color="#6b1d41",
+                            size=14
+                        )
+                    ),
+                )
+                valor = valor + 1
+            # Si hay proveedores, seleccionar la primera por defecto
+            if proveedor_input.options:
+                proveedor_input.value = proveedor_input.options[0].key
+
+        except Exception as error:
+            mensaje.value = f"Error al consultar los proveedores: {error}"
+            mensaje.color = ft.Colors.RED
+            # Actualizar la interfaz para mostrar el mensaje
+    
 
     mensaje = ft.Text(
         "",
@@ -169,32 +173,24 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
     def limpiar_formualrio():
         articulo_input.value = ""
         codigo_input.value = ""
-        categoria_input.value = ""
-        # imagen_input.value = ""
+        categoria_input.value = categoria_input.options[0].key if categoria_input.options else ""
+        imagen_input.value = ""
         precio_input.value = ""
         stock_input.value = ""
         proveedor_input.value = ""
-
-        # Limpiar la imagen
-        imagen_seleccionada = None
-        nombre_archivo.value = "Ningún archivo seleccionado"
-        imagen_previa.visible = False
 
     def guardar_articulo(evento):
         # Recuperar los valores de los TextFile
         articulo_articulo = articulo_input.value
         articulo_codigo = codigo_input.value
-        articulo_categoria = categoria_input.value
-        # articulo_imagen = imagen_input.value
+        articulo_categoria = categoria_input.value # El valor seleccionado del Dropdown
+        articulo_imagen = imagen_input.value
         articulo_precio = precio_input.value
         articulo_stock = stock_input.value
         articulo_proveedor = proveedor_input.value
 
-        # Obtener la imagen seleccionada
-        articulo_imagen = imagen_seleccionada
-
         # Validación de campos vacíos
-        if articulo_articulo == "" or articulo_codigo == "" or articulo_categoria == "" or articulo_imagen is None or articulo_precio == "" or articulo_stock == "" or articulo_proveedor == "":
+        if articulo_articulo == "" or articulo_codigo == "" or articulo_categoria == None or articulo_imagen == "" or articulo_precio == "" or articulo_stock == "" or articulo_proveedor == "":
             mensaje.value = "Todos los campos son obligatorios"
             mensaje.color = ft.Colors.RED
             # Actualizar la interfaz para mostrar el mensaje
@@ -208,8 +204,8 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
                 articulo_id = articulo_id,
                 articulo_articulo = articulo_articulo,
                 articulo_codigo = articulo_codigo,
-                articulo_categoria = int(articulo_categoria),
-                articulo_imagen = articulo_imagen, # Guardamos la imagen en base64
+                articulo_categoria = int(articulo_categoria), # Convertir a entero
+                articulo_imagen = articulo_imagen,
                 articulo_precio = float(articulo_precio),
                 articulo_stock = int(articulo_stock),
                 articulo_proveedor = int(articulo_proveedor)
@@ -222,11 +218,11 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
             
             limpiar_formualrio()
 
-            if formulario_visible and cerrando_modal:
-                evento.page.update()
-                cerrando_modal()
-                return
-
+            # # ---------------------- Si el modal esta activo y si existe la función para cerrar
+            # if formulario_visible and cerrando_modal:
+            #     evento.page.update()
+            #     cerrando_modal()
+            #     return
 
         except ValueError:
             mensaje.value = "El campo 'categoria' debe ser un número entero"
@@ -348,10 +344,8 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
 
             articulo_input,
             codigo_input,
-            categoria_input,
-            
+            categoria_input, # Dropdown de categorias
             imagen_input,
-
             precio_input,
             stock_input,
             proveedor_input,
@@ -360,7 +354,7 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
             ft.Row(
                 controls = [
                     ft.ElevatedButton(
-                        "Guardar",
+                        "Crear",
                         style = ft.ButtonStyle(
                             # Borde sólido vino-caramelo de 2 píxeles por defecto
                             side = {
@@ -390,6 +384,12 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
         ],
         spacing = 15
     )
+
+    # Cargar las categorias
+    cargar_categorias()
+
+    # Cargar los proveedores
+    cargar_proveedores()
 
     # ---------------- Envolver en un contenedor con estilo ----------------
     if formulario_visible:

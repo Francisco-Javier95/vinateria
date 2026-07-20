@@ -3,6 +3,7 @@
 
 from database.conexion import Conexion
 from models.categoria import Categoria
+from models.categoria import Categoria_nombre
 
 class CategoriaDAO:
 
@@ -21,6 +22,22 @@ class CategoriaDAO:
         cursor.close()
         conexion.close()
         return categorias
+    
+    # SELECT categoria_categoria FROM categorias
+    def nombres_categorias(self):
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+
+        cursor.execute("SELECT categoria_categoria FROM categorias")
+        registros = cursor.fetchall()
+
+        nombres = []
+        for registro in registros:
+            categoria = Categoria_nombre(categoria_categoria = registro[0])
+            nombres.append(categoria)
+        cursor.close()
+        conexion.close()
+        return nombres
     
     def insertar(self, categoria):
         conexion = Conexion.obtener_conexion()
