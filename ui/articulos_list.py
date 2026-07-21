@@ -2,9 +2,9 @@ import flet as ft
 
 from models.articulo import Articulo
 from dao.articulo_dao import ArticuloDAO
-from ui.articulo_form_create import articulo_form
-from ui.articulo_form_edit import articulo_form_edit
-from ui.articulo_alert_delete import alerta_eliminar
+from ui.articulo_acciones.articulo_form_create import articulo_form
+from ui.articulo_acciones.articulo_form_edit import articulo_form_edit
+from ui.articulo_acciones.articulo_alert_delete import alerta_eliminar
 
 def articulos_list(regresar):
     # ---------------- Variables de estado -------------------
@@ -57,7 +57,8 @@ def articulos_list(regresar):
                                     controls = [
                                         # Boton Editar
                                         ft.OutlinedButton(
-                                            f"Editar ID:{articulo.articulo_id}",
+                                            #f"Editar ID:{articulo.articulo_id}",}
+                                            "Editar",
                                             data = articulo.articulo_id, # Recuperar el ID del registro/producto
 
                                             style = ft.ButtonStyle(
@@ -84,7 +85,8 @@ def articulos_list(regresar):
 
                                         # Boton Eliminar
                                         ft.OutlinedButton(
-                                            f"Eliminar ID:{articulo.articulo_id}",
+                                            #f"Eliminar ID:{articulo.articulo_id}",
+                                            "Eliminar",
                                             data = articulo.articulo_id,
 
                                             style = ft.ButtonStyle(
@@ -108,7 +110,7 @@ def articulos_list(regresar):
                                                         )
                                                 },
                                                 # Cambiar el color de texto
-                                                color={
+                                                color = {
                                                     ft.ControlState.HOVERED: "#ffffff",
                                                     ft.ControlState.DEFAULT: "#de3b40",
                                                 },
@@ -355,12 +357,12 @@ def articulos_list(regresar):
 
         # --------------- Crear la capa oscura (OVERLAY) --------------
         capa_oscura = ft.Container(
-            expand=True,
-            bgcolor=ft.Colors.BLACK_45,
-            content=ft.Column(
-                controls=[contenido_modal],
+            expand = True,
+            bgcolor = ft.Colors.BLACK_45,
+            content = ft.Column(
+                controls = [contenido_modal],
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                expand=True,
+                expand = True,
                 width = 5000
             ),
             padding = ft.Padding.only(top = 40)
@@ -398,6 +400,7 @@ def articulos_list(regresar):
                                     weight = ft.FontWeight.BOLD,
                                     color = "#c9a03d"
                                 ),
+
                                 ft.OutlinedButton(
                                     "Crear",
                                     style=ft.ButtonStyle(
@@ -478,7 +481,8 @@ def articulos_list(regresar):
                                 controls = [
                                     # Boton Editar
                                     ft.OutlinedButton(
-                                        f"Editar ID:{articulo.articulo_id}",
+                                        #f"Editar ID:{articulo.articulo_id}",
+                                        "Editar",
                                         data = articulo.articulo_id, # Recuperar el ID del registro/producto
 
                                         style = ft.ButtonStyle(
@@ -505,7 +509,8 @@ def articulos_list(regresar):
 
                                     # Boton Eliminar
                                     ft.OutlinedButton(
-                                        f"Eliminar ID:{articulo.articulo_id}",
+                                        #f"Eliminar ID:{articulo.articulo_id}",
+                                        "Eliminar",
                                         data = articulo.articulo_id,
 
                                         style = ft.ButtonStyle(

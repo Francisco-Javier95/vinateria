@@ -1,6 +1,5 @@
 import flet as ft
 
-from ui.articulo_form_create import articulo_form
 from ui.articulos_list import articulos_list
 
 def main_window(page: ft.Page):
@@ -42,11 +41,6 @@ def main_window(page: ft.Page):
     
     def mostrar_inicio(e=None):
         contenido.content = inicio()
-        page.update()
-
-    # Reaccionala click del botón en el menú lateral
-    def insertar_articulo(e=None):
-        contenido.content = articulo_form(mostrar_inicio)
         page.update()
 
     def mostrar_lista_articulos(e=None):
