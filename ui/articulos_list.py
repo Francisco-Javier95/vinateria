@@ -2,7 +2,8 @@ import flet as ft
 
 from models.articulo import Articulo
 from dao.articulo_dao import ArticuloDAO
-from ui.articulo_form import articulo_form
+from ui.articulo_form_create import articulo_form
+from ui.articulo_form_edit import articulo_form_edit
 
 def articulos_list(regresar):
     # ---------------- Variables de estado -------------------
@@ -18,12 +19,13 @@ def articulos_list(regresar):
     # Tabla de productos
     tabla = ft.DataTable(
         columns = [
-            ft.DataColumn(ft.Text("Imagen")),
-            ft.DataColumn(ft.Text("Nombre")),
-            ft.DataColumn(ft.Text("Categoría")),
-            ft.DataColumn(ft.Text("Stock")),
-            ft.DataColumn(ft.Text("Proveedor")),
-            ft.DataColumn(ft.Text("Precio")),
+            ft.DataColumn(ft.Text("Imagen", color = "#0d1b2a")),
+            ft.DataColumn(ft.Text("Nombre", color = "#0d1b2a")),
+            ft.DataColumn(ft.Text("Categoría", color = "#0d1b2a")),
+            ft.DataColumn(ft.Text("Stock", color = "#0d1b2a")),
+            ft.DataColumn(ft.Text("Proveedor", color = "#0d1b2a")),
+            ft.DataColumn(ft.Text("Precio", color = "#0d1b2a")),
+            ft.DataColumn(ft.Text("Acciones", color = "#0d1b2a")),
         ],
         expand = True,
         rows = []
@@ -43,12 +45,37 @@ def articulos_list(regresar):
                 tabla.rows.append(
                     ft.DataRow(
                         cells = [
-                            ft.DataCell(ft.Text(articulo.articulo_imagen)),
-                            ft.DataCell(ft.Text(articulo.articulo_articulo)),
-                            ft.DataCell(ft.Text(str(articulo.articulo_categoria))),
-                            ft.DataCell(ft.Text(str(articulo.articulo_stock))),
-                            ft.DataCell(ft.Text(str(articulo.articulo_proveedor))),
-                            ft.DataCell(ft.Text(f"${articulo.articulo_precio:.2f}")) # ':.2f significa 2 decimales', siendo que el formato es, ejemplo: $1999.99)
+                            ft.DataCell(ft.Text(articulo.articulo_imagen, color = "#0d1b2a")),
+                            ft.DataCell(ft.Text(articulo.articulo_articulo, color = "#0d1b2a")),
+                            ft.DataCell(ft.Text(str(articulo.articulo_categoria), color = "#0d1b2a")),
+                            ft.DataCell(ft.Text(str(articulo.articulo_stock), color = "#0d1b2a")),
+                            ft.DataCell(ft.Text(str(articulo.articulo_proveedor), color = "#0d1b2a")),
+                            ft.DataCell(ft.Text(f"${articulo.articulo_precio:.2f}", color = "#0d1b2a")), # ':.2f significa 2 decimales', siendo que el formato es, ejemplo: $1999.99)
+                            ft.DataCell(
+                                ft.OutlinedButton(
+                                    f"Editar ID:{articulo.articulo_id}",
+                                    data = articulo.articulo_id,
+                                    style=ft.ButtonStyle(
+                                        bgcolor = "#c9a03d",  # Color de fondo
+                                        side = {
+                                            ft.ControlState.DEFAULT: 
+                                                ft.BorderSide(
+                                                    width = 2,
+                                                    color = "#926600"
+                                                ),
+                                            # Borde rojo de 2 píxeles al pasar el mouse
+                                            ft.ControlState.HOVERED: 
+                                                ft.BorderSide(
+                                                    width = 2,
+                                                    color = "#c9a03d"
+                                                )
+                                        },
+                                        color = "#ffffff",
+                                    ),
+
+                                    on_click = abrir_formulario_editar_modal # Al hacer clic, sobre el boton de "Editar" se abrira el modal
+                                )
+                            )
                         ]
                     )
                 )
@@ -91,7 +118,7 @@ def articulos_list(regresar):
             elif pagina_referencia:
                 pagina_referencia.update()
     
-    def abrir_modal(evento):
+    def abrir_formulario_crear_modal(evento):
         # Crear y muestrar el modal con el formulario de "Crear producto"
         # evento: El evento del clic en el boton "Crear"
 
@@ -141,6 +168,92 @@ def articulos_list(regresar):
         elif pagina_referencia:
             pagina_referencia.update()
 
+    def abrir_formulario_editar_modal(evento):
+        # Crear y muestrar el modal con el formulario de "Editar producto"
+        # evento: El evento del clic en el boton "Editar" del registro correspondiente
+
+        # "nonlocal" para modificar variables de la función padre
+        nonlocal capa_oscura_abierta_modal, capa_oscura_modal
+
+        # Guardar referencia a la pagina desde el evento
+        if evento and evento.page:
+            pagina_referencia = evento.page
+
+        # Si el modal ya esta abierto, no hacer nada
+        if capa_oscura_abierta_modal:
+            return
+        
+        # ======== Obtener el ID del articulo desde el boton =========
+        # El ID se guarda en la propiedad 'data' del boton
+        articulo_id = evento.control.data if evento.control else None # Obtener el articulo_id del boton
+
+        if articulo_id is None:
+            print("No se pudo obtener el ID del articulo")
+            return
+        
+        try:
+            # === Obtener los datos del articulo desde la BD ===
+            articulo_dao = ArticuloDAO()
+            articulo = articulo_dao.obtener_id_del_articulo(articulo_id)
+
+            if articulo is None:
+                print(f"No se encontro el articulo con ID: {articulo_id}")
+                return
+            
+            # Preparar los datos para el formulario
+            registro = {
+                'id': articulo.articulo_id,
+                'nombre': articulo.articulo_articulo,
+                'codigo': articulo.articulo_codigo,
+                'categoria_id': articulo.articulo_categoria,
+                'imagen': articulo.articulo_imagen,
+                'precio': str(articulo.articulo_precio),
+                'stock': str(articulo.articulo_stock),
+                'proveedor_id': articulo.articulo_proveedor
+            }
+
+            print(f"Datos cargados: {registro}")
+
+        except Exception as error:
+            print(f"Error al obtener el articulo: {error}")
+            return
+        
+        # --------------- Crear el contenido del modal -----------------
+        contenido_modal = articulo_form_edit(
+            formulario_visible = True, # Activar el modal, mostrando el formulario
+            cerrando_modal = cerrar_modal,
+            registro = registro # Enviar los datos al formulario
+        )
+
+        # --------------- Crear la capa oscura (OVERLAY) --------------
+        capa_oscura = ft.Container(
+            expand=True,
+            bgcolor=ft.Colors.BLACK_45,
+            content=ft.Column(
+                controls=[contenido_modal],
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                alignment=ft.MainAxisAlignment.CENTER,
+                expand=True,
+                width = 5000
+            )
+        )
+
+        # -------------- Agregar la capa a la pila ---------------------
+        # La capa se superpone al contenido principal
+        pila.controls.append(capa_oscura)
+
+        # Guardar referencia a la capa
+        capa_oscura_modal = capa_oscura
+
+        # Cambiar el esado de "cerrado" a "abierto"
+        capa_oscura_abierta_modal = True
+
+        # Actualizar la interfaz
+        if pila.page:
+            pila.update() # Se actualiza la pila para mostrar cambios
+        elif pagina_referencia:
+            pagina_referencia.update()
+
     contenido_principal = ft.Container(
         padding = 30,
         content = ft.Column(
@@ -158,7 +271,7 @@ def articulos_list(regresar):
                                 ft.OutlinedButton(
                                     "Crear",
                                     style=ft.ButtonStyle(
-                                        bgcolor = "#6b1d41",  # <--- Color de fondo que quieras
+                                        bgcolor = "#6b1d41",  # Color de fondo
                                         side = {
                                             ft.ControlState.DEFAULT: 
                                                 ft.BorderSide(
@@ -176,7 +289,7 @@ def articulos_list(regresar):
                                     ),
                                     
                                     icon = ft.Icons.WINE_BAR,
-                                    on_click = abrir_modal # Al hacer clic, sobre el boton de "Crear" se abrira el modal
+                                    on_click = abrir_formulario_crear_modal # Al hacer clic, sobre el boton de "Crear" se abrira el modal
                                 )
                             ]
                         ),
@@ -223,12 +336,37 @@ def articulos_list(regresar):
             tabla.rows.append(
                 ft.DataRow(
                     cells = [
-                        ft.DataCell(ft.Text(articulo.articulo_imagen)),
-                        ft.DataCell(ft.Text(articulo.articulo_articulo)),
-                        ft.DataCell(ft.Text(str(articulo.articulo_categoria))),
-                        ft.DataCell(ft.Text(str(articulo.articulo_stock))),
-                        ft.DataCell(ft.Text(str(articulo.articulo_proveedor))),
-                        ft.DataCell(ft.Text(f"${articulo.articulo_precio:.2f}")) # ':.2f significa 2 decimales', siendo que el formato es, ejemplo: $1999.99)
+                        ft.DataCell(ft.Text(articulo.articulo_imagen, color = "#0d1b2a")),
+                        ft.DataCell(ft.Text(articulo.articulo_articulo, color = "#0d1b2a")),
+                        ft.DataCell(ft.Text(str(articulo.articulo_categoria), color = "#0d1b2a")),
+                        ft.DataCell(ft.Text(str(articulo.articulo_stock), color = "#0d1b2a")),
+                        ft.DataCell(ft.Text(str(articulo.articulo_proveedor), color = "#0d1b2a")),
+                        ft.DataCell(ft.Text(f"${articulo.articulo_precio:.2f}", color = "#0d1b2a")),
+                        ft.DataCell(
+                            ft.OutlinedButton(
+                                f"Editar ID:{articulo.articulo_id}",
+                                data = articulo.articulo_id,
+                                style=ft.ButtonStyle(
+                                    bgcolor = "#c9a03d",  # Color de fondo
+                                    side = {
+                                        ft.ControlState.DEFAULT: 
+                                            ft.BorderSide(
+                                                width = 2,
+                                                color = "#926600"
+                                            ),
+                                        # Borde rojo de 2 píxeles al pasar el mouse
+                                        ft.ControlState.HOVERED: 
+                                            ft.BorderSide(
+                                                width = 2,
+                                                color = "#c9a03d"
+                                            )
+                                    },
+                                    color = "#ffffff",
+                                ),
+
+                                on_click = abrir_formulario_editar_modal # Al hacer clic, sobre el boton de "Editar" se abrira el modal
+                            )
+                        ) # ':.2f significa 2 decimales', siendo que el formato es, ejemplo: $1999.99)
                     ]
                 )
             )

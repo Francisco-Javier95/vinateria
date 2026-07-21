@@ -22,8 +22,8 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
     articulo_input = ft.TextField(
         label = "Nombre: ",
         label_style = estilo_de_label,
-        on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(),
-        on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(),
+        on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(), # Estilo del label en focus
+        on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(), # Estilo del label
         hint_text = "Champagne",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
@@ -32,8 +32,8 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
     codigo_input = ft.TextField(
         label = "Código: ",
         label_style = estilo_de_label,
-        on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(),
-        on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(),
+        on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(), # Estilo del label en focus
+        on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(), # Estilo del label normal
         hint_text = "123-456-789",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
@@ -65,11 +65,11 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
 
             categoria_input.options.clear() # Limpia las opciones del dropdown
 
-            valor = 1
+            valor_categoria = 1
             for categoria in categorias:
                 categoria_input.options.append(
                     ft.dropdown.Option(
-                        key = valor,
+                        key = valor_categoria,
                         text = categoria.categoria_categoria,
                         style=ft.TextStyle(
                             color="#6b1d41",
@@ -77,7 +77,7 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
                         )
                     ),
                 )
-                valor = valor + 1
+                valor_categoria = valor_categoria + 1
             # Si hay categorias, seleccionar la primera por defecto
             if categoria_input.options:
                 categoria_input.value = categoria_input.options[0].key
@@ -85,7 +85,6 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
         except Exception as error:
             mensaje.value = f"Error al consultar las categorías: {error}"
             mensaje.color = ft.Colors.RED
-            # Actualizar la interfaz para mostrar el mensaje
     
     imagen_input = ft.TextField(
         label = "Imagen: ",
@@ -97,6 +96,7 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
         expand = True,
         color = "#424955"
     )
+
     precio_input = ft.TextField(
         label = "Precio: ",
         label_style = estilo_de_label,
@@ -105,7 +105,10 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
         hint_text = "0.00",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
-        color = "#424955"
+        color = "#424955",
+
+        # 'suffix_icon' Sirve para colocar un icono en el input despues del texto
+        suffix_icon = ft.Icons.ATTACH_MONEY, # Icono de $
     )
     stock_input = ft.TextField(
         label = "Stock: ",
@@ -141,11 +144,11 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
 
             proveedor_input.options.clear() # Limpia las opciones del dropdown
 
-            valor = 1
+            valor_proveedor = 1
             for proveedor in proveedores:
                 proveedor_input.options.append(
                     ft.dropdown.Option(
-                        key = valor,
+                        key = valor_proveedor,
                         text = proveedor.proveedor_proveedor,
                         style=ft.TextStyle(
                             color="#6b1d41",
@@ -153,7 +156,7 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
                         )
                     ),
                 )
-                valor = valor + 1
+                valor_proveedor = valor_proveedor + 1
             # Si hay proveedores, seleccionar la primera por defecto
             if proveedor_input.options:
                 proveedor_input.value = proveedor_input.options[0].key
@@ -161,7 +164,6 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
         except Exception as error:
             mensaje.value = f"Error al consultar los proveedores: {error}"
             mensaje.color = ft.Colors.RED
-            # Actualizar la interfaz para mostrar el mensaje
     
 
     mensaje = ft.Text(
@@ -177,7 +179,7 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
         imagen_input.value = ""
         precio_input.value = ""
         stock_input.value = ""
-        proveedor_input.value = ""
+        proveedor_input.value = proveedor_input.options[0].key if proveedor_input.options else ""
 
     def guardar_articulo(evento):
         # Recuperar los valores de los TextFile
@@ -305,6 +307,85 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
                 ]
             )
         )
+
+    # =============== Distribución del formulario en dos columnas ===============
+    # ------------ Columna izquierda -------------------------
+    columna_izquierda = ft.Column(
+        controls = [
+            # Campo Imagen (ocupara 3 celdas de alto)
+            ft.Container(
+                content = imagen_input,
+                height = 174,
+                expand = True
+            ),
+            # Fila 4: Frecio
+            precio_input,
+            # Fila 5: Stock
+            stock_input
+        ],
+        spacing = 15,
+        expand = True
+    )
+
+    # ----------- Columna derecha --------------------
+    columna_derecha = ft.Column(
+        controls = [
+            # Fila 1: Nombre
+            articulo_input,
+            # Fila 2: Código
+            codigo_input,
+            # Fila 3: Categoria
+            categoria_input,
+            # Fila 4: Proveedor
+            proveedor_input,
+            # Fila 5: Boton Crear
+            ft.Row(
+                controls = [
+                    ft.ElevatedButton(
+                        "Crear",
+                        style = ft.ButtonStyle(
+                            # Borde sólido vino-caramelo de 2 píxeles por defecto
+                            side = {
+                                ft.ControlState.DEFAULT: 
+                                    ft.BorderSide(
+                                        width = 2,
+                                        color = "#a11e2f"
+                                    ),
+                                # Borde rojo de 2 píxeles al pasar el mouse
+                                ft.ControlState.HOVERED: 
+                                    ft.BorderSide(
+                                        width = 2,
+                                        color = "#6b1d41"
+                                    )
+                            },
+                            padding = 20,
+                        ),
+                        bgcolor = "#6b1d41",
+                        color = "#ffffff",
+                        expand = True,
+                        on_click = guardar_articulo
+                    ),
+                ],
+                spacing = 10,
+                expand = True
+            ),
+        ],
+        spacing = 15,
+        expand = True
+    )
+
+    # ----------- Contenedor principal con dos columnas ---------------
+    contenido_dos_columnas = ft.Row(
+        controls = [
+            columna_izquierda,
+            columna_derecha,
+        ],
+        spacing = 20,
+        expand = True,
+        vertical_alignment = ft.CrossAxisAlignment.START
+    )
+    # =============== FIN Distribución del formulario en dos columnas ===============
+
     
     # ------------- Construir el formulario ----------------
     contenido_formulario = ft.Column(
@@ -341,48 +422,13 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
                 expand = True,
                 alignment = ft.MainAxisAlignment.CENTER
             ),
+            
+            contenido_dos_columnas,
 
-            articulo_input,
-            codigo_input,
-            categoria_input, # Dropdown de categorias
-            imagen_input,
-            precio_input,
-            stock_input,
-            proveedor_input,
-
-            # ------ BOTONES ---------
-            ft.Row(
-                controls = [
-                    ft.ElevatedButton(
-                        "Crear",
-                        style = ft.ButtonStyle(
-                            # Borde sólido vino-caramelo de 2 píxeles por defecto
-                            side = {
-                                ft.ControlState.DEFAULT: 
-                                    ft.BorderSide(
-                                        width = 2,
-                                        color = "#a11e2f"
-                                    ),
-                                # Borde rojo de 2 píxeles al pasar el mouse
-                                ft.ControlState.HOVERED: 
-                                    ft.BorderSide(
-                                        width = 2,
-                                        color = "#6b1d41"
-                                    )
-                            },
-                            padding = 20,
-                        ),
-                        bgcolor = "#6b1d41",
-                        color = "#ffffff",
-                        expand = True,
-                        on_click = guardar_articulo
-                    ),
-                ],
-                spacing = 10
-            ),
             mensaje
         ],
-        spacing = 15
+        spacing = 15,
+        expand = True
     )
 
     # Cargar las categorias

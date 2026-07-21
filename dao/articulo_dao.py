@@ -11,7 +11,7 @@ class ArticuloDAO:
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
 
-        cursor.execute("SELECT a.articulo_id, a.articulo_articulo, a.articulo_codigo, c.categoria_categoria, a.articulo_imagen, a.articulo_precio, a.articulo_stock, p.proveedor_proveedor FROM articulos_1 a INNER JOIn categorias c ON a.articulo_categoria = c.categoria_id INNER JOIN proveedores p ON a.articulo_proveedor = p.proveedor_id")
+        cursor.execute("SELECT a.articulo_id, a.articulo_articulo, a.articulo_codigo, c.categoria_categoria, a.articulo_imagen, a.articulo_precio, a.articulo_stock, p.proveedor_proveedor FROM articulos_1 a INNER JOIN categorias c ON a.articulo_categoria = c.categoria_id INNER JOIN proveedores p ON a.articulo_proveedor = p.proveedor_id")
         registros = cursor.fetchall()
 
         articulos = []
@@ -21,6 +21,35 @@ class ArticuloDAO:
         cursor.close()
         conexion.close()
         return articulos
+    
+    def obtener_id_del_articulo(self, articulo_id):
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+
+        cursor.execute(
+            "SELECT articulo_id, articulo_articulo, articulo_codigo, articulo_categoria, articulo_imagen, articulo_precio, articulo_stock, articulo_proveedor FROM articulos_1 WHERE articulo_id = %s",
+            (articulo_id,)
+        )
+
+        datos_articulo = cursor.fetchone()
+
+        if datos_articulo:
+            return Articulo(
+                articulo_id = datos_articulo[0],
+                articulo_articulo = datos_articulo[1],
+                articulo_codigo = datos_articulo[2],
+                articulo_categoria = datos_articulo[3],
+                articulo_imagen = datos_articulo[4],
+                articulo_precio = datos_articulo[5],
+                articulo_stock = datos_articulo[6],
+                articulo_proveedor = datos_articulo[7]
+            )
+
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+
+        return None
     
     def insertar(self, articulo):
         conexion = Conexion.obtener_conexion()

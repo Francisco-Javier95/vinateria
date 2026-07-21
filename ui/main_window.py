@@ -1,6 +1,6 @@
 import flet as ft
 
-from ui.articulo_form import articulo_form
+from ui.articulo_form_create import articulo_form
 from ui.articulos_list import articulos_list
 
 def main_window(page: ft.Page):
