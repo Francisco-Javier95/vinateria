@@ -289,7 +289,8 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
                                         width = 2,
                                         color = "#6b1d41"
                                     )
-                            }
+                            },
+                            shape = ft.RoundedRectangleBorder(radius = 10)
                         ),
                         bgcolor = "#6b1d41",
                         icon_color = "#ffffff",
@@ -388,6 +389,7 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
                                     )
                             },
                             padding = 20,
+                            shape = ft.RoundedRectangleBorder(radius = 10)
                         ),
                         bgcolor = "#6b1d41",
                         color = "#ffffff",

@@ -4,6 +4,7 @@ from models.articulo import Articulo
 from dao.articulo_dao import ArticuloDAO
 from ui.articulo_form_create import articulo_form
 from ui.articulo_form_edit import articulo_form_edit
+from ui.articulo_alert_delete import alerta_eliminar
 
 def articulos_list(regresar):
     # ---------------- Variables de estado -------------------
@@ -52,28 +53,72 @@ def articulos_list(regresar):
                             ft.DataCell(ft.Text(str(articulo.articulo_proveedor), color = "#0d1b2a")),
                             ft.DataCell(ft.Text(f"${articulo.articulo_precio:.2f}", color = "#0d1b2a")), # ':.2f significa 2 decimales', siendo que el formato es, ejemplo: $1999.99)
                             ft.DataCell(
-                                ft.OutlinedButton(
-                                    f"Editar ID:{articulo.articulo_id}",
-                                    data = articulo.articulo_id,
-                                    style=ft.ButtonStyle(
-                                        bgcolor = "#c9a03d",  # Color de fondo
-                                        side = {
-                                            ft.ControlState.DEFAULT: 
-                                                ft.BorderSide(
-                                                    width = 2,
-                                                    color = "#926600"
-                                                ),
-                                            # Borde rojo de 2 píxeles al pasar el mouse
-                                            ft.ControlState.HOVERED: 
-                                                ft.BorderSide(
-                                                    width = 2,
-                                                    color = "#c9a03d"
-                                                )
-                                        },
-                                        color = "#ffffff",
-                                    ),
+                                ft.Row(
+                                    controls = [
+                                        # Boton Editar
+                                        ft.OutlinedButton(
+                                            f"Editar ID:{articulo.articulo_id}",
+                                            data = articulo.articulo_id, # Recuperar el ID del registro/producto
 
-                                    on_click = abrir_formulario_editar_modal # Al hacer clic, sobre el boton de "Editar" se abrira el modal
+                                            style = ft.ButtonStyle(
+                                                bgcolor = "#c9a03d",  # Color de fondo
+                                                side = {
+                                                    ft.ControlState.DEFAULT: 
+                                                        ft.BorderSide(
+                                                            width = 2,
+                                                            color = "#926600"
+                                                        ),
+                                                    # Borde rojo de 2 píxeles al pasar el mouse
+                                                    ft.ControlState.HOVERED: 
+                                                        ft.BorderSide(
+                                                            width = 2,
+                                                            color = "#c9a03d"
+                                                        )
+                                                },
+                                                color = "#ffffff",
+                                                shape = ft.RoundedRectangleBorder(radius = 10)
+                                            ),
+
+                                            on_click = abrir_formulario_editar_modal # Al hacer clic, sobre el boton de "Editar" se abrira el modal
+                                        ),
+
+                                        # Boton Eliminar
+                                        ft.OutlinedButton(
+                                            f"Eliminar ID:{articulo.articulo_id}",
+                                            data = articulo.articulo_id,
+
+                                            style = ft.ButtonStyle(
+                                                # Cambiar el color del fondo
+                                                bgcolor = {
+                                                    ft.ControlState.HOVERED: "#de3b40",
+                                                    ft.ControlState.DEFAULT: "#f3f4f6" # Color por defecto
+                                                },
+                                                # Cambiar el color del borde
+                                                side = {
+                                                    ft.ControlState.DEFAULT: 
+                                                        ft.BorderSide(
+                                                            width = 2,
+                                                            color = "#de3b40"
+                                                        ),
+                                                    # Borde rojo de 2 píxeles al pasar el mouse
+                                                    ft.ControlState.HOVERED: 
+                                                        ft.BorderSide(
+                                                            width = 2,
+                                                            color = "#de3b40"
+                                                        )
+                                                },
+                                                # Cambiar el color de texto
+                                                color={
+                                                    ft.ControlState.HOVERED: "#ffffff",
+                                                    ft.ControlState.DEFAULT: "#de3b40",
+                                                },
+                                                # Cambiar el redondeado del borde
+                                                shape = ft.RoundedRectangleBorder(radius = 10)
+                                            ),
+
+                                            on_click = abrir_alerta_eliminar_articulo # Al hacer clic, sobre el boton de "Editar" se abrira el modal
+                                        )
+                                    ]
                                 )
                             )
                         ]
@@ -117,6 +162,7 @@ def articulos_list(regresar):
                 pila.update() # Se actualiza la pila para mostrar cambios
             elif pagina_referencia:
                 pagina_referencia.update()
+
     
     def abrir_formulario_crear_modal(evento):
         # Crear y muestrar el modal con el formulario de "Crear producto"
@@ -217,6 +263,7 @@ def articulos_list(regresar):
         except Exception as error:
             print(f"Error al obtener el articulo: {error}")
             return
+        # ======= FIN Obtener el ID del articulo desde el boton ========
         
         # --------------- Crear el contenido del modal -----------------
         contenido_modal = articulo_form_edit(
@@ -254,6 +301,89 @@ def articulos_list(regresar):
         elif pagina_referencia:
             pagina_referencia.update()
 
+    def abrir_alerta_eliminar_articulo(evento):
+        # Crear y muestrar el modal con la alerta de "La Vinata dice: ¿Desea eliminar este articulo?"
+        # evento: El evento del clic en el boton "Eliminar"
+
+        # "nonlocal" para modificar variables de la función padre
+        nonlocal capa_oscura_abierta_modal, capa_oscura_modal
+
+        # Guardar referencia a la pagina desde el evento
+        if evento and evento.page:
+            pagina_referencia = evento.page
+
+        # Si el modal ya esta abierto, no hacer nada
+        if capa_oscura_abierta_modal:
+            return
+        
+        # ======== Obtener el ID del articulo desde el boton =========
+        # El ID se guarda en la propiedad 'data' del boton
+        articulo_id = evento.control.data if evento.control else None # Obtener el articulo_id del boton
+
+        if articulo_id is None:
+            print("No se pudo obtener el ID del articulo")
+            return
+        
+        try:
+            # === Obtener los datos del articulo desde la BD ===
+            articulo_dao = ArticuloDAO()
+            articulo = articulo_dao.obtener_id_del_articulo(articulo_id)
+
+            if articulo is None:
+                print(f"No se encontro el articulo con ID: {articulo_id}")
+                return
+            
+            # Preparar los datos para el formulario
+            id_y_nombre = {
+                'id': articulo.articulo_id,
+                'nombre': articulo.articulo_articulo
+            }
+
+            print(f"Datos cargados: {id_y_nombre}")
+
+        except Exception as error:
+            print(f"Error al obtener el articulo: {error}")
+            return
+        # ======= FIN Obtener el ID del articulo desde el boton ========
+        
+        # --------------- Crear el contenido del modal -----------------
+        contenido_modal = alerta_eliminar(
+            formulario_visible = True, # Activar el modal, mostrando el formulario
+            cerrando_modal = cerrar_modal,
+            registro = id_y_nombre # Enviar los datos a la alerta
+        )
+
+        # --------------- Crear la capa oscura (OVERLAY) --------------
+        capa_oscura = ft.Container(
+            expand=True,
+            bgcolor=ft.Colors.BLACK_45,
+            content=ft.Column(
+                controls=[contenido_modal],
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                expand=True,
+                width = 5000
+            ),
+            padding = ft.Padding.only(top = 40)
+        )
+
+        # -------------- Agregar la capa a la pila ---------------------
+        # La capa se superpone al contenido principal
+        pila.controls.append(capa_oscura)
+
+        # Guardar referencia a la capa
+        capa_oscura_modal = capa_oscura
+
+        # Cambiar el esado de "cerrado" a "abierto"
+        capa_oscura_abierta_modal = True
+
+        # Actualizar la interfaz
+        if pila.page:
+            pila.update() # Se actualiza la pila para mostrar cambios
+        elif pagina_referencia:
+            pagina_referencia.update()
+
+
+    # ================= CONTENIDO PRINCIPAL =================
     contenido_principal = ft.Container(
         padding = 30,
         content = ft.Column(
@@ -286,6 +416,7 @@ def articulos_list(regresar):
                                                 )
                                         },
                                         color = "#ffffff",
+                                        shape = ft.RoundedRectangleBorder(radius = 10)
                                     ),
                                     
                                     icon = ft.Icons.WINE_BAR,
@@ -341,32 +472,76 @@ def articulos_list(regresar):
                         ft.DataCell(ft.Text(str(articulo.articulo_categoria), color = "#0d1b2a")),
                         ft.DataCell(ft.Text(str(articulo.articulo_stock), color = "#0d1b2a")),
                         ft.DataCell(ft.Text(str(articulo.articulo_proveedor), color = "#0d1b2a")),
-                        ft.DataCell(ft.Text(f"${articulo.articulo_precio:.2f}", color = "#0d1b2a")),
+                        ft.DataCell(ft.Text(f"${articulo.articulo_precio:.2f}", color = "#0d1b2a")), # ':.2f significa 2 decimales', siendo que el formato es, ejemplo: $1999.99)
                         ft.DataCell(
-                            ft.OutlinedButton(
-                                f"Editar ID:{articulo.articulo_id}",
-                                data = articulo.articulo_id,
-                                style=ft.ButtonStyle(
-                                    bgcolor = "#c9a03d",  # Color de fondo
-                                    side = {
-                                        ft.ControlState.DEFAULT: 
-                                            ft.BorderSide(
-                                                width = 2,
-                                                color = "#926600"
-                                            ),
-                                        # Borde rojo de 2 píxeles al pasar el mouse
-                                        ft.ControlState.HOVERED: 
-                                            ft.BorderSide(
-                                                width = 2,
-                                                color = "#c9a03d"
-                                            )
-                                    },
-                                    color = "#ffffff",
-                                ),
+                            ft.Row(
+                                controls = [
+                                    # Boton Editar
+                                    ft.OutlinedButton(
+                                        f"Editar ID:{articulo.articulo_id}",
+                                        data = articulo.articulo_id, # Recuperar el ID del registro/producto
 
-                                on_click = abrir_formulario_editar_modal # Al hacer clic, sobre el boton de "Editar" se abrira el modal
+                                        style = ft.ButtonStyle(
+                                            bgcolor = "#c9a03d",  # Color de fondo
+                                            side = {
+                                                ft.ControlState.DEFAULT: 
+                                                    ft.BorderSide(
+                                                        width = 2,
+                                                        color = "#926600"
+                                                    ),
+                                                # Borde rojo de 2 píxeles al pasar el mouse
+                                                ft.ControlState.HOVERED: 
+                                                    ft.BorderSide(
+                                                        width = 2,
+                                                        color = "#c9a03d"
+                                                    )
+                                            },
+                                            color = "#ffffff",
+                                            shape = ft.RoundedRectangleBorder(radius = 10)
+                                        ),
+
+                                        on_click = abrir_formulario_editar_modal # Al hacer clic, sobre el boton de "Editar" se abrira el modal
+                                    ),
+
+                                    # Boton Eliminar
+                                    ft.OutlinedButton(
+                                        f"Eliminar ID:{articulo.articulo_id}",
+                                        data = articulo.articulo_id,
+
+                                        style = ft.ButtonStyle(
+                                            # Cambiar el color del fondo
+                                            bgcolor = {
+                                                ft.ControlState.HOVERED: "#de3b40",
+                                                ft.ControlState.DEFAULT: "#f3f4f6" # Color por defecto
+                                            },
+                                            # Cambiar el color del borde
+                                            side = {
+                                                ft.ControlState.DEFAULT: 
+                                                    ft.BorderSide(
+                                                        width = 2,
+                                                        color = "#de3b40"
+                                                    ),
+                                                # Borde rojo de 2 píxeles al pasar el mouse
+                                                ft.ControlState.HOVERED: 
+                                                    ft.BorderSide(
+                                                        width = 2,
+                                                        color = "#de3b40"
+                                                    )
+                                            },
+                                            # Cambiar el color de texto
+                                            color = {
+                                                ft.ControlState.HOVERED: "#ffffff",
+                                                ft.ControlState.DEFAULT: "#de3b40",
+                                            },
+                                            # Cambiar el redondeado del borde
+                                            shape = ft.RoundedRectangleBorder(radius = 10)
+                                        ),
+
+                                        on_click = abrir_alerta_eliminar_articulo # Al hacer clic, sobre el boton de "Editar" se abrira el modal
+                                    )
+                                ]
                             )
-                        ) # ':.2f significa 2 decimales', siendo que el formato es, ejemplo: $1999.99)
+                        )
                     ]
                 )
             )
