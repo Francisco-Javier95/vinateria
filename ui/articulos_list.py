@@ -85,7 +85,7 @@ def articulos_list(regresar):
                                     ft.OutlinedButton(
                                         #f"Eliminar ID:{articulo.articulo_id}",
                                         "Eliminar",
-                                        data = articulo.articulo_id,
+                                        data = articulo.articulo_id, # Recuperar el ID del registro/producto
 
                                         style = ft.ButtonStyle(
                                             # Cambiar el color del fondo
@@ -147,12 +147,14 @@ def articulos_list(regresar):
             mostrar_articulos_en_tabla(articulos)
 
         except Exception as error:
-            mensaje.value = f"Error al consultar los productos: {error}"
-            mensaje.color = ft.Colors.RED
+            print(f"Error al consultar los productos: {error}")
+            
             if pila.page:
                 pila.update() # Se actualiza la pila para mostrar cambios
             elif pagina_referencia:
                 pagina_referencia.update()
+
+        return articulos
 
     def buscar_articulos(e):
         # Filtrar los articulo en tiempo real mediante el campo de nombre
@@ -540,6 +542,7 @@ def articulos_list(regresar):
                     ),
                     expand = True,
                     border_radius = 10,
+                    width = 5000,
                     padding = 10
                 ),
 
@@ -553,19 +556,10 @@ def articulos_list(regresar):
     # --------------- Agregar el contenido principal a la pila ----------------
     pila.controls.append(contenido_principal)
 
-    def cargar_articulos_al_inicio():
-        # Se ejecuta cuando la Pila se agrega a la pagina
-        cargar_articulos()
-
-    # Asignar la funcion al evento on_mount de la Pila
-    pila.on_mount = cargar_articulos_al_inicio
-
-
     # ---------------- Cargar datos iniciales (SIN actualizar) ------------------
     # Solo cargaran los datos, pero NO se hace update porque la pila aun no esta en la pagina. La actualización se hara cuando se agregue.
     try:
-        articulo_dao = ArticuloDAO()
-        articulos = articulo_dao.obtener_todos()
+        articulos = cargar_articulos()
 
         tabla.rows.clear()
         for articulo in articulos:
@@ -652,10 +646,8 @@ def articulos_list(regresar):
                     ]
                 )
             )
-    except Exception as error:
-        mensaje.value = f"Error al consultar los productos: {error}"
-        mensaje.color = ft.Colors.RED
 
-    
+    except Exception as error:
+        print(f"Error al consultar los productos: {error}")
 
     return pila
