@@ -37,7 +37,11 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
         hint_text = "123-456-789",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
-        color = "#424955"
+        color = "#424955",
+
+        # Numero maximo de caracteres
+        max_length = 10, # Limita a 10 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container() # No mostrar contador
     )
 
     # --------- Dropdown para categorìas ---------
@@ -100,6 +104,14 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
     precio_input = ft.TextField(
         label = "Precio: ",
         label_style = estilo_de_label,
+        # Habre un: Teclado numerico con decimal en telefonos o tablets
+        keyboard_type=ft.KeyboardType.NUMBER,
+        # Filtro para permitir solo numeros con . para decimales
+        input_filter=ft.InputFilter(
+            allow=True,
+            regex_string=r"^[0-9]*\.?[0-9]*$",  # Permite números y punto decimal
+            replacement_string=""
+        ),
         on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(),
         on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(),
         hint_text = "0.00",  # Esto es el placeholder
@@ -109,6 +121,10 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
 
         # 'suffix_icon' Sirve para colocar un icono en el input despues del texto
         suffix_icon = ft.Icons.ATTACH_MONEY, # Icono de $
+
+        # Numero maximo de caracteres
+        max_length = 10, # Limita a 10 caracteres
+        counter = ft.Container() # No mostrar contador
     )
 
     # Definir el valor inicial del campo Stock
@@ -124,6 +140,7 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
     stock_input = ft.TextField(
         label = "Stock: ",
         value = "0", # Valor inicial del stock
+        # Habre un: Teclado numerico en telefonos o tablets sin decimales
         keyboard_type = ft.KeyboardType.NUMBER,
         # Filtro para permitir solo números (incluyendo signo negativo)
         input_filter = ft.InputFilter(
