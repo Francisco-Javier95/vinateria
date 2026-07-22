@@ -614,4 +614,5 @@ def punto_de_venta():
 # if __name__ == "__main__":
 #     main()
 
-ft.app(target = main_window)
+# Es obligatorio declarar assets_dir para que Flet pueda encontrar la carpeta donde se encuetra la imagen del Logotipo
+ft.app(target = main_window, assets_dir = "assets")

@@ -54,51 +54,241 @@ def main_window(page: ft.Page):
             1,
             "#e2dcd5"
         ),
-        padding = 20,
+        padding = 10,
         content = ft.Column(
             controls = [
-                ft.ElevatedButton(
-                    "Punto de venta",
-                    icon = ft.Icons.HOME,
-                    width = 180,
-                    on_click = mostrar_inicio
-                ),
-                ft.ElevatedButton(
-                    "Inventario",
-                    icon = ft.Icons.INVENTORY,
-                    width = 180,
-                    on_click = mostrar_lista_articulos # No se le coloca () ya que esto indica que es una acción que se eejecutra de forma automatica, sin la opión de que el usuario oprima el botón de "Invetario"
-                ),
-                ft.ElevatedButton(
-                    "Proveedores",
-                    icon = ft.Icons.HOME,
-                    width = 180
-                ),
-                ft.ElevatedButton(
-                    "Informes",
-                    icon = ft.Icons.HOME,
-                    width = 180
-                ),
-                ft.ElevatedButton(
-                    "Usuarios",
-                    icon = ft.Icons.HOME,
-                    width = 180
-                ),
-                ft.ElevatedButton(
-                    "Corte",
-                    icon = ft.Icons.HOME,
-                    width = 180
+                ft.Column(
+                    controls = [
+                        ft.ElevatedButton(
+                            "Punto de venta",
+                            style = ft.ButtonStyle(
+                                # Borde sólido vino-caramelo de 2 píxeles por defecto
+                                side = {
+                                    ft.ControlState.DEFAULT: 
+                                        ft.BorderSide(
+                                            width = 2,
+                                            color = "#6b1d41"
+                                        ),
+                                    # Borde rojo de 2 píxeles al pasar el mouse
+                                    ft.ControlState.HOVERED:
+                                        ft.BorderSide(
+                                            width = 2,
+                                            color = "#6c4e07"
+                                    )
+                                },
+                                bgcolor = {
+                                    ft.ControlState.DEFAULT: "#ffffff",
+                                    ft.ControlState.HOVERED: "#efb034",
+                                },
+                                color = {
+                                    ft.ControlState.DEFAULT: "#efb034",
+                                    ft.ControlState.HOVERED: "#ffffff",
+                                },
+                                icon_color = {
+                                    ft.ControlState.DEFAULT: "#efb034",
+                                    ft.ControlState.HOVERED: "#ffffff",
+                                },
+                                padding = 20,
+                                shape = ft.RoundedRectangleBorder(radius = 10)
+                            ),
+                            icon = ft.Icons.POINT_OF_SALE,
+                            width = 250,
+                            on_click = mostrar_inicio
+                        ),
+                        ft.ElevatedButton(
+                            "Inventario",
+                            style = ft.ButtonStyle(
+                                # Borde sólido vino-caramelo de 2 píxeles por defecto
+                                side = {
+                                    ft.ControlState.DEFAULT: 
+                                        ft.BorderSide(
+                                            width = 2,
+                                            color = "#6b1d41"
+                                        ),
+                                    # Borde rojo de 2 píxeles al pasar el mouse
+                                    ft.ControlState.HOVERED:
+                                        ft.BorderSide(
+                                            width = 2,
+                                            color = "#6c4e07"
+                                    )
+                                },
+                                bgcolor = {
+                                    ft.ControlState.DEFAULT: "#ffffff",
+                                    ft.ControlState.HOVERED: "#efb034",
+                                },
+                                color = {
+                                    ft.ControlState.DEFAULT: "#efb034",
+                                    ft.ControlState.HOVERED: "#ffffff",
+                                },
+                                icon_color = {
+                                    ft.ControlState.DEFAULT: "#efb034",
+                                    ft.ControlState.HOVERED: "#ffffff",
+                                },
+                                padding = 20,
+                                shape = ft.RoundedRectangleBorder(radius = 10)
+                            ),
+                            icon = ft.Icons.WINE_BAR,
+                            width = 250,
+                            on_click = mostrar_lista_articulos # No se le coloca () ya que esto indica que es una acción que se ejecutara de forma automatica, sin la opión de que el usuario oprima el botón de "Invetario"
+                        ),
+                        ft.ElevatedButton(
+                            "Proveedores",
+                            style = ft.ButtonStyle(
+                                # Borde sólido vino-caramelo de 2 píxeles por defecto
+                                side = {
+                                    ft.ControlState.DEFAULT: 
+                                        ft.BorderSide(
+                                            width = 2,
+                                            color = "#6b1d41"
+                                        ),
+                                    # Borde rojo de 2 píxeles al pasar el mouse
+                                    ft.ControlState.HOVERED:
+                                        ft.BorderSide(
+                                            width = 2,
+                                            color = "#6c4e07"
+                                    )
+                                },
+                                bgcolor = {
+                                    ft.ControlState.DEFAULT: "#ffffff",
+                                    ft.ControlState.HOVERED: "#efb034",
+                                },
+                                color = {
+                                    ft.ControlState.DEFAULT: "#efb034",
+                                    ft.ControlState.HOVERED: "#ffffff",
+                                },
+                                icon_color = {
+                                    ft.ControlState.DEFAULT: "#efb034",
+                                    ft.ControlState.HOVERED: "#ffffff",
+                                },
+                                padding = 20,
+                                shape = ft.RoundedRectangleBorder(radius = 10)
+                            ),
+                            icon = ft.Icons.LOCAL_SHIPPING,
+                            width = 250
+                        ),
+                        ft.ElevatedButton(
+                            "Informes",
+                            style = ft.ButtonStyle(
+                                # Borde sólido vino-caramelo de 2 píxeles por defecto
+                                side = {
+                                    ft.ControlState.DEFAULT: 
+                                        ft.BorderSide(
+                                            width = 2,
+                                            color = "#6b1d41"
+                                        ),
+                                    # Borde rojo de 2 píxeles al pasar el mouse
+                                    ft.ControlState.HOVERED:
+                                        ft.BorderSide(
+                                            width = 2,
+                                            color = "#6c4e07"
+                                    )
+                                },
+                                bgcolor = {
+                                    ft.ControlState.DEFAULT: "#ffffff",
+                                    ft.ControlState.HOVERED: "#efb034",
+                                },
+                                color = {
+                                    ft.ControlState.DEFAULT: "#efb034",
+                                    ft.ControlState.HOVERED: "#ffffff",
+                                },
+                                icon_color = {
+                                    ft.ControlState.DEFAULT: "#efb034",
+                                    ft.ControlState.HOVERED: "#ffffff",
+                                },
+                                padding = 20,
+                                shape = ft.RoundedRectangleBorder(radius = 10)
+                            ),
+                            icon = ft.Icons.TRENDING_UP,
+                            width = 250
+                        ),
+                        ft.ElevatedButton(
+                            "Usuarios",
+                            style = ft.ButtonStyle(
+                                # Borde sólido vino-caramelo de 2 píxeles por defecto
+                                side = {
+                                    ft.ControlState.DEFAULT: 
+                                        ft.BorderSide(
+                                            width = 2,
+                                            color = "#6b1d41"
+                                        ),
+                                    # Borde rojo de 2 píxeles al pasar el mouse
+                                    ft.ControlState.HOVERED:
+                                        ft.BorderSide(
+                                            width = 2,
+                                            color = "#6c4e07"
+                                    )
+                                },
+                                bgcolor = {
+                                    ft.ControlState.DEFAULT: "#ffffff",
+                                    ft.ControlState.HOVERED: "#efb034",
+                                },
+                                color = {
+                                    ft.ControlState.DEFAULT: "#efb034",
+                                    ft.ControlState.HOVERED: "#ffffff",
+                                },
+                                icon_color = {
+                                    ft.ControlState.DEFAULT: "#efb034",
+                                    ft.ControlState.HOVERED: "#ffffff",
+                                },
+                                padding = 20,
+                                shape = ft.RoundedRectangleBorder(radius = 10)
+                            ),
+                            icon = ft.Icons.PERSON,
+                            width = 250
+                        ),
+                        ft.ElevatedButton(
+                            "Corte",
+                            style = ft.ButtonStyle(
+                                # Borde sólido vino-caramelo de 2 píxeles por defecto
+                                side = {
+                                    ft.ControlState.DEFAULT: 
+                                        ft.BorderSide(
+                                            width = 2,
+                                            color = "#6b1d41"
+                                        ),
+                                    # Borde rojo de 2 píxeles al pasar el mouse
+                                    ft.ControlState.HOVERED:
+                                        ft.BorderSide(
+                                            width = 2,
+                                            color = "#6c4e07"
+                                    )
+                                },
+                                bgcolor = {
+                                    ft.ControlState.DEFAULT: "#ffffff",
+                                    ft.ControlState.HOVERED: "#efb034",
+                                },
+                                color = {
+                                    ft.ControlState.DEFAULT: "#efb034",
+                                    ft.ControlState.HOVERED: "#ffffff",
+                                },
+                                icon_color = {
+                                    ft.ControlState.DEFAULT: "#efb034",
+                                    ft.ControlState.HOVERED: "#ffffff",
+                                },
+                                padding = 20,
+                                shape = ft.RoundedRectangleBorder(radius = 10)
+                            ),
+                            icon = ft.Icons.ATTACH_MONEY,
+                            width = 250
+                        )
+                    ]
                 ),
 
-                ft.Divider(color = "#CCC9C5"),
+                ft.Column(
+                    controls = [
+                        ft.Divider(color = "#CCC9C5"),
 
-                ft.Text(
-                    "Imagen",
-                    size = 22,
-                    weight = ft.FontWeight.BOLD,
-                    color = ft.Colors.BLACK 
-                ),
+                        ft.Image(
+                            src = f"imagenes/logotipo_La_Vinata.png",
+                            width = 200,
+                            height = 200,
+                            border_radius = 10
+                        )
+                    ],
+                    spacing = 3
+                )
             ],
+            alignment = ft.MainAxisAlignment.SPACE_BETWEEN,
             spacing = 10
         )
     )

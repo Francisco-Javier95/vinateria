@@ -518,7 +518,7 @@ def articulos_list(regresar):
                                     "Inventario",
                                     size = 24,
                                     weight = ft.FontWeight.BOLD,
-                                    color = "#c9a03d"
+                                    color = "#6b1d41"
                                 ),
                                 barra_de_acciones
                             ]
