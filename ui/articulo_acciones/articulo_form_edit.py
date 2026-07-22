@@ -41,7 +41,11 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
         expand = True,
         color = "#424955",
 
-        value = registro.get('codigo') if registro else "" # Cargar datos
+        value = registro.get('codigo') if registro else "", # Cargar datos
+
+        # Numero maximo de caracteres
+        max_length = 10, # Limita a 10 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container() # No mostrar contador
     )
 
     # --------- Dropdown para categorìas ---------
@@ -115,6 +119,14 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
     precio_input = ft.TextField(
         label = "Precio: ",
         label_style = estilo_de_label,
+        # Habre un: Teclado numerico con decimal en telefonos o tablets
+        keyboard_type=ft.KeyboardType.NUMBER,
+        # Filtro para permitir solo numeros con . para decimales
+        input_filter=ft.InputFilter(
+            allow=True,
+            regex_string=r"^[0-9]*\.?[0-9]*$",  # Permite números y punto decimal
+            replacement_string=""
+        ),
         on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(),
         on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(),
         hint_text = "0.00",  # Esto es el placeholder
@@ -125,10 +137,34 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
         # 'suffix_icon' Sirve para colocar un icono en el input despues del texto
         suffix_icon = ft.Icons.ATTACH_MONEY, # Icono de $
 
-        value = registro.get('precio') if registro else "" # Cargar datos
+        value = registro.get('precio') if registro else "", # Cargar datos
+
+        # Numero maximo de caracteres
+        max_length = 10, # Limita a 10 caracteres
+        counter = ft.Container() # No mostrar contador
     )
+
+    # Definir el valor inicial del campo Stock
+    def reiniciar_valor(e):
+        # Si el valor es vacío o no es un número válido, establecer 0
+        if not e.control.value or not e.control.value.lstrip('-').isdigit():
+            e.control.value = "0"
+            e.page.update()
+        else:
+            # Opcional: convertir a int/float si se requiere cálculo
+            pass
+
     stock_input = ft.TextField(
         label = "Stock: ",
+        # Habre un: Teclado numerico en telefonos o tablets sin decimales
+        keyboard_type = ft.KeyboardType.NUMBER,
+        # Filtro para permitir solo números (incluyendo signo negativo)
+        input_filter = ft.InputFilter(
+            allow = True,
+            # No valores negativos ni caracteres
+            regex_string = r"[0-9-]",
+            replacement_string = ""
+        ),
         label_style = estilo_de_label,
         on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(),
         on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(),
@@ -137,8 +173,90 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
         expand = True,
         color = "#424955",
 
-        value = registro.get('stock') if registro else "" # Cargar datos
+        value = registro.get('stock') if registro else "", # Cargar datos
+
+        # Cuando se introduce un valor invalido, se reinicia el valor a 0
+        on_change = reiniciar_valor
+        # Actualizar la variable interna si el usuario borra todo
     )
+
+    def obtener_stock_valor():
+        try:
+            if not stock_input.value or stock_input.value.strip() == "":
+                return 0
+            return int(stock_input.value)
+        except ValueError:
+            return 0
+        
+    # Definir el metodo para decrementar
+    def decremento_click(e):
+        valor = obtener_stock_valor()
+        if valor > 0:
+            # Restar 1 y convertir de nuevo a string
+            stock_input.value = str(valor - 1)
+            # Actualizar el estado del boton
+            boton_decremento_activo()
+            e.page.update()
+
+    # Definir el metodo para incrementar
+    def incremento_click(e):
+        valor = obtener_stock_valor()
+        # Convertir a entero, sumar 1 y convertir de nuevo a string
+        stock_input.value = str(valor + 1)
+        # Actualizar la interfaz para hacer el incremento
+        boton_decremento_activo()
+        e.page.update()
+
+    def boton_decremento_activo():
+        valor = obtener_stock_valor()
+        esta_activo = valor > 0
+
+        # Actualizar el boton de decremento
+        if esta_activo:
+            boton_decremento.content = ft.IconButton(
+                # Botón de resta (icono flecha abajo)
+                icon = ft.Icons.ARROW_DROP_DOWN,
+                icon_size = 20, # Cambia el tamaño visual del ícono
+                scale = 1.0, # Escala el botón completo
+                style = ft.ButtonStyle(
+                    shape = ft.RoundedRectangleBorder(radius = 5),
+                    padding = ft.Padding.symmetric(horizontal = 5, vertical = 2),
+                ),
+                bgcolor = "#6b1d41",
+                icon_color = "#ffffff",
+                tooltip = "Decrementar", # Texto que aparece al pasar el cursor
+                # Tamaño definido
+                width = 30,
+                height = 20,
+                                        
+                on_click = decremento_click
+            )
+        else:
+            boton_decremento.content = ft.IconButton(
+                # Botón de resta (icono flecha abajo)
+                icon = ft.Icons.ARROW_DROP_DOWN,
+                icon_size = 20, # Cambia el tamaño visual del ícono
+                scale = 1.0, # Escala el botón completo
+                style = ft.ButtonStyle(
+                    shape = ft.RoundedRectangleBorder(radius = 5),
+                    padding = ft.Padding.symmetric(horizontal = 5, vertical = 2),
+                ),
+                bgcolor = "#696768",
+                icon_color = "#ffffff",
+                tooltip = "Decrementar", # Texto que aparece al pasar el cursor
+                # Tamaño definido
+                width = 30,
+                height = 20,
+                                        
+                # on_click = decremento_click
+            ) # NO COLOCAR LA COMA, DE LO CONTRARIO EL ESTILO DE BOTON INACTIVO NO SE MOSTRARA
+    
+    # Crear el contenedor del boton
+    boton_decremento = ft.Container()
+
+    # Inicializar el estado del boton
+    boton_decremento_activo()
+    
     proveedor_input = ft.Dropdown(
         label = "Proveedor: ",
         on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(),
@@ -350,8 +468,44 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
             ),
             # Fila 4: Frecio
             precio_input,
+            
             # Fila 5: Stock
-            stock_input
+            ft.Row(
+                alignment=ft.MainAxisAlignment.CENTER,
+                controls=[
+                    # El campo de texto
+                    stock_input,
+
+                    # Botones de incremento y decremento
+                    ft.Column(
+                        controls = [
+                            # Botón de suma (icono flecha arriba)
+                            ft.IconButton(
+                                icon = ft.Icons.ARROW_DROP_UP,
+                                icon_size = 20, # Cambia el tamaño visual del ícono
+                                scale = 1.0, # Escala el botón completo
+                                style = ft.ButtonStyle(
+                                    shape = ft.RoundedRectangleBorder(radius = 5),
+                                    padding = ft.Padding.symmetric(horizontal = 5, vertical = 2),
+                                ),
+                                bgcolor = "#6b1d41",
+                                icon_color = "#ffffff",
+                                tooltip = "Incrementar", # Texto que aparece al pasar el cursor
+                                # Tamaño definido
+                                width = 30,
+                                height = 20,
+
+                                on_click = incremento_click
+                            ),
+
+                            # Botón de resta (dinamico)
+                            boton_decremento,
+                        ],
+                        spacing = 6
+                    ),
+                ],
+                spacing = 6
+            ) 
         ],
         spacing = 15,
         expand = True

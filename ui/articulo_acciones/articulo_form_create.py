@@ -328,9 +328,9 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
                 articulo_codigo = articulo_codigo,
                 articulo_categoria = int(articulo_categoria), # Convertir a entero
                 articulo_imagen = articulo_imagen,
-                articulo_precio = float(articulo_precio),
-                articulo_stock = int(articulo_stock),
-                articulo_proveedor = int(articulo_proveedor)
+                articulo_precio = float(articulo_precio), # Convertir a numero real
+                articulo_stock = int(articulo_stock), # Convertir a numero entero
+                articulo_proveedor = int(articulo_proveedor) # Convertir a numero entero
             )
 
             articulo_dao.insertar(nuevo_articulo)
