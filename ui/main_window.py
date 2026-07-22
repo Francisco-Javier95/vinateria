@@ -26,7 +26,7 @@ def main_window(page: ft.Page):
 
     # Widget container
     contenido = ft.Container(
-        padding = 30,
+        padding = 5,
         expand = True
     )
 
@@ -50,6 +50,10 @@ def main_window(page: ft.Page):
     menu_lateral = ft.Container(
         width = 220,
         bgcolor = "#F9F6F0",
+        border = ft.Border.all(
+            1,
+            "#e2dcd5"
+        ),
         padding = 20,
         content = ft.Column(
             controls = [
@@ -95,7 +99,7 @@ def main_window(page: ft.Page):
                     color = ft.Colors.BLACK 
                 ),
             ],
-            spacing = 15
+            spacing = 10
         )
     )
 
