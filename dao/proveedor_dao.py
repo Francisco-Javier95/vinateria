@@ -17,7 +17,7 @@ class ProveedorDAO:
 
         proveedores = []
         for registro in registros:
-            proveedor = Proveedor (proveedor_id = registro[0], proveedor_proveedor = registro[1], proveedor_aPaterno = registro[2], proveedor_aMaterno = registro[3], proveedor_telefono = registro[4], proveedor_direccion = registro[5], proveedor_correo = registro[6])
+            proveedor = Proveedor (proveedor_id = registro[0], proveedor_proveedor = registro[1], proveedor_apaterno = registro[2], proveedor_amaterno = registro[3], proveedor_telefono = registro[4], proveedor_direccion = registro[5], proveedor_correo = registro[6])
             proveedores.append(proveedor)
         cursor.close()
         conexion.close()
@@ -38,6 +38,35 @@ class ProveedorDAO:
         cursor.close()
         conexion.close()
         return nombres
+
+    # SELECT * FROM proveedores FROM proveedores WHERE proveedor_id = %s
+    def obtener_id_del_proveedor (self, proveedor_id):
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+
+        cursor.execute(
+            "SELECT proveedor_id, proveedor_proveedor, proveedor_apaterno, proveedor_amaterno, proveedor_telefono, proveedor_direccion, proveedor_correo FROM proveedores WHERE proveedor_id = %s",
+            (proveedor_id,)
+        )
+
+        datos_proveedor = cursor.fetchone()
+
+        if datos_proveedor:
+            return Proveedor(
+                proveedor_id = datos_proveedor[0],
+                proveedor_proveedor = datos_proveedor[1],
+                proveedor_apaterno = datos_proveedor[2],
+                proveedor_amaterno = datos_proveedor[3],
+                proveedor_telefono = datos_proveedor[4],
+                proveedor_direccion = datos_proveedor[5],
+                proveedor_correo = datos_proveedor[6]
+            )
+
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+
+        return None
     
     def insertar(self, proveedor):
         conexion = Conexion.obtener_conexion()
@@ -51,8 +80,8 @@ class ProveedorDAO:
             sql,
             (
                 proveedor.proveedor_proveedor,
-                proveedor.proveedor_aPaterno,
-                proveedor.proveedor_aMaterno,
+                proveedor.proveedor_apaterno,
+                proveedor.proveedor_amaterno,
                 proveedor.proveedor_telefono,
                 proveedor.proveedor_direccion,
                 proveedor.proveedor_correo
@@ -75,8 +104,8 @@ class ProveedorDAO:
             sql,
             (
                 proveedor.proveedor_proveedor,
-                proveedor.proveedor_aPaterno,
-                proveedor.proveedor_aMaterno,
+                proveedor.proveedor_apaterno,
+                proveedor.proveedor_amaterno,
                 proveedor.proveedor_telefono,
                 proveedor.proveedor_direccion,
                 proveedor.proveedor_correo,

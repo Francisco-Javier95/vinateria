@@ -362,7 +362,7 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
 
             articulo_dao.actualizar(editar_articulo)
 
-            mensaje.value = f"Articulo {articulo_articulo} ha sido insertado exitosamente"
+            mensaje.value = f"Articulo {articulo_articulo} ha sido editado exitosamente"
             mensaje.color = ft.Colors.GREEN
             
             # limpiar_formualrio()

@@ -1,6 +1,7 @@
 import flet as ft
 
 from ui.articulos_list import articulos_list
+from ui.proveedores_list import proveedores_list
 
 def main_window(page: ft.Page):
     # Definir configuración de la página principal
@@ -39,12 +40,16 @@ def main_window(page: ft.Page):
             spacing = 10
         )
     
-    def mostrar_inicio(e=None):
+    def mostrar_inicio(e = None):
         contenido.content = inicio()
         page.update()
 
-    def mostrar_lista_articulos(e=None):
+    def mostrar_lista_articulos(e = None):
         contenido.content = articulos_list(mostrar_inicio)
+        page.update()
+
+    def mostrar_lista_proveedores(e = None):
+        contenido.content = proveedores_list(mostrar_inicio)
         page.update()
 
     menu_lateral = ft.Container(
@@ -164,7 +169,8 @@ def main_window(page: ft.Page):
                                 shape = ft.RoundedRectangleBorder(radius = 10)
                             ),
                             icon = ft.Icons.LOCAL_SHIPPING,
-                            width = 250
+                            width = 250,
+                            on_click = mostrar_lista_proveedores # Redirigir a "proveedores_list.py"
                         ),
                         ft.ElevatedButton(
                             "Informes",
