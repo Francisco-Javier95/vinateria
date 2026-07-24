@@ -48,16 +48,118 @@ def usuario_form(regresar = None, formulario_visible = False, cerrando_modal = N
         expand = True,
         color = "#424955"
     )
+
+    # Definir el valor inicial del campo Nuúmero de empleado
+    def reiniciar_valor(e):
+        # Si el valor es vacio o no es un número valido, restablecer a 1
+        if not e.control.value or not e.control.value.lstrip('-').isdigit():
+            e.control.value = "1"
+            e.page.update()
+        else:
+            # Opcional: convertir a int/float si se requiere calculo
+            pass
+    
     nuempleado_input = ft.TextField(
         label = "Número de emplado: ",
+        value = "1", # Valor inicial del stock
+        # Habre un: Teclado numerico en telefonos o tablets sin decimales
+        keyboard_type = ft.KeyboardType.NUMBER,
+        # Filtro para permitir solo números (incluyendo signo negativo)
+        input_filter = ft.InputFilter(
+            allow = True,
+            # No valores negativos ni caracteres
+            regex_string = r"[0-9-]",
+            replacement_string = ""
+        ),
         label_style = estilo_de_label,
         on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(), # Estilo del label en focus
         on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(), # Estilo del label
         hint_text = "1",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
-        color = "#424955"
+        color = "#424955",
+
+        # Cuando se introduce un valor invalido, se reiniciara el valor a 1
+        on_change = reiniciar_valor
+        # Actualizar la variable interna si el usuario borra todo
     )
+
+    def obtener_nuempleado_valor():
+        try:
+            if not nuempleado_input.value or nuempleado_input.value.strip() == "":
+                return 1
+            return int(nuempleado_input.value)
+        except ValueError:
+            return 1
+
+    def decremento_click(e):
+        valor = obtener_nuempleado_valor()
+        if valor > 1:
+            # Restar 1 y convertir de nuevo a string
+            nuempleado_input.value = str(valor - 1)
+            # Actualizar el estado del boton
+            boton_decremento_activo()
+            e.page.update()
+
+    # Definir el metodo para incrementar
+    def incremento_click(e):
+        valor = obtener_nuempleado_valor()
+        # Convertir a entero, sumar 1 y convertir de nuevo a string
+        nuempleado_input.value = str(valor + 1)
+        # Actualizar la interfaz para hacer el incremento
+        boton_decremento_activo()
+        e.page.update()
+
+    def boton_decremento_activo():
+        valor = obtener_nuempleado_valor()
+        estado_activo = valor > 1
+
+        # Actualizar el boton de decremento
+        if estado_activo:
+            boton_decremento.content = ft.IconButton(
+                # Boton de resta (icono flecha abajo)
+                icon = ft.Icons.ARROW_DROP_DOWN,
+                icon_size = 20, # Cambia el tamaño visual del icono
+                scale = 1.0, # Escala el boton completo
+                style = ft.ButtonStyle(
+                    shape = ft.RoundedRectangleBorder(radius = 5),
+                    padding = ft.Padding.symmetric(horizontal = 5, vertical = 2)
+                ),
+                bgcolor = "#6b1d41",
+                icon_color = "#ffffff",
+                tooltip = "Decrementar", # Texto que aparece al pasar el cursor por encime del boton de decremento
+                # Tamaño definido
+                width = 30,
+                height = 20,
+
+                on_click = decremento_click
+            )
+        else:
+            boton_decremento.content = ft.IconButton(
+                # Boton de resta (icono flecha abajo)
+                icon = ft.Icons.ARROW_DROP_DOWN,
+                icon_size = 20, # Cambia el tamaño visual del icono
+                scale = 1.0, # Escala el boton completo
+                style = ft.ButtonStyle(
+                    shape = ft.RoundedRectangleBorder(radius = 5),
+                    padding = ft.Padding.symmetric(horizontal = 5, vertical = 2)
+                ),
+                bgcolor = "#696768",
+                icon_color = "#ffffff",
+                tooltip = "Decrementar", # Texto que aparece al pasar el cursor por encime del boton de decremento
+                # Tamaño definido
+                width = 30,
+                height = 20,
+
+                # on_click = decremento_click // Boton de incremento inactivo
+            )
+
+    # Crear el contenedor del boton
+    boton_decremento = ft.Container()
+
+    # Inicializar el estado del boton
+    boton_decremento_activo()
+
     correo_input = ft.TextField(
         label = "Correo electrónico: ",
         label_style = estilo_de_label,
@@ -141,6 +243,7 @@ def usuario_form(regresar = None, formulario_visible = False, cerrando_modal = N
         correo_input.value = ""
         contrasenia_input.value = ""
         privilegio_input.value = privilegio_input.options[0].key if privilegio_input.options else ""
+        boton_decremento_activo()
 
     def guardar_usuario(evento):
         # Recuperar los valores de los TextFile
@@ -150,7 +253,7 @@ def usuario_form(regresar = None, formulario_visible = False, cerrando_modal = N
         usuario_nuempleado = nuempleado_input.value
         usuario_correo = correo_input.value
         usuario_contrasenia = contrasenia_input.value
-        usuario_privilegio = privilegio_input.value
+        usuario_privilegio = privilegio_input.value # El valor seleccionado del Dropdown
 
         # Validación de campos vacíos
         if usuario_usuario == "" or usuario_apaterno == "" or usuario_amaterno == "" or usuario_nuempleado == "" or usuario_correo == "" or usuario_contrasenia == "" or usuario_privilegio == None:
@@ -297,7 +400,42 @@ def usuario_form(regresar = None, formulario_visible = False, cerrando_modal = N
             apaterno_input,
 
             # Fila 2: Número de empleado
-            nuempleado_input,
+            ft.Row(
+                alignment=ft.MainAxisAlignment.CENTER,
+                controls=[
+                    # El campo de texto
+                    nuempleado_input,
+
+                    # Botones de incremento y decremento
+                    ft.Column(
+                        controls = [
+                            # Botón de suma (icono flecha arriba)
+                            ft.IconButton(
+                                icon = ft.Icons.ARROW_DROP_UP,
+                                icon_size = 20, # Cambia el tamaño visual del ícono
+                                scale = 1.0, # Escala el botón completo
+                                style = ft.ButtonStyle(
+                                    shape = ft.RoundedRectangleBorder(radius = 5),
+                                    padding = ft.Padding.symmetric(horizontal = 5, vertical = 2),
+                                ),
+                                bgcolor = "#6b1d41",
+                                icon_color = "#ffffff",
+                                tooltip = "Incrementar", # Texto que aparece al pasar el cursor
+                                # Tamaño definido
+                                width = 30,
+                                height = 20,
+
+                                on_click = incremento_click
+                            ),
+
+                            # Botón de resta (dinamico)
+                            boton_decremento,
+                        ],
+                        spacing = 6
+                    ),
+                ],
+                spacing = 6
+            ),
 
             # Fila 3: Contreseña
             contrasenia_input,
