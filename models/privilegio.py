@@ -7,3 +7,8 @@ class Privilegio:
 
     def mostrar_info (self):
         return f"Privilegio: {self.privilegio_privilegio}"
+
+class Privilegio_nombre:
+    # Constructor
+    def __init__(self, privilegio_privilegio):
+        self.privilegio_privilegio = privilegio_privilegio

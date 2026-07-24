@@ -2,6 +2,7 @@ import flet as ft
 
 from ui.articulos_list import articulos_list
 from ui.proveedores_list import proveedores_list
+from ui.usuarios_list import usuarios_list
 
 def main_window(page: ft.Page):
     # Definir configuración de la página principal
@@ -51,6 +52,10 @@ def main_window(page: ft.Page):
     def mostrar_lista_proveedores(e = None):
         contenido.content = proveedores_list(mostrar_inicio)
         page.update()
+
+    def mostrar_lista_usuarios(e = None):
+            contenido.content = usuarios_list(mostrar_inicio)
+            page.update()
 
     menu_lateral = ft.Container(
         width = 220,
@@ -240,7 +245,8 @@ def main_window(page: ft.Page):
                                 shape = ft.RoundedRectangleBorder(radius = 10)
                             ),
                             icon = ft.Icons.PERSON,
-                            width = 250
+                            width = 250,
+                            on_click = mostrar_lista_usuarios # Redirigir a "usuarios_list.py"
                         ),
                         ft.ElevatedButton(
                             "Corte",

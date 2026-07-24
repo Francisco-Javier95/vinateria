@@ -39,7 +39,7 @@ class ProveedorDAO:
         conexion.close()
         return nombres
 
-    # SELECT * FROM proveedores FROM proveedores WHERE proveedor_id = %s
+    # SELECT * FROM proveedores WHERE proveedor_id = %s
     def obtener_id_del_proveedor (self, proveedor_id):
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
