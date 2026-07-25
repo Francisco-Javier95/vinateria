@@ -11,7 +11,7 @@ class UsuarioDAO:
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
 
-        cursor.execute("SELECT u.usuario_id, u.usuario_usuario, u.usuario_apaterno, u.usuario_amaterno, u.usuario_nuempleado, u.usuario_correo, u.usuario_contrasenia, p.privilegio_privilegio FROM usuarios u INNER JOIN privilegios p ON u.usuario_privilegio = p.privilegio_id")
+        cursor.execute("SELECT u.usuario_id, u.usuario_usuario, u.usuario_apaterno, u.usuario_amaterno, u.usuario_nuempleado, u.usuario_correo, u.usuario_contrasenia, p.privilegio_privilegio FROM usuarios u INNER JOIN privilegios p ON u.usuario_privilegio = p.privilegio_id ORDER BY u.usuario_id ASC")
         registros = cursor.fetchall()
 
         usuarios = []

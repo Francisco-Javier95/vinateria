@@ -21,13 +21,15 @@ def usuarios_list(regresar):
     # --------------- Tabla de usuarios ---------------------
     # Tabla de usuarios
     tabla = ft.DataTable(
+        divider_thickness = 0,
+        horizontal_lines = ft.BorderSide(1, "#e2dcd5"),
         columns = [
-            ft.DataColumn(ft.Text("Nombre", color = "#0d1b2a")), # Columna 1
-            ft.DataColumn(ft.Text("Contraseña", color = "#0d1b2a")), # Columna 2
-            ft.DataColumn(ft.Text("Número empleado", color = "#0d1b2a")), # Columna 3
-            ft.DataColumn(ft.Text("Correo electrónico", color = "#0d1b2a")), # Columna 4
-            ft.DataColumn(ft.Text("Privilegio", color = "#0d1b2a")), # Columna 5
-            ft.DataColumn(ft.Text("Acciones", color = "#0d1b2a")) # Columna 6
+            ft.DataColumn(ft.Text("Nombre", color = "#926600", weight = ft.FontWeight.BOLD)), # Columna 1
+            ft.DataColumn(ft.Text("Contraseña", color = "#926600", weight = ft.FontWeight.BOLD)), # Columna 2
+            ft.DataColumn(ft.Text("Número empleado", color = "#926600", weight = ft.FontWeight.BOLD, width = 100, text_align = ft.TextAlign.CENTER)), # Columna 3
+            ft.DataColumn(ft.Text("Correo electrónico", color = "#926600", weight = ft.FontWeight.BOLD, width = 100)), # Columna 4
+            ft.DataColumn(ft.Text("Privilegio", color = "#926600", weight = ft.FontWeight.BOLD)), # Columna 5
+            ft.DataColumn(ft.Text("Acciones", color = "#926600",text_align = ft.TextAlign.CENTER, weight = ft.FontWeight.BOLD, width = 170)) # Columna 6
         ],
         expand = True,
         rows = []
@@ -35,99 +37,148 @@ def usuarios_list(regresar):
 
     mensaje = ft.Text()
 
+    def estado_boton_eliminar(usuario):
+        # Si el usuario tiene ID 1 (administrador principal), no se mostrara boton
+        if usuario.usuario_id == 1:
+            return None
+
+        return ft.OutlinedButton(
+            #f"Eliminar ID:{usuario.usuario_id}",
+            "Eliminar",
+            data = usuario.usuario_id, # Recuperar el ID del registro/usuario
+
+            style = ft.ButtonStyle(
+                # Cambiar el color del fondo
+                bgcolor = {
+                    ft.ControlState.HOVERED: "#de3b40",
+                    ft.ControlState.DEFAULT: "#f3f4f6" # Color por defecto
+                },
+                # Cambiar el color del borde
+                side = {
+                    ft.ControlState.DEFAULT: 
+                        ft.BorderSide(
+                            width = 2,
+                            color = "#de3b40"
+                        ),
+                    # Borde rojo de 2 píxeles al pasar el mouse
+                    ft.ControlState.HOVERED: 
+                        ft.BorderSide(
+                            width = 2,
+                            color = "#de3b40"
+                        )
+                },
+                # Cambiar el color de texto
+                color = {
+                    ft.ControlState.HOVERED: "#ffffff",
+                    ft.ControlState.DEFAULT: "#de3b40",
+                },
+                # Cambiar el redondeado del borde
+                shape = ft.RoundedRectangleBorder(radius = 10)
+            ),
+
+            on_click = abrir_alerta_eliminar_usuario # Al hacer clic, sobre el boton de "Editar" se abrira el modal
+        )
+
     def obtener_nombre_completo(usuario):
         # Concatenar el nombre completo de los usuarios
         return f"{usuario.usuario_usuario} {usuario.usuario_apaterno} {usuario.usuario_amaterno}".strip()
+
+    def obtener_iniciales(usuario):
+        # Extraer las iniciales del o los nombres del usuario
+
+        # Dividir el nombre por espacios
+        partes = usuario.usuario_usuario.strip().split()
+
+        # Tomar la primera letra de cada parte y unirlas
+        iniciales = "".join([parte[0].upper() for parte in partes])
+
+        return iniciales 
 
     def mostrar_usuarios_en_tabla(usuarios):
         # Muestra una lista de usuarios en la tabla
         tabla.rows.clear()
 
         for usuario in usuarios:
+            iniciales_nombres = obtener_iniciales(usuario)
             usuario_nombre_completo = obtener_nombre_completo(usuario)
 
-            tabla.rows.append(
-                ft.DataRow(
-                    cells = [
-                        ft.DataCell(ft.Text(usuario_nombre_completo, color = "#0d1b2a")),
-                        ft.DataCell(ft.Text(usuario.usuario_contrasenia, color = "#0d1b2a")),
-                        ft.DataCell(ft.Text(usuario.usuario_nuempleado, color = "#0d1b2a")),
-                        ft.DataCell(ft.Text(usuario.usuario_correo, color = "#0d1b2a")),
-                        ft.DataCell(ft.Text(usuario.usuario_privilegio, color = "#0d1b2a")),
-                        ft.DataCell(
-                            ft.Row(
-                                controls = [
-                                    # Boton Editar
-                                    ft.OutlinedButton(
-                                        #f"Editar ID:{usuario.usuario_id}",}
-                                        "Editar",
-                                        data = usuario.usuario_id, # Recuperar el ID del registro/usuario
-
-                                        style = ft.ButtonStyle(
-                                            bgcolor = "#c9a03d",  # Color de fondo
-                                            side = {
-                                                ft.ControlState.DEFAULT: 
-                                                    ft.BorderSide(
-                                                        width = 2,
-                                                        color = "#926600"
-                                                    ),
-                                                # Borde rojo de 2 píxeles al pasar el mouse
-                                                ft.ControlState.HOVERED: 
-                                                    ft.BorderSide(
-                                                        width = 2,
-                                                        color = "#c9a03d"
-                                                    )
-                                            },
-                                            color = "#ffffff",
-                                            shape = ft.RoundedRectangleBorder(radius = 10)
-                                        ),
-
-                                        on_click = abrir_formulario_editar_modal # Al hacer clic, sobre el boton de "Editar" se abrira el modal
+            row = ft.DataRow(
+                cells = [
+                    ft.DataCell(
+                        ft.Row(
+                            controls = [
+                                ft.Container(
+                                    content = ft.Text(
+                                        iniciales_nombres,
+                                        color = "#6b1d41",
+                                        weight = ft.FontWeight.BOLD,
+                                        size = 17
                                     ),
+                                    bgcolor = "#fff6e5",
+                                    border = ft.Border.all(
+                                        1,
+                                        "#c9a03d"
+                                    ),
+                                    border_radius = 35,
+                                    width = 35,
+                                    height = 35,
+                                    alignment = ft.Alignment.CENTER
+                                ),
+                                ft.Text(usuario_nombre_completo, color = "#0d1b2a")
+                            ],
+                            width = 300
+                        ),
+                    ),
+                    ft.DataCell(ft.Text(usuario.usuario_contrasenia, color = "#0d1b2a")),
+                    ft.DataCell(ft.Text(usuario.usuario_nuempleado, color = "#0d1b2a", text_align = ft.TextAlign.CENTER, weight = ft.FontWeight.BOLD, width = 100, expand = True)),
+                    ft.DataCell(ft.Text(usuario.usuario_correo, color = "#0d1b2a")),
+                    ft.DataCell(ft.Container(ft.Text(usuario.usuario_privilegio, color = "#926600"), bgcolor = "#ffde93", padding = ft.Padding.symmetric(vertical = 4, horizontal = 8), border_radius = 4)),
+                    ft.DataCell(
+                        ft.Row(
+                            controls = [
+                                # Boton Editar
+                                ft.OutlinedButton(
+                                    #f"Editar ID:{usuario.usuario_id}",}
+                                    "Editar",
+                                    data = usuario.usuario_id, # Recuperar el ID del registro/usuario
 
-                                    # Boton Eliminar
-                                    ft.OutlinedButton(
-                                        #f"Eliminar ID:{usuario.usuario_id}",
-                                        "Eliminar",
-                                        data = usuario.usuario_id, # Recuperar el ID del registro/usuario
+                                    style = ft.ButtonStyle(
+                                        bgcolor = "#c9a03d",  # Color de fondo
+                                        side = {
+                                            ft.ControlState.DEFAULT: 
+                                                ft.BorderSide(
+                                                    width = 2,
+                                                    color = "#926600"
+                                                ),
+                                            # Borde rojo de 2 píxeles al pasar el mouse
+                                            ft.ControlState.HOVERED: 
+                                                ft.BorderSide(
+                                                    width = 2,
+                                                    color = "#c9a03d"
+                                                )
+                                        },
+                                        color = "#ffffff",
+                                        shape = ft.RoundedRectangleBorder(radius = 10)
+                                    ),
+                                    expand = True,
 
-                                        style = ft.ButtonStyle(
-                                            # Cambiar el color del fondo
-                                            bgcolor = {
-                                                ft.ControlState.HOVERED: "#de3b40",
-                                                ft.ControlState.DEFAULT: "#f3f4f6" # Color por defecto
-                                            },
-                                            # Cambiar el color del borde
-                                            side = {
-                                                ft.ControlState.DEFAULT: 
-                                                    ft.BorderSide(
-                                                        width = 2,
-                                                        color = "#de3b40"
-                                                    ),
-                                                # Borde rojo de 2 píxeles al pasar el mouse
-                                                ft.ControlState.HOVERED: 
-                                                    ft.BorderSide(
-                                                        width = 2,
-                                                        color = "#de3b40"
-                                                    )
-                                            },
-                                            # Cambiar el color de texto
-                                            color = {
-                                                ft.ControlState.HOVERED: "#ffffff",
-                                                ft.ControlState.DEFAULT: "#de3b40",
-                                            },
-                                            # Cambiar el redondeado del borde
-                                            shape = ft.RoundedRectangleBorder(radius = 10)
-                                        ),
-
-                                        on_click = abrir_alerta_eliminar_usuario # Al hacer clic, sobre el boton de "Editar" se abrira el modal
-                                    )
-                                ]
-                            )
-                        )
-                    ]
-                )
+                                    on_click = abrir_formulario_editar_modal # Al hacer clic, sobre el boton de "Editar" se abrira el modal
+                                ),
+                                # Boton Eliminar (solo si NO es ID 1)
+                                estado_boton_eliminar(usuario) if usuario.usuario_id != 1 else ft.Container(),  
+                            ],
+                            margin = 0,
+                            expand = True
+                        ),
+                    )
+                ]
             )
+
+            # Si es el usuario ID 1, cabiar el color de fondo de la fila
+            if usuario.usuario_id == 1:
+                row.color = "#f0eee9" # Color diferente para el administrador
+
+            tabla.rows.append(row)
         
         # Actualizar la interfaz
         if pila.page:
@@ -544,18 +595,17 @@ def usuarios_list(regresar):
                     alignment = ft.MainAxisAlignment.SPACE_BETWEEN
                 ),
                 
-                ft.Divider(),
-                
                 ft.Container(
                     content = tabla,
                     border = ft.Border.all(
                         1,
-                        ft.Colors.BLUE_900
+                        "#ede9e4"
                     ),
                     expand = True,
                     border_radius = 10,
                     width = 5000,
-                    padding = 10
+                    padding = 0,
+                    bgcolor = "#ffffff"
                 ),
 
                 mensaje
@@ -581,11 +631,11 @@ def usuarios_list(regresar):
             tabla.rows.append(
                 ft.DataRow(
                     cells = [
-                        ft.DataCell(ft.Text(usuario_nombre_completo, color = "#0d1b2a")),
+                        ft.DataCell(ft.Text(usuario_nombre_completo, color = "#0d1b2a",)),
                         ft.DataCell(ft.Text(usuario.usuario_contrasenia, color = "#0d1b2a")),
-                        ft.DataCell(ft.Text(usuario.usuario_nuempleado, color = "#0d1b2a")),
+                        ft.DataCell(ft.Text(usuario.usuario_nuempleado, color = "#0d1b2a", text_align = ft.TextAlign.CENTER, weight = ft.FontWeight.BOLD, width = 100), expand = 100),
                         ft.DataCell(ft.Text(usuario.usuario_correo, color = "#0d1b2a")),
-                        ft.DataCell(ft.Text(usuario.usuario_privilegio, color = "#0d1b2a")),
+                        ft.DataCell(ft.Container(ft.Text(usuario.usuario_privilegio, color = "#926600"), bgcolor = "#ffde93", padding = ft.Padding.symmetric(vertical = 4, horizontal = 8), border_radius = 4)),
                         ft.DataCell(
                             ft.Row(
                                 controls = [
@@ -617,43 +667,7 @@ def usuarios_list(regresar):
                                         on_click = abrir_formulario_editar_modal # Al hacer clic, sobre el boton de "Editar" se abrira el modal
                                     ),
 
-                                    # Boton Eliminar
-                                    ft.OutlinedButton(
-                                        #f"Eliminar ID:{usuario.usuario_id}",
-                                        "Eliminar",
-                                        data = usuario.usuario_id,
-
-                                        style = ft.ButtonStyle(
-                                            # Cambiar el color del fondo
-                                            bgcolor = {
-                                                ft.ControlState.HOVERED: "#de3b40",
-                                                ft.ControlState.DEFAULT: "#f3f4f6" # Color por defecto
-                                            },
-                                            # Cambiar el color del borde
-                                            side = {
-                                                ft.ControlState.DEFAULT: 
-                                                    ft.BorderSide(
-                                                        width = 2,
-                                                        color = "#de3b40"
-                                                    ),
-                                                # Borde rojo de 2 píxeles al pasar el mouse
-                                                ft.ControlState.HOVERED: 
-                                                    ft.BorderSide(
-                                                        width = 2,
-                                                        color = "#de3b40"
-                                                    )
-                                            },
-                                            # Cambiar el color de texto
-                                            color = {
-                                                ft.ControlState.HOVERED: "#ffffff",
-                                                ft.ControlState.DEFAULT: "#de3b40",
-                                            },
-                                            # Cambiar el redondeado del borde
-                                            shape = ft.RoundedRectangleBorder(radius = 10)
-                                        ),
-
-                                        on_click = abrir_alerta_eliminar_usuario # Al hacer clic, sobre el boton de "Editar" se abrira el modal
-                                    )
+                                    estado_boton_eliminar(usuario)
                                 ]
                             )
                         )
