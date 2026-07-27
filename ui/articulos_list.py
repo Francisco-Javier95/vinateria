@@ -6,6 +6,8 @@ from ui.articulo_acciones.articulo_form_create import articulo_form
 from ui.articulo_acciones.articulo_form_edit import articulo_form_edit
 from ui.articulo_acciones.articulo_alert_delete import alerta_eliminar
 
+from ui.articulo_acciones.categorias_list import categorias_list
+
 def articulos_list(regresar):
     # ---------------- Variables de estado -------------------
     capa_oscura_abierta_modal = False # Indica si el modal esta visible/activo
@@ -18,112 +20,219 @@ def articulos_list(regresar):
     pila = ft.Stack(expand = True) # ft.Stack permite superponer widgets (elementos)
     # 'expand = True' hace que ocupe todo el espacio disponible
     
-    # --------------- Tabla de productos ---------------------
-    # Tabla de productos
-    tabla = ft.DataTable(
-        columns = [
-            ft.DataColumn(ft.Text("Imagen", color = "#0d1b2a")),
-            ft.DataColumn(ft.Text("Nombre", color = "#0d1b2a")),
-            ft.DataColumn(ft.Text("Categoría", color = "#0d1b2a")),
-            ft.DataColumn(ft.Text("Stock", color = "#0d1b2a")),
-            ft.DataColumn(ft.Text("Proveedor", color = "#0d1b2a")),
-            ft.DataColumn(ft.Text("Precio", color = "#0d1b2a")),
-            ft.DataColumn(ft.Text("Acciones", color = "#0d1b2a")),
-        ],
+    # ======= CONTENEDOR PARA TARJETAS (GRID) =======
+    # Grid de productos
+
+    grid_articulos = ft.GridView(
         expand = True,
-        rows = []
+        runs_count = 5,  # 5 columnas
+        max_extent = 300,
+        child_aspect_ratio = 0.80,  # Relación de aspecto (ancho/alto)
+        spacing = 15,
+        run_spacing = 15,
+        padding = 0,
+        auto_scroll = True,
     )
 
     mensaje = ft.Text()
 
-    def mostrar_articulos_en_tabla(articulos):
-        # Muestra una lista de articulos en la tabla
-        tabla.rows.clear()
+    # Metodo para crear las tarjetas
+    def crear_tarjeta_articulo(articulo):
+        # Crea una tarjeta para un artículo individual
+        
+        # --- IMAGEN (estática por ahora) ---
+        imagen = ft.Image(
+            src = f"imagenes/imagenes_DB/dramatic-shadows-enhance-premium-wine-bottle-s-luxurious-appearance-showcasing-rich-color-photo.webp",  # Imagen estática de ejemplo
+            expand = True
+        )
+        
+        # --- NOMBRE ---
+        nombre = ft.Text(
+            articulo.articulo_articulo,
+            size = 20,
+            weight = ft.FontWeight.BOLD,
+            color = "#6b1d41",
+            max_lines = 2
+        )
+        
+        # --- CATEGORÍA Y PROVEEDOR ---
+        categoria_proveedor = ft.Row(
+            controls = [
+                ft.Container(
+                    content = ft.Text(
+                        str(articulo.articulo_categoria),
+                        size = 16,
+                        color = "#9095a0",
+                    ),
+                ),
+
+                ft.Container(content = ft.Text(""), height = 20, width = 1, bgcolor = "#e2dcd5"),
+
+                ft.Container(
+                    content = ft.Text(
+                        str(articulo.articulo_proveedor),
+                        size = 16,
+                        color="#9095a0",
+                        text_align = ft.TextAlign.CENTER,
+                        expand = True
+                    ),
+                ),
+            ],
+            alignment = ft.MainAxisAlignment.SPACE_BETWEEN,
+            spacing = 0,
+        )
+        
+        # --- STOCK Y PRECIO ---
+        stock_precio = ft.Row(
+            controls = [
+                ft.Container(
+                    content = ft.Row(
+                        controls = [
+                            ft.Text(
+                                f"Stock: {articulo.articulo_stock}",
+                                size = 16,
+                                color = "#424955",
+                                weight = ft.FontWeight.W_500,
+                            ),
+                        ],
+                        spacing = 2,
+                    ),
+                    padding = ft.Padding.symmetric(horizontal = 0, vertical = 2),
+                ),
+                ft.Container(
+                    content = ft.Row(
+                        controls = [
+                            ft.Icon(
+                                ft.Icons.ATTACH_MONEY,
+                                size = 18,
+                                color = "#c9a03d"
+                            ),
+                            ft.Text(
+                                f"{articulo.articulo_precio:.2f}",
+                                size = 18,
+                                color = "#c9a03d",
+                                weight = ft.FontWeight.BOLD,
+                            ),
+                        ],
+                        spacing = 2,
+                    ),
+                    padding = ft.Padding.symmetric(horizontal = 0, vertical = 2),
+                ),
+            ],
+            alignment = ft.MainAxisAlignment.SPACE_BETWEEN,
+            spacing = 0,
+        )
+
+        # Juntar categoria_proveedor y stock_precio
+        categoria_proveedor_stock_precio = ft.Column(
+            controls = [
+                categoria_proveedor,
+                stock_precio
+            ],
+            margin = 0,
+            spacing = 0
+        )
+        
+        # --- BOTONES DE ACCIONES ---
+        acciones = ft.Row(
+            controls = [
+                ft.OutlinedButton(
+                    "Editar",
+                    data = articulo.articulo_id,
+                    style = ft.ButtonStyle(
+                        bgcolor = "#c9a03d",
+                        side = {
+                            ft.ControlState.DEFAULT: ft.BorderSide(width = 2, color = "#926600"),
+                            ft.ControlState.HOVERED: ft.BorderSide(width = 2, color = "#c9a03d"),
+                        },
+                        color = "#ffffff",
+                        shape = ft.RoundedRectangleBorder(radius = 10),
+                        padding = ft.Padding.symmetric(horizontal = 10, vertical = 17),
+                    ),
+                    expand = True,
+                    on_click = abrir_formulario_editar_modal,
+                ),
+                ft.OutlinedButton(
+                    "Eliminar",
+                    data = articulo.articulo_id,
+                    style = ft.ButtonStyle(
+                        bgcolor = {
+                            ft.ControlState.HOVERED: "#de3b40",
+                            ft.ControlState.DEFAULT: "#f3f4f6",
+                        },
+                        side = {
+                            ft.ControlState.DEFAULT: ft.BorderSide(width=2, color="#de3b40"),
+                            ft.ControlState.HOVERED: ft.BorderSide(width=2, color="#de3b40"),
+                        },
+                        color = {
+                            ft.ControlState.HOVERED: "#ffffff",
+                            ft.ControlState.DEFAULT: "#de3b40",
+                        },
+                        shape = ft.RoundedRectangleBorder(radius = 10),
+                        padding = ft.Padding.symmetric(horizontal = 10, vertical = 17),
+                    ),
+                    expand = True,
+                    on_click = abrir_alerta_eliminar_articulo,
+                ),
+            ],
+            spacing = 10,
+            alignment = ft.MainAxisAlignment.CENTER,
+        )
+        
+        # --- TARJETA COMPLETA ---
+        tarjeta = ft.Container(
+            content = ft.Column(
+                controls = [
+                    # Imagen
+                    ft.Container(
+                        content = (
+                            imagen
+                        ),
+                        border_radius = 5
+                    ),
+                    # Contenido de la tarjeta
+                    ft.Container(
+                        content = ft.Column(
+                            controls = [
+                                nombre,
+                                categoria_proveedor_stock_precio
+                            ],
+                            spacing = 8,
+                        ),
+                        padding = ft.Padding.symmetric(horizontal = 2, vertical = 5),
+                        expand = True,
+                    ),
+                    # Acciones
+                    ft.Container(
+                        content = (
+                            acciones
+                        )
+                    )
+                ],
+                spacing = 4,
+                alignment = ft.MainAxisAlignment.SPACE_BETWEEN,
+                # horizontal_alignment = ft.CrossAxisAlignment.CENTER,
+            ),
+            padding = 4,
+            bgcolor = "#ffffff",
+            border = ft.Border.all(
+                1,
+                "#e2dcd5"
+            ),
+            border_radius = 10,
+            height = 800
+        )
+        
+        return tarjeta
+
+    # GRID de las tarjetas de los productos
+    def mostrar_articulos_en_grid(articulos):
+        """Muestra una lista de artículos en el grid de tarjetas"""
+        grid_articulos.controls.clear()
 
         for articulo in articulos:
-            tabla.rows.append(
-                ft.DataRow(
-                    cells = [
-                        ft.DataCell(ft.Text(articulo.articulo_imagen, color = "#0d1b2a")),
-                        ft.DataCell(ft.Text(articulo.articulo_articulo, color = "#0d1b2a")),
-                        ft.DataCell(ft.Text(str(articulo.articulo_categoria), color = "#0d1b2a")),
-                        ft.DataCell(ft.Text(str(articulo.articulo_stock), color = "#0d1b2a")),
-                        ft.DataCell(ft.Text(str(articulo.articulo_proveedor), color = "#0d1b2a")),
-                        ft.DataCell(ft.Text(f"${articulo.articulo_precio:.2f}", color = "#0d1b2a")), # ':.2f significa 2 decimales', siendo que el formato es, ejemplo: $1999.99)
-                        ft.DataCell(
-                            ft.Row(
-                                controls = [
-                                    # Boton Editar
-                                    ft.OutlinedButton(
-                                        #f"Editar ID:{articulo.articulo_id}",}
-                                        "Editar",
-                                        data = articulo.articulo_id, # Recuperar el ID del registro/producto
-
-                                        style = ft.ButtonStyle(
-                                            bgcolor = "#c9a03d",  # Color de fondo
-                                            side = {
-                                                ft.ControlState.DEFAULT: 
-                                                    ft.BorderSide(
-                                                        width = 2,
-                                                        color = "#926600"
-                                                    ),
-                                                # Borde rojo de 2 píxeles al pasar el mouse
-                                                ft.ControlState.HOVERED: 
-                                                    ft.BorderSide(
-                                                        width = 2,
-                                                        color = "#c9a03d"
-                                                    )
-                                            },
-                                            color = "#ffffff",
-                                            shape = ft.RoundedRectangleBorder(radius = 10)
-                                        ),
-
-                                        on_click = abrir_formulario_editar_modal # Al hacer clic, sobre el boton de "Editar" se abrira el modal
-                                    ),
-
-                                    # Boton Eliminar
-                                    ft.OutlinedButton(
-                                        #f"Eliminar ID:{articulo.articulo_id}",
-                                        "Eliminar",
-                                        data = articulo.articulo_id, # Recuperar el ID del registro/producto
-
-                                        style = ft.ButtonStyle(
-                                            # Cambiar el color del fondo
-                                            bgcolor = {
-                                                ft.ControlState.HOVERED: "#de3b40",
-                                                ft.ControlState.DEFAULT: "#f3f4f6" # Color por defecto
-                                            },
-                                            # Cambiar el color del borde
-                                            side = {
-                                                ft.ControlState.DEFAULT: 
-                                                    ft.BorderSide(
-                                                        width = 2,
-                                                        color = "#de3b40"
-                                                    ),
-                                                # Borde rojo de 2 píxeles al pasar el mouse
-                                                ft.ControlState.HOVERED: 
-                                                    ft.BorderSide(
-                                                        width = 2,
-                                                        color = "#de3b40"
-                                                    )
-                                            },
-                                            # Cambiar el color de texto
-                                            color = {
-                                                ft.ControlState.HOVERED: "#ffffff",
-                                                ft.ControlState.DEFAULT: "#de3b40",
-                                            },
-                                            # Cambiar el redondeado del borde
-                                            shape = ft.RoundedRectangleBorder(radius = 10)
-                                        ),
-
-                                        on_click = abrir_alerta_eliminar_articulo # Al hacer clic, sobre el boton de "Editar" se abrira el modal
-                                    )
-                                ]
-                            )
-                        )
-                    ]
-                )
-            )
+            tarjeta = crear_tarjeta_articulo(articulo)
+            grid_articulos.controls.append(tarjeta)
         
         # Actualizar la interfaz
         if pila.page:
@@ -144,7 +253,7 @@ def articulos_list(regresar):
             todos_los_articulos = articulos
 
             # Mostrar todos los articulos
-            mostrar_articulos_en_tabla(articulos)
+            mostrar_articulos_en_grid(articulos)
 
         except Exception as error:
             print(f"Error al consultar los productos: {error}")
@@ -163,7 +272,7 @@ def articulos_list(regresar):
 
         # Si el campo de busqueda esta vacio se mostraran todos los articulos (registros)
         if texto_busqueda == "":
-            mostrar_articulos_en_tabla(todos_los_articulos)
+            mostrar_articulos_en_grid(todos_los_articulos)
             return
         
         # Filtrar articulos por nombre
@@ -173,7 +282,7 @@ def articulos_list(regresar):
         ]
 
         # Mostrar los articulos filtrados
-        mostrar_articulos_en_tabla(articulos_filtrados)
+        mostrar_articulos_en_grid(articulos_filtrados)
 
         # Mostrar mensaje si no hay resultados
         if not articulos_filtrados:
@@ -428,6 +537,55 @@ def articulos_list(regresar):
         elif pagina_referencia:
             pagina_referencia.update()
 
+    def abrir_tabla_categoria_model(evento):
+        # Crear y muestrar el modal con la tabla de "Categorías"
+        # evento: El evento del clic en el boton "Categorías"
+
+        # "nonlocal" para modificar variables de la función padre
+        nonlocal capa_oscura_abierta_modal, capa_oscura_modal
+
+        # Guardar referencia a la pagina desde el evento
+        if evento and evento.page:
+            pagina_referencia = evento.page
+
+        # Si el modal ya esta abierto, no hacer nada
+        if capa_oscura_abierta_modal:
+            return
+        
+        # --------------- Crear el contenido del modal -----------------
+        contenido_modal = categorias_list(
+            tabla_categoria_visible = True, # Activar el modal, mostrando el formulario
+            cerrando_modal = cerrar_modal
+        )
+
+        # --------------- Crear la capa oscura (OVERLAY) --------------
+        capa_oscura = ft.Container(
+            expand = True,
+            bgcolor = ft.Colors.BLACK_45,
+            content = ft.Column(
+                controls = [contenido_modal],
+                alignment = ft.MainAxisAlignment.CENTER,
+                width = 5000,
+                height = 5000
+            )
+        )
+
+        # -------------- Agregar la capa a la pila ---------------------
+        # La capa se superpone al contenido principal
+        pila.controls.append(capa_oscura)
+
+        # Guardar referencia a la capa
+        capa_oscura_modal = capa_oscura
+
+        # Cambiar el esado de "cerrado" a "abierto"
+        capa_oscura_abierta_modal = True
+
+        # Actualizar la interfaz
+        if pila.page:
+            pila.update() # Se actualiza la pila para mostrar cambios
+        elif pagina_referencia:
+            pagina_referencia.update()
+
     # Estilos de los label
     estilo_de_label = ft.TextStyle(
         color = "#926600", 
@@ -492,7 +650,8 @@ def articulos_list(regresar):
                 ),
 
                 # Campo de busqueda
-                busqueda_input
+                busqueda_input,
+
             ],
         ),
         bgcolor = "#ffffff",
@@ -514,36 +673,57 @@ def articulos_list(regresar):
                     controls = [
                         ft.Row(
                             controls = [
+                                # Titulo del segmento
                                 ft.Text(
                                     "Inventario",
                                     size = 24,
                                     weight = ft.FontWeight.BOLD,
                                     color = "#6b1d41"
                                 ),
-                                barra_de_acciones
-                            ]
+                                # Mostrar la barra de acciones
+                                barra_de_acciones,
+
+                                # Boton de la lista de categorías
+                                ft.OutlinedButton(
+                                    "Categorías",
+                                    style = ft.ButtonStyle(
+                                        bgcolor = "#c9a03d", # Color de fondo
+                                        side = {
+                                            ft.ControlState.DEFAULT:
+                                            ft.BorderSide(
+                                                width = 2,
+                                                color = "#926600"
+                                            ),
+                                            ft.ControlState.HOVERED:
+                                            ft.BorderSide(
+                                                width = 2,
+                                                color = "#c9a03d"
+                                            )
+                                        },
+                                        color = "#ffffff",
+                                        shape = ft.RoundedRectangleBorder(radius = 10)
+                                    ),
+                
+                                    height = 40,
+                
+                                    on_click = abrir_tabla_categoria_model # Al hacer click, sobre el boton de "Categorías"
+                                )
+                            ],
+                            expand = True,
+                            alignment = ft.MainAxisAlignment.SPACE_BETWEEN
                         ),
                         # ft.OutlinedButton(
                         #     "Regresar",
                         #     icon = ft.Icons.ARROW_BACK,
                         #     on_click = lambda e: regresar()
                         # )
-                    ],
-                    alignment = ft.MainAxisAlignment.SPACE_BETWEEN
+                    ]
                 ),
                 
-                ft.Divider(),
-                
                 ft.Container(
-                    content = tabla,
-                    border = ft.Border.all(
-                        1,
-                        ft.Colors.BLUE_900
-                    ),
+                    content = grid_articulos,
                     expand = True,
-                    border_radius = 10,
-                    width = 5000,
-                    padding = 10
+                    width = 5000
                 ),
 
                 mensaje
@@ -561,91 +741,10 @@ def articulos_list(regresar):
     try:
         articulos = cargar_articulos()
 
-        tabla.rows.clear()
+        grid_articulos.controls.clear()
         for articulo in articulos:
-            tabla.rows.append(
-                ft.DataRow(
-                    cells = [
-                        ft.DataCell(ft.Text(articulo.articulo_imagen, color = "#0d1b2a")),
-                        ft.DataCell(ft.Text(articulo.articulo_articulo, color = "#0d1b2a")),
-                        ft.DataCell(ft.Text(str(articulo.articulo_categoria), color = "#0d1b2a")),
-                        ft.DataCell(ft.Text(str(articulo.articulo_stock), color = "#0d1b2a")),
-                        ft.DataCell(ft.Text(str(articulo.articulo_proveedor), color = "#0d1b2a")),
-                        ft.DataCell(ft.Text(f"${articulo.articulo_precio:.2f}", color = "#0d1b2a")), # ':.2f significa 2 decimales', siendo que el formato es, ejemplo: $1999.99)
-                        ft.DataCell(
-                            ft.Row(
-                                controls = [
-                                    # Boton Editar
-                                    ft.OutlinedButton(
-                                        #f"Editar ID:{articulo.articulo_id}",
-                                        "Editar",
-                                        data = articulo.articulo_id, # Recuperar el ID del registro/producto
-
-                                        style = ft.ButtonStyle(
-                                            bgcolor = "#c9a03d",  # Color de fondo
-                                            side = {
-                                                ft.ControlState.DEFAULT: 
-                                                    ft.BorderSide(
-                                                        width = 2,
-                                                        color = "#926600"
-                                                    ),
-                                                # Borde rojo de 2 píxeles al pasar el mouse
-                                                ft.ControlState.HOVERED: 
-                                                    ft.BorderSide(
-                                                        width = 2,
-                                                        color = "#c9a03d"
-                                                    )
-                                            },
-                                            color = "#ffffff",
-                                            shape = ft.RoundedRectangleBorder(radius = 10)
-                                        ),
-
-                                        on_click = abrir_formulario_editar_modal # Al hacer clic, sobre el boton de "Editar" se abrira el modal
-                                    ),
-
-                                    # Boton Eliminar
-                                    ft.OutlinedButton(
-                                        #f"Eliminar ID:{articulo.articulo_id}",
-                                        "Eliminar",
-                                        data = articulo.articulo_id,
-
-                                        style = ft.ButtonStyle(
-                                            # Cambiar el color del fondo
-                                            bgcolor = {
-                                                ft.ControlState.HOVERED: "#de3b40",
-                                                ft.ControlState.DEFAULT: "#f3f4f6" # Color por defecto
-                                            },
-                                            # Cambiar el color del borde
-                                            side = {
-                                                ft.ControlState.DEFAULT: 
-                                                    ft.BorderSide(
-                                                        width = 2,
-                                                        color = "#de3b40"
-                                                    ),
-                                                # Borde rojo de 2 píxeles al pasar el mouse
-                                                ft.ControlState.HOVERED: 
-                                                    ft.BorderSide(
-                                                        width = 2,
-                                                        color = "#de3b40"
-                                                    )
-                                            },
-                                            # Cambiar el color de texto
-                                            color = {
-                                                ft.ControlState.HOVERED: "#ffffff",
-                                                ft.ControlState.DEFAULT: "#de3b40",
-                                            },
-                                            # Cambiar el redondeado del borde
-                                            shape = ft.RoundedRectangleBorder(radius = 10)
-                                        ),
-
-                                        on_click = abrir_alerta_eliminar_articulo # Al hacer clic, sobre el boton de "Editar" se abrira el modal
-                                    )
-                                ]
-                            )
-                        )
-                    ]
-                )
-            )
+            tarjeta = crear_tarjeta_articulo(articulo)
+            grid_articulos.controls.append(tarjeta)
 
     except Exception as error:
         print(f"Error al consultar los productos: {error}")

@@ -54,8 +54,8 @@ def main_window(page: ft.Page):
         page.update()
 
     def mostrar_lista_usuarios(e = None):
-            contenido.content = usuarios_list(mostrar_inicio)
-            page.update()
+        contenido.content = usuarios_list(mostrar_inicio)
+        page.update()
 
     menu_lateral = ft.Container(
         width = 220,

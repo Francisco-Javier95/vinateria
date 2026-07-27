@@ -38,6 +38,32 @@ class CategoriaDAO:
         cursor.close()
         conexion.close()
         return nombres
+
+    # SELECT * FROM categorias WHERE categoria_id = %s
+    def obtener_id_de_la_categoria (self, categoria_id):
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+
+        cursor.execute(
+            "SELECT * FROM categorias WHERE categoria_id = %s",
+            (categoria_id,)
+        )
+
+        datos_categoria = cursor.fetchone()
+
+        if datos_categoria:
+            return Categoria(
+                categoria_id = datos_categoria[0],
+                categoria_categoria = datos_categoria[1],
+                categoria_tipo = datos_categoria[2],
+                categoria_descripcion = datos_categoria[3]
+            )
+
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+
+        return None
     
     def insertar(self, categoria):
         conexion = Conexion.obtener_conexion()

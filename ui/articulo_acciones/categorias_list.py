@@ -1,35 +1,34 @@
 import flet as ft
 
-from models.usuario import Usuario
-from dao.usuario_dao import UsuarioDAO
-from ui.usuario_acciones.usuario_form_create import usuario_form
-from ui.usuario_acciones.usuario_form_edit import usuario_form_edit
-from ui.usuario_acciones.usuario_alert_delete import alerta_eliminar
+from models.categoria import Categoria
+from dao.categoria_dao import CategoriaDAO
+from ui.articulo_acciones.categoria_acciones.categoria_form_create import categoria_form_create
+from ui.articulo_acciones.categoria_acciones.categoria_form_edit import categoria_form_edit
+from ui.articulo_acciones.categoria_acciones.categoria_alert_delete import alerta_eliminar
 
-def usuarios_list(regresar):
+def categorias_list(regresar = None, tabla_categoria_visible = False, cerrando_modal = None, registro = None):
+    
     # ---------------- Variables de estado -------------------
     capa_oscura_abierta_modal = False # Indica si el modal esta visible/activo
     capa_oscura_modal = None # Es el contenido con backgroud oscuro semitransparente (capa oscuara)
     pagina_referencia = None # Guardar la referencia a la pagina (contenido)
-    
-    todos_los_usuarios = [] # Guardar todos los usuarios sin filtrar
+
+    todas_las_categorias = [] # Guardar todas las categorias sin filtrar
 
     # -------------- Contenedor de capas ---------------------
     pila = ft.Stack(expand = True) # ft.Stack permite superponer widgets (elementos)
     # 'expand = True' hace que ocupe todo el espacio disponible
     
-    # --------------- Tabla de usuarios ---------------------
-    # Tabla de usuarios
+    # --------------- Tabla de categorías ---------------------
+    # Tabla de categorías
     tabla = ft.DataTable(
         divider_thickness = 0,
         horizontal_lines = ft.BorderSide(1, "#e2dcd5"),
         columns = [
             ft.DataColumn(ft.Text("Nombre", color = "#926600", weight = ft.FontWeight.BOLD)), # Columna 1
-            ft.DataColumn(ft.Text("Contraseña", color = "#926600", weight = ft.FontWeight.BOLD)), # Columna 2
-            ft.DataColumn(ft.Text("Número empleado", color = "#926600", weight = ft.FontWeight.BOLD, width = 100, text_align = ft.TextAlign.CENTER)), # Columna 3
-            ft.DataColumn(ft.Text("Correo electrónico", color = "#926600", weight = ft.FontWeight.BOLD, width = 100)), # Columna 4
-            ft.DataColumn(ft.Text("Privilegio", color = "#926600", weight = ft.FontWeight.BOLD)), # Columna 5
-            ft.DataColumn(ft.Text("Acciones", color = "#926600",text_align = ft.TextAlign.CENTER, weight = ft.FontWeight.BOLD, width = 170)) # Columna 6
+            ft.DataColumn(ft.Text("Vino/Licor", color = "#926600", weight = ft.FontWeight.BOLD, text_align = ft.TextAlign.CENTER, width = 100, expand = True)), # Columna 2
+            ft.DataColumn(ft.Text("Descripción", color = "#926600", weight = ft.FontWeight.BOLD, width = 300)), # Columna 3
+            ft.DataColumn(ft.Text("Acciones", color = "#926600",text_align = ft.TextAlign.CENTER, weight = ft.FontWeight.BOLD, width = 170)) # Columna 4
         ],
         expand = True,
         rows = []
@@ -37,110 +36,24 @@ def usuarios_list(regresar):
 
     mensaje = ft.Text()
 
-    def estado_boton_eliminar(usuario):
-        # Si el usuario tiene ID 1 (administrador principal), no se mostrara boton
-        if usuario.usuario_id == 1:
-            return None
-
-        return ft.OutlinedButton(
-            #f"Eliminar ID:{usuario.usuario_id}",
-            "Eliminar",
-            data = usuario.usuario_id, # Recuperar el ID del registro/usuario
-
-            style = ft.ButtonStyle(
-                # Cambiar el color del fondo
-                bgcolor = {
-                    ft.ControlState.HOVERED: "#de3b40",
-                    ft.ControlState.DEFAULT: "#f3f4f6" # Color por defecto
-                },
-                # Cambiar el color del borde
-                side = {
-                    ft.ControlState.DEFAULT: 
-                        ft.BorderSide(
-                            width = 2,
-                            color = "#de3b40"
-                        ),
-                    # Borde rojo de 2 píxeles al pasar el mouse
-                    ft.ControlState.HOVERED: 
-                        ft.BorderSide(
-                            width = 2,
-                            color = "#de3b40"
-                        )
-                },
-                # Cambiar el color de texto
-                color = {
-                    ft.ControlState.HOVERED: "#ffffff",
-                    ft.ControlState.DEFAULT: "#de3b40",
-                },
-                # Cambiar el redondeado del borde
-                shape = ft.RoundedRectangleBorder(radius = 10)
-            ),
-
-            on_click = abrir_alerta_eliminar_usuario # Al hacer clic, sobre el boton de "Editar" se abrira el modal
-        )
-
-    def obtener_nombre_completo(usuario):
-        # Concatenar el nombre completo de los usuarios
-        return f"{usuario.usuario_usuario} {usuario.usuario_apaterno} {usuario.usuario_amaterno}".strip()
-
-    def obtener_iniciales(usuario):
-        # Extraer las iniciales del o los nombres del usuario
-
-        # Dividir el nombre por espacios
-        partes = usuario.usuario_usuario.strip().split()
-
-        # Tomar la primera letra de cada parte y unirlas
-        iniciales = "".join([parte[0].upper() for parte in partes])
-
-        return iniciales 
-
-    def mostrar_usuarios_en_tabla(usuarios):
-        # Muestra una lista de usuarios en la tabla
+    def mostrar_categorias_en_tabla(categorias):
+        # Muestra una lista de categorias en la tabla
         tabla.rows.clear()
 
-        for usuario in usuarios:
-            iniciales_nombres = obtener_iniciales(usuario)
-            usuario_nombre_completo = obtener_nombre_completo(usuario)
-
+        for categoria in categorias:
             row = ft.DataRow(
                 cells = [
-                    ft.DataCell(
-                        ft.Row(
-                            controls = [
-                                ft.Container(
-                                    content = ft.Text(
-                                        iniciales_nombres,
-                                        color = "#6b1d41",
-                                        weight = ft.FontWeight.BOLD,
-                                        size = 17
-                                    ),
-                                    bgcolor = "#fff6e5",
-                                    border = ft.Border.all(
-                                        1,
-                                        "#c9a03d"
-                                    ),
-                                    border_radius = 35,
-                                    width = 35,
-                                    height = 35,
-                                    alignment = ft.Alignment.CENTER
-                                ),
-                                ft.Text(usuario_nombre_completo, color = "#0d1b2a", weight = ft.FontWeight.BOLD)
-                            ],
-                            width = 300
-                        ),
-                    ),
-                    ft.DataCell(ft.Text(usuario.usuario_contrasenia, color = "#0d1b2a")),
-                    ft.DataCell(ft.Text(usuario.usuario_nuempleado, color = "#0d1b2a", text_align = ft.TextAlign.CENTER, weight = ft.FontWeight.BOLD, width = 100, expand = True)),
-                    ft.DataCell(ft.Text(usuario.usuario_correo, color = "#0d1b2a")),
-                    ft.DataCell(ft.Container(ft.Text(usuario.usuario_privilegio, color = "#926600"), bgcolor = "#ffde93", padding = ft.Padding.symmetric(vertical = 4, horizontal = 8), border_radius = 4)),
+                    ft.DataCell(ft.Text(categoria.categoria_categoria, color = "#0d1b2a", weight = ft.FontWeight.BOLD)),
+                    ft.DataCell(ft.Container(ft.Text(categoria.categoria_tipo, color = "#926600", text_align = ft.TextAlign.CENTER, weight = ft.FontWeight.BOLD, width = 100, expand = True), bgcolor = "#ffde93", padding = ft.Padding.symmetric(vertical = 4, horizontal = 8), border_radius = 4, expand = True), expand = True),
+                    ft.DataCell(ft.Text(categoria.categoria_descripcion, color = "#0d1b2a")),
                     ft.DataCell(
                         ft.Row(
                             controls = [
                                 # Boton Editar
                                 ft.OutlinedButton(
-                                    #f"Editar ID:{usuario.usuario_id}",
+                                    #f"Editar ID:{categoria.categoria_id}",
                                     "Editar",
-                                    data = usuario.usuario_id, # Recuperar el ID del registro/usuario
+                                    data = categoria.categoria_id, # Recuperar el ID de la categoria
 
                                     style = ft.ButtonStyle(
                                         bgcolor = "#c9a03d",  # Color de fondo
@@ -162,10 +75,46 @@ def usuarios_list(regresar):
                                     ),
                                     expand = True,
 
-                                    on_click = abrir_formulario_editar_modal # Al hacer clic, sobre el boton de "Editar" se abrira el modal
+                                    on_click = abrir_formulario_editar_categoria # Al hacer clic, sobre el boton de "Editar" se abrira el modal
                                 ),
-                                # Boton Eliminar (solo si NO es ID 1)
-                                estado_boton_eliminar(usuario) if usuario.usuario_id != 1 else ft.Container(),  
+
+                                # Boton Eliminar
+                                ft.OutlinedButton(
+                                    #f"Eliminar ID:{categoria.categoria_id}",
+                                    "Eliminar",
+                                    data = categoria.categoria_id, # Recuperar el ID de la categoria
+
+                                    style = ft.ButtonStyle(
+                                        # Cambiar el color del fondo
+                                        bgcolor = {
+                                            ft.ControlState.HOVERED: "#de3b40",
+                                            ft.ControlState.DEFAULT: "#f3f4f6" # Color por defecto
+                                        },
+                                        # Cambiar el color del borde
+                                        side = {
+                                            ft.ControlState.DEFAULT: 
+                                                ft.BorderSide(
+                                                    width = 2,
+                                                    color = "#de3b40"
+                                                ),
+                                            # Borde rojo de 2 píxeles al pasar el mouse
+                                            ft.ControlState.HOVERED: 
+                                                ft.BorderSide(
+                                                    width = 2,
+                                                    color = "#de3b40"
+                                                )
+                                        },
+                                        # Cambiar el color de texto
+                                        color = {
+                                            ft.ControlState.HOVERED: "#ffffff",
+                                            ft.ControlState.DEFAULT: "#de3b40",
+                                        },
+                                        # Cambiar el redondeado del borde
+                                        shape = ft.RoundedRectangleBorder(radius = 10)
+                                    ),
+
+                                    on_click = abrir_alerta_eliminar_categoria # Al hacer clic, sobre el boton de "Editar" se abrira el modal
+                                ) 
                             ],
                             margin = 0,
                             expand = True
@@ -173,10 +122,6 @@ def usuarios_list(regresar):
                     )
                 ]
             )
-
-            # Si es el usuario ID 1, cabiar el color de fondo de la fila
-            if usuario.usuario_id == 1:
-                row.color = "#f0eee9" # Color diferente para el administrador
 
             tabla.rows.append(row)
         
@@ -186,64 +131,63 @@ def usuarios_list(regresar):
         elif pagina_referencia:
             pagina_referencia.update()
 
-    # -----------------Función para cargar los usuarios----------------------
-    def cargar_usuarios():
-        # Cargar todos los usuarios de la base de datos
-        nonlocal todos_los_usuarios
+    # -----------------Función para cargar las categorias----------------------
+    def cargar_categorias():
+        # Cargar todas las categorias de la base de datos
+        nonlocal todas_las_categorias
 
         try:
-            usuario_dao = UsuarioDAO()
-            usuarios = usuario_dao.obtener_todos()
+            categoria_dao = CategoriaDAO()
+            categorias = categoria_dao.obtener_todos()
 
-            # Guardar todos los usuarios
-            todos_los_usuarios = usuarios
+            # Guardar todas las categorias
+            todas_las_categorias = categorias
 
-            # Mostrar todos los usuarios
-            mostrar_usuarios_en_tabla(usuarios)
+            # Mostrar todas las categorias
+            mostrar_categorias_en_tabla(categorias)
 
         except Exception as error:
-            print(f"Error al consultar los usuarios: {error}")
+            print(f"Error al consultar las categorías: {error}")
             
             if pila.page:
                 pila.update() # Se actualiza la pila para mostrar cambios
             elif pagina_referencia:
                 pagina_referencia.update()
 
-        return usuarios
+        return categorias
 
-    def buscar_usuarios(e):
-        # Filtrar los usuarios en tiempo real mediante el campo de nombre
+    def buscar_categorias(e):
+        # Filtrar las categorias en tiempo real mediante el campo de nombre
 
         texto_busqueda = busqueda_input.value.lower().strip() if busqueda_input.value else ""
 
-        # Si el campo de busqueda esta vacio se mostraran todos los usuarios (registros)
+        # Si el campo de busqueda esta vacio se mostraran todas las categorias (registros)
         if texto_busqueda == "":
-            mostrar_usuarios_en_tabla(todos_los_usuarios)
+            mostrar_categorias_en_tabla(todas_las_categorias)
             return
         
-        # Filtrar usuarios por nombre
-        usuarios_filtrados = [
-            usuario for usuario in todos_los_usuarios
-            if texto_busqueda in obtener_nombre_completo(usuario).lower()
+        # Filtrar categorias por nombre
+        categorias_filtradas = [
+            categoria for categoria in todas_las_categorias
+            if texto_busqueda in categoria.categoria_categoria.lower()
         ]
 
-        # Mostrar los usuarios filtrados
-        mostrar_usuarios_en_tabla(usuarios_filtrados)
+        # Mostrar las categorias filtrados
+        mostrar_categorias_en_tabla(categorias_filtradas)
 
         # Mostrar mensaje si no hay resultados
-        if not usuarios_filtrados:
-            print(f"No se encontraron usuarios con '{texto_busqueda}'")
+        if not categorias_filtradas:
+            print(f"No se encontraron categorias con '{texto_busqueda}'")
             if pila.page:
                 pila.update()
             else:
                 pagina_referencia.update()
         
-
     # ------------------- Función para cerrar la modal --------------------
     def cerrar_modal():
         # Cierra el modal, eliminando la capa oscura de la pila
 
-        # 'nonlocal' permite modificar variables de la función padre (usuarios_list)
+        # 'nonlocal' permite modificar variables de la función padre (categorias_list)
         nonlocal capa_oscura_abierta_modal, capa_oscura_modal
 
         # Varificar si el modal está abierto y la capa oscura exite en la pila
@@ -255,8 +199,8 @@ def usuarios_list(regresar):
             capa_oscura_modal = None
             capa_oscura_abierta_modal = False
 
-            # Volver a cargar la lista de los usuarios
-            cargar_usuarios()
+            # Volver a cargar la lista de las categorias
+            cargar_categorias()
 
             # Actualizar la interfaz
             if pila.page:
@@ -265,8 +209,8 @@ def usuarios_list(regresar):
                 pagina_referencia.update()
 
     
-    def abrir_formulario_registrar_modal(evento):
-        # Crear y muestrar el modal con el formulario de Registrar usuario"
+    def abrir_formulario_crear_categoria_modal(evento):
+        # Crear y muestrar el modal con el formulario de Registrar categoria"
         # evento: El evento del clic en el boton "Registrar"
 
         # "nonlocal" para modificar variables de la función padre
@@ -281,8 +225,8 @@ def usuarios_list(regresar):
             return
         
         # --------------- Crear el contenido del modal -----------------
-        contenido_modal = usuario_form(
-            formulario_visible = True, # Activar el modal, mostrando el formulario
+        contenido_modal = categoria_form_create(
+            tabla_categoria_visible = True, # Activar el modal, mostrando el formulario
             cerrando_modal = cerrar_modal
         )
 
@@ -315,8 +259,8 @@ def usuarios_list(regresar):
         elif pagina_referencia:
             pagina_referencia.update()
 
-    def abrir_formulario_editar_modal(evento):
-        # Crear y mostrar el modal con el formulario de "Editar usuario"
+    def abrir_formulario_editar_categoria(evento):
+        # Crear y mostrar el modal con el formulario de "Editar categoria"
         # evento: El evento del clic en el boton "Editar" del registro correspondiente
 
         # "nonlocal" para modificar variables de la función padre
@@ -330,46 +274,42 @@ def usuarios_list(regresar):
         if capa_oscura_abierta_modal:
             return
         
-        # ======== Obtener el ID del usuario desde el boton =========
+        # ======== Obtener el ID del categoria desde el boton =========
         # El ID se guarda en la propiedad 'data' del boton
-        usuario_id = evento.control.data if evento.control else None # Obtener el usuario_id del boton
+        categoria_id = evento.control.data if evento.control else None # Obtener la categoria_id del boton
 
-        if usuario_id is None:
-            print("No se pudo obtener el ID del usuario")
+        if categoria_id is None:
+            print("No se pudo obtener el ID de la categoria")
             return
         
         try:
-            # === Obtener los datos del usuario desde la BD ===
-            usuario_dao = UsuarioDAO()
-            usuario = usuario_dao.obtener_id_del_usuario(usuario_id)
+            # === Obtener los datos de la categoria desde la BD ===
+            categoria_dao = CategoriaDAO()
+            categoria = categoria_dao.obtener_id_de_la_categoria(categoria_id)
 
-            if usuario is None:
-                print(f"No se encontro el usuario con ID: {usuario_id}")
+            if categoria is None:
+                print(f"No se encontro la categoria con ID: {categoria_id}")
                 return
 
             
             # Preparar los datos para el formulario
             registro = {
-                'id': usuario.usuario_id,
-                'nombre': usuario.usuario_usuario,
-                'apellido_paterno': usuario.usuario_apaterno,
-                'apellido_materno': usuario.usuario_amaterno,
-                'contrasenia': usuario.usuario_contrasenia,
-                'numero_empleado': usuario.usuario_nuempleado,
-                'correo': usuario.usuario_correo,
-                'privilegio_id': usuario.usuario_privilegio
+                'id': categoria.categoria_id,
+                'nombre': categoria.categoria_categoria,
+                'tipo': categoria.categoria_tipo,
+                'descripcion': categoria.categoria_descripcion
             }
 
             print(f"Datos cargados: {registro}")
 
         except Exception as error:
-            print(f"Error al obtener el usuario: {error}")
+            print(f"Error al obtener la categoria: {error}")
             return
-        # ======= FIN Obtener el ID del usuario desde el boton ========
+        # ======= FIN Obtener el ID de la categoria desde el boton ========
         
         # --------------- Crear el contenido del modal -----------------
-        contenido_modal = usuario_form_edit(
-            formulario_visible = True, # Activar el modal, mostrando el formulario
+        contenido_modal = categoria_form_edit(
+            tabla_categoria_visible = True, # Activar el modal, mostrando el formulario
             cerrando_modal = cerrar_modal,
             registro = registro # Enviar los datos al formulario
         )
@@ -403,8 +343,8 @@ def usuarios_list(regresar):
         elif pagina_referencia:
             pagina_referencia.update()
 
-    def abrir_alerta_eliminar_usuario(evento):
-        # Crear y muestrar el modal con la alerta de "La Vinata dice: ¿Desea eliminar este usuario?"
+    def abrir_alerta_eliminar_categoria(evento):
+        # Crear y muestrar el modal con la alerta de "La Vinata dice: ¿Desea eliminar esta categoria?"
         # evento: El evento del clic en el boton "Eliminar"
 
         # "nonlocal" para modificar variables de la función padre
@@ -418,39 +358,39 @@ def usuarios_list(regresar):
         if capa_oscura_abierta_modal:
             return
         
-        # ======== Obtener el ID del usuario desde el boton =========
+        # ======== Obtener el ID de la categoria desde el boton =========
         # El ID se guarda en la propiedad 'data' del boton
-        usuario_id = evento.control.data if evento.control else None # Obtener el usuario_id del boton
+        categoria_id = evento.control.data if evento.control else None # Obtener la categoria_id del boton
 
-        if usuario_id is None:
-            print("No se pudo obtener el ID del usuario")
+        if categoria_id is None:
+            print("No se pudo obtener el ID de la categoria")
             return
         
         try:
-            # === Obtener los datos del usuario desde la BD ===
-            usuario_dao = UsuarioDAO()
-            usuario = usuario_dao.obtener_id_del_usuario(usuario_id)
+            # === Obtener los datos de la categoria desde la BD ===
+            categoria_dao = CategoriaDAO()
+            categoria = categoria_dao.obtener_id_de_la_categoria(categoria_id)
 
-            if usuario is None:
-                print(f"No se encontro el usuario con ID: {usuario_id}")
+            if categoria is None:
+                print(f"No se encontro la categoria con ID: {categoria_id}")
                 return
             
             # Preparar los datos para el formulario
             id_y_nombre = {
-                'id': usuario.usuario_id,
-                'nombre': usuario.usuario_usuario
+                'id': categoria.categoria_id,
+                'nombre': categoria.categoria_categoria
             }
 
             print(f"Datos cargados: {id_y_nombre}")
 
         except Exception as error:
-            print(f"Error al obtener el usuario: {error}")
+            print(f"Error al obtener la categoria: {error}")
             return
-        # ======= FIN Obtener el ID del usuario desde el boton ========
+        # ======= FIN Obtener el ID de la categoria desde el boton ========
         
         # --------------- Crear el contenido del modal -----------------
         contenido_modal = alerta_eliminar(
-            formulario_visible = True, # Activar el modal, mostrando el formulario
+            tabla_categoria_visible = True, # Activar el modal, mostrando el formulario
             cerrando_modal = cerrar_modal,
             registro = id_y_nombre # Enviar los datos a la alerta
         )
@@ -508,11 +448,11 @@ def usuarios_list(regresar):
         width = 400,
         height = 40,
 
-        on_change = buscar_usuarios, # Buscar en tiempo real
+        on_change = buscar_categorias, # Buscar en tiempo real
 
         # 'suffix_icon' Sirve para colocar un icono en el input despues del texto
         suffix_icon = ft.Icon(
-            ft.Icons.SEARCH_OUTLINED, # Icono de $
+            ft.Icons.SEARCH_OUTLINED, # Icono de lupa
             color = "#6b1d41"
 
         ),
@@ -536,6 +476,48 @@ def usuarios_list(regresar):
         border_radius = 4
     )
 
+    barra_de_acciones = ft.Container(
+        ft.Row(
+            controls = [
+                ft.OutlinedButton(
+                    "Crear",
+                    style = ft.ButtonStyle(
+                        bgcolor = "#6b1d41",  # Color de fondo
+                        side = {
+                            ft.ControlState.DEFAULT: 
+                            ft.BorderSide(
+                                width = 2,
+                                color = "#a11e2f"
+                            ),
+                            # Borde rojo de 2 píxeles al pasar el mouse
+                            ft.ControlState.HOVERED: 
+                            ft.BorderSide(
+                                width = 2,
+                                color = "#6b1d41"
+                            )
+                        },
+                        color = "#ffffff",
+                        shape = ft.RoundedRectangleBorder(radius = 10)
+                    ),
+                    height = 40,
+                                    
+                    icon = ft.Icons.LABEL,
+                    on_click = abrir_formulario_crear_categoria_modal # Al hacer clic, sobre el boton de "Crear" se abrira el modal
+                ),
+
+                # Campo de busqueda
+                busqueda_input,
+
+            ]
+        ),
+        bgcolor = "#ffffff",
+        border = ft.Border.all(
+            1,
+            "#e2dcd5"
+        ),
+        border_radius = 10,
+        padding = 10
+    )
 
     # ================= CONTENIDO PRINCIPAL =================
     contenido_principal = ft.Container(
@@ -548,40 +530,40 @@ def usuarios_list(regresar):
                             controls = [
                                 # Titulo de la sección
                                 ft.Text(
-                                    "Usuarios",
+                                    "Categorías",
                                     size = 24,
                                     weight = ft.FontWeight.BOLD,
                                     color = "#6b1d41"
                                 ),
 
-                                # Campo de busqueda
-                                campo_de_busqueda,
-                                
-                                # Boton de crear
-                                ft.OutlinedButton(
-                                    "Registrar",
+                                # Barra de acciones
+                                barra_de_acciones,
+
+                                # Boton para cerrar la lista
+                                ft.IconButton(
+                                    icon = ft.Icons.CLOSE,
                                     style = ft.ButtonStyle(
-                                        bgcolor = "#6b1d41",  # Color de fondo
+                                        # Borde sólido vino-caramelo de 2 píxeles por defecto
                                         side = {
                                             ft.ControlState.DEFAULT: 
-                                            ft.BorderSide(
-                                                width = 2,
-                                                color = "#a11e2f"
-                                            ),
+                                                ft.BorderSide(
+                                                    width = 2,
+                                                    color = "#a11e2f"
+                                                ),
                                             # Borde rojo de 2 píxeles al pasar el mouse
                                             ft.ControlState.HOVERED: 
-                                            ft.BorderSide(
-                                                width = 2,
-                                                color = "#6b1d41"
-                                            )
+                                                ft.BorderSide(
+                                                    width = 2,
+                                                    color = "#6b1d41"
+                                                )
                                         },
-                                        color = "#ffffff",
                                         shape = ft.RoundedRectangleBorder(radius = 10)
                                     ),
-                                    height = 40,
-                                                    
-                                    icon = ft.Icons.PERSON,
-                                    on_click = abrir_formulario_registrar_modal # Al hacer clic, sobre el boton de "Registrar" se abrira el modal
+                                    bgcolor = "#6b1d41",
+                                    icon_color = "#ffffff",
+                                    on_click = lambda e: cerrando_modal(),
+
+                                    tooltip = "Cerrar" # Texto que aparece al pasar el cursor
                                 ),
                             ],
                             expand = True,
@@ -592,7 +574,8 @@ def usuarios_list(regresar):
                         #     icon = ft.Icons.ARROW_BACK,
                         #     on_click = lambda e: regresar()
                         # )
-                    ]
+                    ],
+                    alignment = ft.MainAxisAlignment.SPACE_BETWEEN
                 ),
                 
                 ft.Container(
@@ -615,35 +598,50 @@ def usuarios_list(regresar):
         )
     )
 
+    contenido_en_pila = ft.Container(
+        content = contenido_principal,
+        bgcolor = "#f9f6f0",
+        border = ft.Border.all(
+            1,
+            "#e2dcd5"
+        ),
+        border_radius = 20,
+        margin = ft.Margin.only(top = 90,left = 150),
+        padding = 30,
+        shadow = ft.BoxShadow(
+            spread_radius = 1, # Expansión de la sombra
+            blur_radius = 20, #Difuminado
+            color = ft.Colors.BLACK_38
+        ),
+        width = 1000,
+        height = 700
+    )
+
     # --------------- Agregar el contenido principal a la pila ----------------
-    pila.controls.append(contenido_principal)
+    pila.controls.append(contenido_en_pila)
 
     # ---------------- Cargar datos iniciales (SIN actualizar) ------------------
     # Solo cargaran los datos, pero NO se hace update porque la pila aun no esta en la pagina. La actualización se hara cuando se agregue.
     try:
-        usuarios = cargar_usuarios()
+        categorias = cargar_categorias()
 
         tabla.rows.clear()
-        for usuario in usuarios:
-            # Concatenar nombre completo
-            usuario_nombre_completo = obtener_nombre_completo(usuario)
+        for categoria in categorias:
 
             tabla.rows.append(
                 ft.DataRow(
                     cells = [
-                        ft.DataCell(ft.Text(usuario_nombre_completo, color = "#0d1b2a", weight = ft.FontWeight.BOLD)),
-                        ft.DataCell(ft.Text(usuario.usuario_contrasenia, color = "#0d1b2a")),
-                        ft.DataCell(ft.Text(usuario.usuario_nuempleado, color = "#0d1b2a", text_align = ft.TextAlign.CENTER, weight = ft.FontWeight.BOLD, width = 100), expand = 100),
-                        ft.DataCell(ft.Text(usuario.usuario_correo, color = "#0d1b2a")),
-                        ft.DataCell(ft.Container(ft.Text(usuario.usuario_privilegio, color = "#926600"), bgcolor = "#ffde93", padding = ft.Padding.symmetric(vertical = 4, horizontal = 8), border_radius = 4)),
+                        ft.DataCell(ft.Text(categoria.categoria_categoria, color = "#0d1b2a",)),
+                        ft.DataCell(ft.Text(categoria.categoria_tipo, color = "#0d1b2a", text_align = ft.TextAlign.CENTER, weight = ft.FontWeight.BOLD, width = 100, expand = True)),
+                        ft.DataCell(ft.Text(categoria.categoria_descripcion, color = "#0d1b2a",)),
                         ft.DataCell(
                             ft.Row(
                                 controls = [
                                     # Boton Editar
                                     ft.OutlinedButton(
-                                        #f"Editar ID:{usuario.usuario_id}",
+                                        #f"Editar ID:{categoria.categoria_id}",
                                         "Editar",
-                                        data = usuario.usuario_id, # Recuperar el ID del usuario
+                                        data = categoria.categoria_id, # Recuperar el ID de la categoria
 
                                         style = ft.ButtonStyle(
                                             bgcolor = "#c9a03d",  # Color de fondo
@@ -664,10 +662,46 @@ def usuarios_list(regresar):
                                             shape = ft.RoundedRectangleBorder(radius = 10)
                                         ),
 
-                                        on_click = abrir_formulario_editar_modal # Al hacer clic, sobre el boton de "Editar" se abrira el modal
+                                        on_click = abrir_formulario_editar_categoria # Al hacer clic, sobre el boton de "Editar" se abrira el modal
                                     ),
 
-                                    estado_boton_eliminar(usuario)
+                                    # Boton Eliminar
+                                    ft.OutlinedButton(
+                                        #f"Eliminar ID:{categoria.categoria_id}",
+                                        "Eliminar",
+                                        data = categoria.categoria_id, # Recuperar el ID de la categoria
+    
+                                        style = ft.ButtonStyle(
+                                            # Cambiar el color del fondo
+                                            bgcolor = {
+                                                ft.ControlState.HOVERED: "#de3b40",
+                                                ft.ControlState.DEFAULT: "#f3f4f6" # Color por defecto
+                                            },
+                                            # Cambiar el color del borde
+                                            side = {
+                                                ft.ControlState.DEFAULT: 
+                                                    ft.BorderSide(
+                                                        width = 2,
+                                                        color = "#de3b40"
+                                                    ),
+                                                # Borde rojo de 2 píxeles al pasar el mouse
+                                                ft.ControlState.HOVERED: 
+                                                    ft.BorderSide(
+                                                        width = 2,
+                                                        color = "#de3b40"
+                                                    )
+                                            },
+                                            # Cambiar el color de texto
+                                            color = {
+                                                ft.ControlState.HOVERED: "#ffffff",
+                                                ft.ControlState.DEFAULT: "#de3b40",
+                                            },
+                                            # Cambiar el redondeado del borde
+                                            shape = ft.RoundedRectangleBorder(radius = 10)
+                                        ),
+    
+                                        on_click = abrir_alerta_eliminar_categoria # Al hacer clic, sobre el boton de "Editar" se abrira el modal
+                                    ) 
                                 ]
                             )
                         )
@@ -676,6 +710,7 @@ def usuarios_list(regresar):
             )
 
     except Exception as error:
-        print(f"Error al consultar los usuarios: {error}")
+        print(f"Error al consultar las categorias: {error}")
 
     return pila
+    

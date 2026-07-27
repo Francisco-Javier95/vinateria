@@ -11,7 +11,7 @@ class PrivilegioDAO():
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
 
-        cursor.execute("SELECT privilegio_privilegio FROM privilegios")
+        cursor.execute("SELECT privilegio_privilegio FROM privilegios ORDER BY privilegio_id ASC")
         registros = cursor.fetchall()
 
         nombres = []

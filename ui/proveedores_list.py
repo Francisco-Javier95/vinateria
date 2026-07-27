@@ -21,12 +21,14 @@ def proveedores_list(regresar):
     # --------------- Tabla de proveedores ---------------------
     # Tabla de proveedores
     tabla = ft.DataTable(
+        divider_thickness = 0,
+        horizontal_lines = ft.BorderSide(1, "#e2dcd5"),
         columns = [
-            ft.DataColumn(ft.Text("Nombre", color = "#0d1b2a")), # Columna 1
-            ft.DataColumn(ft.Text("Teléfono", color = "#0d1b2a")), # Columna 2
-            ft.DataColumn(ft.Text("Dirección", color = "#0d1b2a")), # Columna 3
-            ft.DataColumn(ft.Text("Correo electrónico", color = "#0d1b2a")), # Columna 4
-            ft.DataColumn(ft.Text("Acciones", color = "#0d1b2a")) # Columna 5
+            ft.DataColumn(ft.Text("Nombre", color = "#926600", weight = ft.FontWeight.BOLD)), # Columna 1
+            ft.DataColumn(ft.Text("Teléfono", color = "#926600", weight = ft.FontWeight.BOLD)), # Columna 2
+            ft.DataColumn(ft.Text("Dirección", color = "#926600", weight = ft.FontWeight.BOLD)), # Columna 3
+            ft.DataColumn(ft.Text("Correo electrónico", color = "#926600", weight = ft.FontWeight.BOLD)), # Columna 4
+            ft.DataColumn(ft.Text("Acciones", color = "#926600",text_align = ft.TextAlign.CENTER, weight = ft.FontWeight.BOLD, width = 170)) # Columna 5
         ],
         expand = True,
         rows = []
@@ -48,9 +50,9 @@ def proveedores_list(regresar):
             tabla.rows.append(
                 ft.DataRow(
                     cells = [
-                        ft.DataCell(ft.Text(proveedor_nombre_completo, color = "#0d1b2a")),
+                        ft.DataCell(ft.Text(proveedor_nombre_completo, color = "#0d1b2a", weight = ft.FontWeight.BOLD)),
                         ft.DataCell(ft.Text(proveedor.proveedor_telefono, color = "#0d1b2a")),
-                        ft.DataCell(ft.Text(proveedor.proveedor_direccion, color = "#0d1b2a")),
+                        ft.DataCell(ft.Text(proveedor.proveedor_direccion, color = "#0d1b2a", width = 350)),
                         ft.DataCell(ft.Text(proveedor.proveedor_correo, color = "#0d1b2a")),
                         ft.DataCell(
                             ft.Row(
@@ -530,6 +532,7 @@ def proveedores_list(regresar):
                                     on_click = abrir_formulario_registrar_modal # Al hacer clic, sobre el boton de "Registrar" se abrira el modal
                                 ),
                             ],
+                            expand = True,
                             alignment = ft.MainAxisAlignment.SPACE_BETWEEN
                         ),
                         # ft.OutlinedButton(
@@ -537,22 +540,20 @@ def proveedores_list(regresar):
                         #     icon = ft.Icons.ARROW_BACK,
                         #     on_click = lambda e: regresar()
                         # )
-                    ],
-                    alignment = ft.MainAxisAlignment.SPACE_BETWEEN
+                    ]
                 ),
-                
-                ft.Divider(),
                 
                 ft.Container(
                     content = tabla,
                     border = ft.Border.all(
                         1,
-                        ft.Colors.BLUE_900
+                        "#ede9e4"
                     ),
                     expand = True,
                     border_radius = 10,
                     width = 5000,
-                    padding = 10
+                    padding = 0,
+                    bgcolor = "#ffffff"
                 ),
 
                 mensaje

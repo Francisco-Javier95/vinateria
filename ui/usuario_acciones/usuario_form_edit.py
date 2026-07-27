@@ -35,7 +35,7 @@ def usuario_form_edit(regresar = None, formulario_visible = False, cerrando_moda
         label_style = estilo_de_label,
         on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(), # Estilo del label en focus
         on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(), # Estilo del label
-        hint_text = "Jared Alan",  # Esto es el placeholder
+        hint_text = "Pérez",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
         color = "#424955",
@@ -47,7 +47,7 @@ def usuario_form_edit(regresar = None, formulario_visible = False, cerrando_moda
         label_style = estilo_de_label,
         on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(), # Estilo del label en focus
         on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(), # Estilo del label
-        hint_text = "Jared Alan",  # Esto es el placeholder
+        hint_text = "Pichardo",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
         color = "#424955",
@@ -208,7 +208,9 @@ def usuario_form_edit(regresar = None, formulario_visible = False, cerrando_moda
         focused_border_color = "#c9a03d", # Borde al enfocar
         bgcolor = "#f9f6f0", # Fondo del menú desplegable
 
-        value = registro.get('privilegio_id') if registro else None # Cargar datos
+        value = registro.get('privilegio_id') if registro else None, # Cargar datos
+
+        disabled = registro.get('id') == 1 if registro else False, # Si el ID = 1, se desabilita el boton
     )
 
     # Metodo para cargar los privilegios desde la Base de Datos
@@ -404,7 +406,7 @@ def usuario_form_edit(regresar = None, formulario_visible = False, cerrando_moda
             correo_input,
 
             # Fila 4: Privilegio
-            privilegio_input
+            privilegio_input 
         ],
         spacing = 15,
         expand = True
