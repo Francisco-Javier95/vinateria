@@ -1,5 +1,7 @@
 import flet as ft
 
+from ui.punto_de_venta import punto_de_venta
+
 from ui.articulos_list import articulos_list
 from ui.proveedores_list import proveedores_list
 from ui.usuarios_list import usuarios_list
@@ -31,18 +33,9 @@ def main_window(page: ft.Page):
         padding = 5,
         expand = True
     )
-
-    def inicio():
-        return ft.Column(
-            controls = [
-                titulo,
-                subtitulo
-            ],
-            spacing = 10
-        )
     
     def mostrar_inicio(e = None):
-        contenido.content = inicio()
+        contenido.content = punto_de_venta()
         page.update()
 
     def mostrar_lista_articulos(e = None):
