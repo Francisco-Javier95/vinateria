@@ -4,23 +4,19 @@ from models.articulo import Articulo
 from dao.articulo_dao import ArticuloDAO
 
 def punto_de_venta(regresar=None):
-    # ============================================================
-    # ====== CONTENEDOR PRINCIPAL ================================
-    # ============================================================
-    pila = ft.Stack(expand=True)
-    
-    # ============================================================
-    # ====== VARIABLES DE ESTADO =================================
-    # ============================================================
+    # ---------------- Variables de estado -------------------
     todos_los_articulos = []
+    lista_compra = []  # Lista de productos agregados
     producto_seleccionado = None
     sugerencias_visibles = False
 
-    # ============================================================
-    # ====== FUNCIONES PARA CARGAR DATOS ==========================
-    # ============================================================
+    # -------------- Contenedor de capas ---------------------
+    pila = ft.Stack(expand = True) # ft.Stack permite superponer widgets (elementos)
+    # 'expand = True' hace que ocupe todo el espacio disponible
+
+    # Metodo de cargar articulos
     def cargar_articulos():
-        """Carga todos los artículos desde la base de datos"""
+        # Carga todos los artículos desde la base de datos
         nonlocal todos_los_articulos
         try:
             articulo_dao = ArticuloDAO()
@@ -29,11 +25,9 @@ def punto_de_venta(regresar=None):
         except Exception as error:
             print(f"Error al cargar artículos: {error}")
 
-    # ============================================================
-    # ====== FUNCIONES DE BÚSQUEDA ================================
-    # ============================================================
+    # Función e 'Busqueda'
     def obtener_sugerencias(texto, campo):
-        """Obtiene sugerencias basadas en el texto y el campo de búsqueda"""
+        # Obtiene sugerencias basadas en el texto y el campo de búsqueda
         if not texto or texto.strip() == "":
             return []
         
@@ -52,19 +46,19 @@ def punto_de_venta(regresar=None):
         return sugerencias[:10]
 
     def buscar_por_codigo(e):
-        """Busca productos por código mientras el usuario escribe"""
+        # Busca productos por código mientras el usuario escribe
         texto = e.control.value
         sugerencias = obtener_sugerencias(texto, "codigo")
         actualizar_sugerencias(sugerencias, "codigo")
 
     def buscar_por_nombre(e):
-        """Busca productos por nombre mientras el usuario escribe"""
+        # Busca productos por nombre mientras el usuario escribe
         texto = e.control.value
         sugerencias = obtener_sugerencias(texto, "nombre")
         actualizar_sugerencias(sugerencias, "nombre")
 
     def actualizar_sugerencias(sugerencias, tipo):
-        """Actualiza la lista de sugerencias en el popup"""
+        # Actualiza la lista de sugerencias en el popup
         nonlocal sugerencias_visibles
         
         contenedor_sugerencias.content.controls.clear()
@@ -82,41 +76,33 @@ def punto_de_venta(regresar=None):
             else:
                 texto_mostrar = f"{articulo.articulo_articulo} ({articulo.articulo_codigo})"
             
-            # === FUNCIÓN PARA HOVER ===
-            def on_sugerencia_hover(e):
-                """Cambia el color de fondo al pasar el mouse"""
-                e.control.bgcolor = "#f9f6f0" if e.data == "true" else "#ffffff"
-                e.control.update()
-            
             sugerencia = ft.Container(
-                content=ft.Row(
-                    controls=[
-                        ft.Text(texto_mostrar, size=14, color="#6b1d41"),
-                        ft.Container(expand=True)
+                content = ft.Row(
+                    controls = [
+                        ft.Text(texto_mostrar, size = 14, color = "#6b1d41"),
+                        ft.Container(expand = True)
                     ],
-                    alignment=ft.MainAxisAlignment.START,
+                    alignment = ft.MainAxisAlignment.START,
                 ),
-                padding=ft.Padding.symmetric(horizontal=15, vertical=10),
-                bgcolor="#ffffff",
-                border=ft.Border.only(bottom=ft.BorderSide(width=1, color="#f0eee9")),
-                on_click=lambda e, a=articulo: seleccionar_producto(a, tipo),
-                on_hover=on_sugerencia_hover,  # <--- Función separada
-                animate=ft.Animation(200, ft.AnimationCurve.EASE_IN_OUT),
+                padding = ft.Padding.symmetric(horizontal = 15, vertical = 10),
+                bgcolor = "#ffffff",
+                border = ft.Border.only(bottom = ft.BorderSide(width = 1, color = "#f0eee9")),
+                on_click = lambda e, a = articulo: seleccionar_producto(a, tipo),
+                animate = ft.Animation(200, ft.AnimationCurve.EASE_IN_OUT),
             )
             contenedor_sugerencias.content.controls.append(sugerencia)
         
         contenedor_sugerencias.visible = True
-        pila.page.update()
+        if pila.page:
+            pila.page.update()
 
-    # ============================================================
-    # ====== FUNCIONES DE SELECCIÓN ===============================
-    # ============================================================
+    # ----------------- Funciones de selección ---------------
     def seleccionar_producto(articulo, tipo):
-        """Selecciona un producto y actualiza la interfaz"""
+        # Selecciona un producto y actualiza la interfaz
         nonlocal producto_seleccionado, sugerencias_visibles
         
         producto_seleccionado = articulo
-        print(f"✅ Producto seleccionado: {articulo.articulo_articulo}")
+        print(f"Producto seleccionado: {articulo.articulo_articulo}")
         
         if tipo == "codigo":
             campo_codigo.value = articulo.articulo_codigo
@@ -124,47 +110,185 @@ def punto_de_venta(regresar=None):
         else:
             campo_nombre.value = articulo.articulo_articulo
             campo_codigo.value = articulo.articulo_codigo
-        
-        imagen_producto.src = "https://via.placeholder.com/150x150/6b1d41/ffffff?text=Producto"
+
+        # Acutalizar imagen
+        imagen_producto.src = f"imagenes/imagenes_DB/a-bottle-of-wine-on-a-dark-background_acostada.jpg"
         imagen_producto.visible = True
-        
+
+        # Actualizar existencias
         texto_existencias.value = f"Existencias: {articulo.articulo_stock}"
+
+        # Habilitar boton de agregar
         boton_agregar.disabled = False
-        
+
+        # Resetear cantidad a 1
+        cantidad_input.value = "1"
+        actualizar_estado_botones()
+
+        # Ocultar sugerencias
         contenedor_sugerencias.visible = False
         sugerencias_visibles = False
         
-        pila.page.update()
+        if pila.page:
+            pila.page.update()
 
     def ocultar_sugerencias(e):
-        """Oculta las sugerencias al perder el foco"""
+        # Oculta las sugerencias al perder el foco
         nonlocal sugerencias_visibles
         import time
         time.sleep(0.2)
         contenedor_sugerencias.visible = False
         sugerencias_visibles = False
-        pila.page.update()
+        if pila.page:
+            pila.page.update()
 
-    # ============================================================
-    # ====== BOTÓN AGREGAR ========================================
-    # ============================================================
-    def agregar_a_lista(e):
-        if not producto_seleccionado:
-            print("❌ No hay producto seleccionado")
+    def actualizar_estado_botones():
+        # Actualiza el estado de ambos botones (incremento y decremento)
+        valor = obtener_cantidad_valor()
+        stock = producto_seleccionado.articulo_stock if producto_seleccionado else 0
+
+        # Actualizar botón de decremento (activo si valor > 1)
+        if valor > 1:
+            boton_decremento.content = ft.IconButton(
+                # Botón de resta (icono flecha abajo)
+                icon=ft.Icons.ARROW_DROP_DOWN,
+
+                icon_size = 20, # Cambia el tamaño visual del ícono
+                scale = 1.0, # Escala el botón completo
+                style = ft.ButtonStyle(
+                    shape = ft.RoundedRectangleBorder(radius = 5),
+                    padding = ft.Padding.symmetric(horizontal = 5, vertical = 2),
+                ),
+                bgcolor = "#6b1d41",
+                icon_color = "#ffffff",
+                tooltip = "Decrementar", # Texto que aparece al pasar el cursor
+                # Tamaño definido
+                width = 30,
+                height = 20,
+
+                on_click = decremento_click
+            )
+        else:
+            # Botón de resta (icono flecha abajo)
+            boton_decremento.content = ft.IconButton(
+                icon=ft.Icons.ARROW_DROP_DOWN,
+
+                icon_size = 20, # Cambia el tamaño visual del ícono
+                scale = 1.0, # Escala el botón completo
+                style = ft.ButtonStyle(
+                    shape = ft.RoundedRectangleBorder(radius = 5),
+                    padding = ft.Padding.symmetric(horizontal = 5, vertical = 2),
+                ),
+                bgcolor = "#696768",
+                icon_color = "#ffffff",
+                tooltip = "Decrementar", # Texto que aparece al pasar el cursor
+                # Tamaño definido
+                width = 30,
+                height = 20,
+                                        
+                # on_click = decremento_click
+            ) # NO COLOCAR LA COMA, DE LO CONTRARIO EL ESTILO DE BOTON INACTIVO NO SE MOSTRARA
+
+        # Activo si valor < stock (y stock > 0)
+        if producto_seleccionado and valor < stock:
+            boton_incremento.content = ft.IconButton(
+                icon=ft.Icons.ARROW_DROP_UP,
+                icon_size=20,
+                scale=1.0,
+                style=ft.ButtonStyle(
+                    shape=ft.RoundedRectangleBorder(radius=5),
+                    padding=ft.Padding.symmetric(horizontal=5, vertical=2),
+                ),
+                bgcolor="#6b1d41",
+                icon_color="#ffffff",
+                tooltip="Incrementar",
+                width=30,
+                height=20,
+                on_click=incremento_click
+            )
+        else:
+            boton_incremento.content = ft.IconButton(
+                icon=ft.Icons.ARROW_DROP_UP,
+                icon_size=20,
+                scale=1.0,
+                style=ft.ButtonStyle(
+                    shape=ft.RoundedRectangleBorder(radius=5),
+                    padding=ft.Padding.symmetric(horizontal=5, vertical=2),
+                ),
+                bgcolor="#696768",
+                icon_color="#ffffff",
+                tooltip="Stock máximo alcanzado" if producto_seleccionado else "Selecciona un producto",
+                width=30,
+                height=20,
+            )
+
+        if pila.page:
+            pila.page.update()
+
+    def reiniciar_valor(e):
+        if not e.control.value or not e.control.value.lstrip('-').isdigit():
+            e.control.value = "1"
+            actualizar_estado_botones()
+            if pila.page:
+                pila.page.update()
             return
-        
-        cantidad = obtener_cantidad_valor()
-        print(f"✅ Producto agregado: {producto_seleccionado.articulo_articulo} x{cantidad}")
-        print(f"   Precio: ${producto_seleccionado.articulo_precio:.2f}")
 
-    # ============================================================
-    # ====== CARGAR DATOS INICIALES ==============================
-    # ============================================================
-    cargar_articulos()
+        try:
+            valor = int(e.control.value)
+            stock = producto_seleccionado.articulo_stock if producto_seleccionado else 0
 
-    # ============================================================
-    # ====== INTERFAZ DE USUARIO ================================
-    # ============================================================
+            if valor < 1:
+                e.control.value = "1"
+            elif producto_seleccionado and valor > stock:
+                e.control.value = str(stock)
+                texto_existencias.value = f"⚠️ Máximo: {stock}"
+                texto_existencias.color = "#de3b40"
+            else:
+                texto_existencias.value = f"Existencias: {stock}"
+                texto_existencias.color = "#9095a0"
+
+            actualizar_estado_botones()
+            if pila.page:
+                pila.page.update()
+        except ValueError:
+            e.control.value = "1"
+            actualizar_estado_botones()
+            if pila.page:
+                pila.page.update()
+
+    def obtener_cantidad_valor():
+        try:
+            if not cantidad_input.value or cantidad_input.value.strip() == "":
+                return 1
+            return int(cantidad_input.value)
+        except ValueError:
+            return 1
+
+    def decremento_click(e):
+        valor = obtener_cantidad_valor()
+        if valor > 1:
+            # Convertir a entero, sumar 1 y convertir de nuevo a string
+            cantidad_input.value = str(valor - 1)
+            # Actualizar la interfaz para actualizar el estado de los botones
+            actualizar_estado_botones()
+
+            if pila.page:
+                pila.page.update()
+
+    def incremento_click(e):
+        valor = obtener_cantidad_valor()
+        stock = producto_seleccionado.articulo_stock if producto_seleccionado else 0
+
+        if producto_seleccionado and valor < stock:
+            # Convertir a entero, sumar 1 y convertir de nuevo a string
+            cantidad_input.value = str(valor + 1)
+            texto_existencias.value = f"Existencias: {stock}"
+            texto_existencias.color = "#9095a0"
+            # Actualizar la interfaz para actualizar el estado de los botones
+            actualizar_estado_botones()
+
+            if pila.page:
+                pila.page.update()
     
     titulo = ft.Text(
         "Punto de Venta",
@@ -202,7 +326,7 @@ def punto_de_venta(regresar=None):
         bgcolor = "#f9f6f0", # Fondo del menú desplegable
         width = 380,
 
-        # suffix=ft.Icon(ft.Icons.SEARCH, color="#6b1d41"),
+        suffix_icon = ft.Icons.SEARCH
     )
     
     campo_nombre = ft.TextField(
@@ -222,24 +346,24 @@ def punto_de_venta(regresar=None):
         bgcolor = "#f9f6f0", # Fondo del menú desplegable
         width = 380,
 
-        # suffix=ft.Icon(ft.Icons.SEARCH, color="#6b1d41"),
+        suffix_icon = ft.Icons.SEARCH
     )
     
     contenedor_sugerencias = ft.Container(
-        content=ft.Column(
-            controls=[],
-            spacing=0,
+        content = ft.Column(
+            controls = [],
+            spacing = 0,
         ),
-        bgcolor="#f9f6f0",
-        border=ft.Border.all(1, "#e2dcd5"),
-        border_radius=10,
-        shadow=ft.BoxShadow(
-            spread_radius=1,
-            blur_radius=5,
-            color=ft.Colors.BLACK26,
+        bgcolor = "#f9f6f0",
+        border = ft.Border.all(1, "#e2dcd5"),
+        border_radius = 10,
+        shadow = ft.BoxShadow(
+            spread_radius = 1,
+            blur_radius = 5,
+            color = ft.Colors.BLACK26,
         ),
-        visible=False,
-        margin=ft.Margin.only(top=5),
+        visible = False,
+        margin = ft.Margin.only(top = 5),
         width = 380
     )
     
@@ -248,15 +372,6 @@ def punto_de_venta(regresar=None):
         expand = True
     )
 
-    # Definir el valor inicial del campo Stock
-    def reiniciar_valor(e):
-        # Si el valor es vacío o no es un número válido, establecer 0
-        if not e.control.value or not e.control.value.lstrip('-').isdigit():
-            e.control.value = "1"
-            e.page.update()
-        else:
-            # Opcional: convertir a int/float si se requiere cálculo
-            pass
 
     cantidad_input = ft.TextField(
         label = "Stock: ",
@@ -283,88 +398,266 @@ def punto_de_venta(regresar=None):
         # Actualizar la variable interna si el usuario borra todo
     )
 
-    def obtener_cantidad_valor():
-        try:
-            if not cantidad_input.value or cantidad_input.value.strip() == "":
-                return 1
-            return int(cantidad_input.value)
-        except ValueError:
-            return 1
-        
-    # Definir el metodo para decrementar
-    def decremento_click(e):
-        valor = obtener_cantidad_valor()
-        if valor > 1:
-            # Restar 1 y convertir de nuevo a string
-            cantidad_input.value = str(valor - 1)
-            # Actualizar el estado del boton
-            boton_decremento_activo()
-            e.page.update()
+    def agregar_a_lista(e):
+        # Agrega el producto seleccionado a la lista de compra
+        nonlocal lista_compra
 
-    # Definir el metodo para incrementar
-    def incremento_click(e):
-        valor = obtener_cantidad_valor()
-        # Convertir a entero, sumar 1 y convertir de nuevo a string
-        cantidad_input.value = str(valor + 1)
-        # Actualizar la interfaz para hacer el incremento
-        boton_decremento_activo()
-        e.page.update()
+        if not producto_seleccionado:
+            print("No hay producto seleccionado")
+            return
 
-    def boton_decremento_activo():
-        valor = obtener_cantidad_valor()
-        esta_activo = valor > 1
+        cantidad = obtener_cantidad_valor()
 
-        # Actualizar el boton de decremento
-        if esta_activo:
-            boton_decremento.content = ft.IconButton(
-                # Botón de resta (icono flecha abajo)
-                icon = ft.Icons.ARROW_DROP_DOWN,
-                icon_size = 20, # Cambia el tamaño visual del ícono
-                scale = 1.0, # Escala el botón completo
-                style = ft.ButtonStyle(
-                    shape = ft.RoundedRectangleBorder(radius = 5),
-                    padding = ft.Padding.symmetric(horizontal = 5, vertical = 2),
-                ),
-                bgcolor = "#6b1d41",
-                icon_color = "#ffffff",
-                tooltip = "Decrementar", # Texto que aparece al pasar el cursor
-                # Tamaño definido
-                width = 30,
-                height = 20,
-                                        
-                on_click = decremento_click
-            )
+        # Validar que no exceda el stock
+        if cantidad > producto_seleccionado.articulo_stock:
+            texto_existencias.value = f"Máximo: {producto_seleccionado.articulo_stock}"
+            texto_existencias.color = "#de3b40"
+            pila.page.update()
+            return
+
+        # Verificar si ya existe en la lista
+        existente = next((p for p in lista_compra if p.articulo_id == producto_seleccionado.articulo_id), None)
+
+        if existente:
+            if existente.cantidad + cantidad <= producto_seleccionado.articulo_stock:
+                existente.cantidad += cantidad
+            else:
+                texto_existencias.value = f"⚠️ Stock insuficiente"
+                texto_existencias.color = "#de3b40"
+                pila.page.update()
+                return
         else:
-            boton_decremento.content = ft.IconButton(
-                # Botón de resta (icono flecha abajo)
-                icon = ft.Icons.ARROW_DROP_DOWN,
-                icon_size = 20, # Cambia el tamaño visual del ícono
-                scale = 1.0, # Escala el botón completo
-                style = ft.ButtonStyle(
-                    shape = ft.RoundedRectangleBorder(radius = 5),
-                    padding = ft.Padding.symmetric(horizontal = 5, vertical = 2),
-                ),
-                bgcolor = "#696768",
-                icon_color = "#ffffff",
-                tooltip = "Decrementar", # Texto que aparece al pasar el cursor
-                # Tamaño definido
-                width = 30,
-                height = 20,
-                                        
-                # on_click = decremento_click
-            ) # NO COLOCAR LA COMA, DE LO CONTRARIO EL ESTILO DE BOTON INACTIVO NO SE MOSTRARA
-    
-    # Crear el contenedor del boton
-    boton_decremento = ft.Container()
+            # Crear nuevo item
+            item = Articulo(
+                articulo_id = producto_seleccionado.articulo_id,
+                articulo_articulo = producto_seleccionado.articulo_articulo,
+                articulo_codigo = producto_seleccionado.articulo_codigo,
+                articulo_categoria = producto_seleccionado.articulo_categoria,
+                articulo_imagen = producto_seleccionado.articulo_imagen,
+                articulo_precio = producto_seleccionado.articulo_precio,
+                articulo_stock = producto_seleccionado.articulo_stock,
+                articulo_proveedor = producto_seleccionado.articulo_proveedor,
+            )
+            item.cantidad = cantidad
+            lista_compra.append(item)
 
-    # Inicializar el estado del boton
-    boton_decremento_activo()
+        print(f"Agregado: {item.articulo_articulo} x{cantidad}")
+
+        # Limpiar selección
+        limpiar_seleccion()
+        actualizar_lista_compra()
+        actualizar_resumen()
+
+    def limpiar_seleccion():
+        # Limpia la selección actual
+        nonlocal producto_seleccionado
+        producto_seleccionado = None
+        imagen_producto.visible = False
+        texto_existencias.value = "Existencias: ---"
+        texto_existencias.color = "#9095a0"
+        boton_agregar.disabled = True
+        campo_codigo.value = ""
+        campo_nombre.value = ""
+        cantidad_input.value = "1"
+        actualizar_estado_botones()
+        pila.page.update()
+
+    def actualizar_lista_compra():
+        # Muestra los productos en la lista de compra
+        grid_lista.controls.clear()
+
+        if not lista_compra:
+            grid_lista.controls.append(
+                ft.Container(
+                    content = ft.Row(
+                        controls = [
+                            ft.Icon(ft.Icons.CANCEL, size=26, color="#9095a0"),
+                            ft.Text("No hay productos en la lista", size = 20, color = "#9095a0"),
+                        ],
+                        alignment = ft.MainAxisAlignment.CENTER,
+                        spacing = 10,
+                    )
+                )
+            )
+            pila.page.update()
+            return
+
+        for item in lista_compra:
+            tarjeta = crear_tarjeta_lista(item)
+            grid_lista.controls.append(tarjeta)
+
+        pila.page.update()
+
+    def crear_tarjeta_lista(item):
+        # Crea una tarjeta para un producto en la lista de compra
+
+        def cambiar_cantidad(delta):
+            if 1 <= item.cantidad + delta <= item.articulo_stock:
+                item.cantidad += delta
+                actualizar_lista_compra()
+                actualizar_resumen()
+
+        def eliminar_de_lista(e):
+            nonlocal lista_compra
+            lista_compra = [p for p in lista_compra if p.articulo_id != item.articulo_id]
+            actualizar_lista_compra()
+            actualizar_resumen()
+
+        return ft.Container(
+            content=ft.Row(
+                controls=[
+                    ft.Image(
+                        src = f"imagenes/imagenes_DB/a-bottle-of-wine-on-a-dark-background_acostada.jpg",
+                        expand = True,
+                        border_radius = 8,
+                    ),
+                    
+                    ft.Column(
+                        controls = [
+                            ft.Text(item.articulo_articulo, size = 18, weight = ft.FontWeight.BOLD, color = "#6b1d41"),
+
+                            ft.Row(
+                                controls = [
+                                    ft.Text(item.articulo_categoria, size = 16, color = "#9095a0"),
+
+                                    ft.Container(content = ft.Text(""), height = 20, width = 1, bgcolor = "#e2dcd5"),
+
+                                    ft.Text(item.articulo_proveedor, size = 16, color = "#9095a0")
+                                ]
+                            ),
+
+                            ft.Row(
+                                controls = [
+                                    ft.IconButton(
+                                        icon = ft.Icon(
+                                            ft.Icons.REMOVE, # Icono de -
+                                            color = "#6b1d41"
+                                        ),
+                                        icon_size = 16,
+                                        on_click = lambda e: cambiar_cantidad(-1),
+                                        disabled = item.cantidad <= 1,
+                                    ),
+
+                                    ft.Text(str(item.cantidad), size = 16, weight = ft.FontWeight.BOLD, color = "#424955", width = 30, text_align = ft.TextAlign.CENTER),
+
+                                    ft.IconButton(
+                                        icon = ft.Icon(
+                                            ft.Icons.ADD, # Icono de +
+                                            color = "#6b1d41"
+                                        ),
+                                        icon_size = 16,
+                                        on_click = lambda e: cambiar_cantidad(1),
+                                        disabled = item.cantidad >= item.articulo_stock,
+                                    )
+                                ]
+                            )
+                        ],
+                        spacing=2,
+                    ),
+
+                    ft.Column(
+                        controls = [
+                            ft.OutlinedButton(
+                                "",
+                                icon = ft.Icon(
+                                    ft.Icons.DELETE, # Nombre del icono (ej. FAVORITE)
+                                    size=25, # Tamaño en píxeles
+                                ),
+                                style = ft.ButtonStyle(
+                                    bgcolor = {
+                                        ft.ControlState.HOVERED: "#de3b40",
+                                        ft.ControlState.DEFAULT: "#f3f4f6",
+                                    },
+                                    side = {
+                                        ft.ControlState.DEFAULT: ft.BorderSide(width=2, color="#de3b40"),
+                                        ft.ControlState.HOVERED: ft.BorderSide(width=2, color="#de3b40"),
+                                    },
+                                    color = {
+                                        ft.ControlState.HOVERED: "#ffffff",
+                                        ft.ControlState.DEFAULT: "#de3b40",
+                                    },
+                                    shape = ft.RoundedRectangleBorder(radius = 10),
+                                    padding = ft.Padding.symmetric(horizontal = 8, vertical = 8)
+                                ),
+                                width = 40,
+                                height = 40,
+                                margin = ft.Margin.only(left = 50, bottom = 15),
+                                on_click = eliminar_de_lista, 
+                                tooltip = "Eliminar"
+                            ),
+
+                            ft.Text(
+                                f"${item.articulo_precio * item.cantidad:.2f}",
+                                size = 14,
+                                weight = ft.FontWeight.BOLD, 
+                                color = "#c9a03d", 
+                                width = 80, 
+                                text_align = ft.TextAlign.END
+                            )
+                        ],
+                        alignment = ft.MainAxisAlignment.CENTER
+                    )
+                ],
+                alignment = ft.MainAxisAlignment.SPACE_BETWEEN,
+            ),
+            bgcolor = "#ffffff",
+            border = ft.Border.all(1, "#e2dcd5"),
+            border_radius = 10,
+            padding = ft.Padding.symmetric(horizontal = 15, vertical = 10),
+            margin = ft.Margin.only(bottom = 5),
+        )
+
+    def actualizar_resumen():
+        # Actualiza el resumen de la compra
+        total_precio = sum(item.articulo_precio * item.cantidad for item in lista_compra)
+
+        texto_total_precio.value = f"Total | ${total_precio:.2f}"
+        pila.page.update()
+
+    def limpiar_lista(e):
+        # Limpia toda la lista de compra
+        nonlocal lista_compra
+        lista_compra = []
+        actualizar_lista_compra()
+        actualizar_resumen()
+        grid_lista.controls = []
+
+    # === FUNCIONES DE ACCIONES ===
+    def guardar_compra(e):
+        # Guarda la compra (por ahora solo imprime)
+        if not lista_compra:
+            print("Lista de compra vacía")
+            return
+        print("Guardando compra...")
+        for item in lista_compra:
+            print(f"   - {item.articulo_articulo} x{item.cantidad} = ${item.articulo_precio * item.cantidad:.2f}")
+        print(f"   Total: ${sum(item.articulo_precio * item.cantidad for item in lista_compra):.2f}")
+
+    def confirmar_compra(e):
+        # Confirma la compra (por ahora solo imprime)
+        if not lista_compra:
+            print("Lista de compra vacía")
+            return
+        print("Compra confirmada!")
+        for item in lista_compra:
+            print(f"   - {item.articulo_articulo} x{item.cantidad} = ${item.articulo_precio * item.cantidad:.2f}")
+        print(f"   Total: ${sum(item.articulo_precio * item.cantidad for item in lista_compra):.2f}")
+        # Limpiar lista después de confirmar
+        limpiar_lista(None)
+
+    # Botones de incremento y decremento
+    boton_decremento = ft.Container()
+    boton_incremento = ft.Container()
+
+    # ===== CARGAR DATOS INICIALES ====
+    cargar_articulos()
+
 
     texto_existencias = ft.Text(
         "Existencias: ---",
-        size=14,
-        color="#9095a0",
-        weight=ft.FontWeight.W_500,
+        size = 14,
+        color = "#9095a0",
+        weight = ft.FontWeight.W_500,
         text_align = ft.TextAlign.CENTER,
         margin = ft.Margin.only(top = 12)
     )
@@ -402,7 +695,8 @@ def punto_de_venta(regresar=None):
             shape = ft.RoundedRectangleBorder(radius = 10)
         ),
         height = 40,
-        # on_click=agregar_a_lista,
+        disabled = True,
+        on_click = agregar_a_lista,
     )
     
     campos_con_sugerencias = ft.Stack(
@@ -438,27 +732,11 @@ def punto_de_venta(regresar=None):
                     # Botones de incremento y decremento
                     ft.Column(
                         controls = [
-                            # Botón de suma (icono flecha arriba)
-                            ft.IconButton(
-                                icon = ft.Icons.ARROW_DROP_UP,
-                                icon_size = 20, # Cambia el tamaño visual del ícono
-                                scale = 1.0, # Escala el botón completo
-                                style = ft.ButtonStyle(
-                                    shape = ft.RoundedRectangleBorder(radius = 5),
-                                    padding = ft.Padding.symmetric(horizontal = 5, vertical = 2),
-                                ),
-                                bgcolor = "#6b1d41",
-                                icon_color = "#ffffff",
-                                tooltip = "Incrementar", # Texto que aparece al pasar el cursor
-                                # Tamaño definido
-                                width = 30,
-                                height = 20,
-
-                                on_click = incremento_click
-                            ),
+                            # Botón de suma (dinamico)
+                            boton_incremento,
 
                             # Botón de resta (dinamico)
-                            boton_decremento,
+                            boton_decremento
                         ],
                         spacing = 6
                     ),
@@ -469,7 +747,8 @@ def punto_de_venta(regresar=None):
             contenedor_existencias
         ],
     )
-    
+
+    # Formulario de "Agregar"
     formulario = ft.Container(
         content = ft.Row(
             controls = [
@@ -496,20 +775,206 @@ def punto_de_venta(regresar=None):
         padding=20,
     )
 
-    contenido_principal = ft.Container(
-        padding=20,
-        content=ft.Column(
-            controls=[
-                titulo,
-                ft.Divider(height=10, color="transparent"),
-                formulario,
-            ],
-            spacing=10,
-            expand=True,
-        ),
-        expand=True,
+    # === LISTA DE COMPRA ===
+    titulo_lista = ft.Text(
+        "Productos",
+        size = 24,
+        weight = ft.FontWeight.BOLD,
+        color = "#6b1d41",
     )
 
+    grid_lista = ft.GridView(
+        controls = [],
+        runs_count = 3,  # 3 columnas
+        max_extent = 500,
+        child_aspect_ratio = 3.00,  # Relación de aspecto (ancho/alto)
+        spacing = 10,
+        scroll = ft.ScrollMode.AUTO,
+        width = 5000,
+        height = 420
+    )
+
+    texto_total_precio = ft.Text(
+        "Total | $0.00",
+        size = 28,
+        weight = ft.FontWeight.BOLD,
+        color = "#c9a03d",
+    )
+
+    boton_limpiar = ft.OutlinedButton(
+        "Limpiar lista",
+        icon = ft.Icons.DELETE,
+        on_click = limpiar_lista,
+        style = ft.ButtonStyle(
+            bgcolor = {
+                ft.ControlState.HOVERED: "#de3b40",
+                ft.ControlState.DEFAULT: "#f3f4f6",
+            },
+            side = {
+                ft.ControlState.DEFAULT: ft.BorderSide(width=2, color="#de3b40"),
+                ft.ControlState.HOVERED: ft.BorderSide(width=2, color="#de3b40"),
+            },
+            color = {
+                ft.ControlState.HOVERED: "#ffffff",
+                ft.ControlState.DEFAULT: "#de3b40",
+            },
+            shape = ft.RoundedRectangleBorder(radius = 10),
+            padding = ft.Padding.symmetric(horizontal = 10, vertical = 17),
+        )
+    )
+
+    # === BARRA DE ACCIONES INFERIOR ===
+    barra_acciones = ft.Container(
+        content = ft.Row(
+            controls = [
+                ft.ElevatedButton(
+                    "Guardar",
+                    icon = ft.Icons.SAVE,
+
+                    style = ft.ButtonStyle(
+                        # Borde sólido vino-caramelo de 2 píxeles por defecto
+                        side = {
+                            ft.ControlState.DEFAULT: 
+                                ft.BorderSide(
+                                    width = 2,
+                                    color = "#926600"
+                                ),
+                            # Borde rojo de 2 píxeles al pasar el mouse
+                            ft.ControlState.HOVERED: 
+                                ft.BorderSide(
+                                    width = 2,
+                                    color = "#c9a03d"
+                                )
+                        },
+                        padding = 20,
+                        shape = ft.RoundedRectangleBorder(radius = 10)
+                    ),
+                    bgcolor = "#c9a03d",
+                    color = "#ffffff",
+                    width = 130,
+                    on_click = guardar_compra,
+                ),
+
+                texto_total_precio,
+
+                ft.Row(
+                    controls = [
+                        ft.ElevatedButton(
+                            "Confirmar",
+                            icon = ft.Icons.CHECK,
+                            style = ft.ButtonStyle(
+                                # Borde sólido vino-caramelo de 2 píxeles por defecto
+                                side = {
+                                    ft.ControlState.DEFAULT: 
+                                        ft.BorderSide(
+                                            width = 2,
+                                            color = "#a11e2f"
+                                        ),
+                                    # Borde rojo de 2 píxeles al pasar el mouse
+                                    ft.ControlState.HOVERED: 
+                                        ft.BorderSide(
+                                            width = 2,
+                                            color = "#6b1d41"
+                                        )
+                                },
+                                padding = 20,
+                                shape = ft.RoundedRectangleBorder(radius = 10)
+                            ),
+                            bgcolor = "#6b1d41",
+                            color = "#ffffff",
+                            on_click=confirmar_compra,
+                        ),
+                        ft.ElevatedButton(
+                            "Cancelar",
+                            icon = ft.Icons.CLOSE,
+                            style = ft.ButtonStyle(
+                                bgcolor = {
+                                    ft.ControlState.HOVERED: "#de3b40",
+                                    ft.ControlState.DEFAULT: "#f3f4f6",
+                                },
+                                side = {
+                                    ft.ControlState.DEFAULT: ft.BorderSide(width=2, color="#de3b40"),
+                                    ft.ControlState.HOVERED: ft.BorderSide(width=2, color="#de3b40"),
+                                },
+                                color = {
+                                    ft.ControlState.HOVERED: "#ffffff",
+                                    ft.ControlState.DEFAULT: "#de3b40",
+                                },
+                                shape = ft.RoundedRectangleBorder(radius = 10),
+                                padding = 20,
+                            ),
+                            on_click=lambda e: regresar() if regresar else None,
+                        ),
+                    ]
+                )
+                
+            ],
+            alignment = ft.MainAxisAlignment.SPACE_BETWEEN,
+            spacing = 20,
+        ),
+        padding = ft.Padding.symmetric(vertical = 15, horizontal = 20),
+        bgcolor = "#ffffff",
+        border = ft.Border.all(1, "#e2dcd5"),
+        border_radius = 10,
+    )
+
+    # ----------------- Contenido principal -------------------
+    contenido_principal = ft.Container(
+        padding = 20,
+        content = ft.Column(
+            controls = [
+                titulo,
+                formulario,
+
+                ft.Container(
+                    content = (
+                        ft.Column(
+                            controls = [
+                                ft.Row(
+                                    controls = [
+                                        titulo_lista,
+                                        boton_limpiar,
+                                    ],
+                                    alignment = ft.MainAxisAlignment.SPACE_BETWEEN,
+                                    margin = ft.Margin.only(left = 15, right = 15, top = 15, bottom = 5)
+                                ),
+
+                                ft.Divider(thickness = 20, color = "#f0eee9"),
+
+                                ft.Column(
+                                    controls = [
+                                        grid_lista
+                                    ],
+                                    margin = ft.Margin.only(left = 15, right = 15, top = 5, bottom = 15)
+                                )
+                                
+                            ]
+                        )
+                    ),
+                    border = ft.Border.all(1, "#e2dcd5"),
+                    border_radius = 10,
+                    padding = 0,
+                    bgcolor = "#ffffff",
+                    expand = True,
+                    height = 300,
+                ),
+                
+                barra_acciones,
+            ],
+            spacing = 10,
+            expand = True,
+        ),
+        expand = True,
+    )
+
+    # Agrega a la pila
     pila.controls.append(contenido_principal)
+
+    def inicializar_botones():
+        # Se ejecuta cuando el Stack se agrega a la página
+        actualizar_estado_botones()
+        cargar_articulos()
+
+    pila.on_mount = inicializar_botones
 
     return pila
