@@ -4,6 +4,7 @@ from models.articulo import Articulo
 from dao.articulo_dao import ArticuloDAO
 
 from ui.venta_acciones.venta_form_confirm import confirmar_form
+from ui.venta_acciones.venta_alert_cancel import alerta_cancelar
 
 def punto_de_venta(regresar=None):
     # ---------------- Variables de estado -------------------
@@ -127,12 +128,12 @@ def punto_de_venta(regresar=None):
             elif pagina_referencia:
                 pagina_referencia.update()
 
-    def abrir_formulario_guardar_modal(evento):
+    def abrir_formulario_confirmar_modal(evento):
         # Crear y mostrar el modal con el formulario de "Guardar venta"
         nonlocal capa_oscura_abierta_modal, capa_oscura_modal, lista_compra
 
         if not lista_compra:
-            print("❌ Lista de compra vacía")
+            print("Lista de compra vacía")
             return
 
         # Guardar referencia a la página
@@ -148,6 +149,14 @@ def punto_de_venta(regresar=None):
         
         # === USUARIO (por ahora fijo, luego con login) ===
         usuario_id = 1  # Temporal, luego se obtendrá del login
+
+        def limpiar_despues_de_confirmar():
+            # Limpiar la lista de compra despues de confirmar la venta
+            nonlocal lista_compra
+            lista_compra = []
+            actualizar_lista_compra()
+            actualizar_resumen()
+            print("Lista de compra limpiada")
         
         # --------------- Crear el contenido del modal -----------------
         contenido_modal = confirmar_form(
@@ -156,6 +165,7 @@ def punto_de_venta(regresar=None):
             total=total,
             lista_articulos=articulos_ids,
             usuario_id=usuario_id,
+            limpiar_lista = limpiar_despues_de_confirmar,
         )
 
         # --------------- Crear la capa oscura (OVERLAY) --------------
@@ -179,6 +189,69 @@ def punto_de_venta(regresar=None):
         # Actualizar la interfaz
         if pila.page:
             pila.update()
+        elif pagina_referencia:
+            pagina_referencia.update()
+
+    def abrir_alerta_cancelar_venta(evento):
+        # Crear y muestrar el modal con la alerta de "La Vinata dice: ¿Desea cancelar la venta?"
+        # evento: El evento del clic en el boton "Cancelar"
+
+        # "nonlocal" para modificar variables de la función padre
+        nonlocal capa_oscura_abierta_modal, capa_oscura_modal, lista_compra
+
+        if not lista_compra:
+            print("Lista de compra vacía")
+            return
+
+        # Guardar referencia a la pagina desde el evento
+        if evento and evento.page:
+            pagina_referencia = evento.page
+
+        # Si el modal ya esta abierto, no hacer nada
+        if capa_oscura_abierta_modal:
+            return
+
+        def limpiar_despues_de_confirmar():
+            # Limpiar la lista de compra despues de confirmar la venta
+            nonlocal lista_compra
+            lista_compra = []
+            actualizar_lista_compra()
+            actualizar_resumen()
+            print("Lista de compra limpiada")
+        
+        # --------------- Crear el contenido del modal -----------------
+        contenido_modal = alerta_cancelar(
+            formulario_visible = True, # Activar el modal, mostrando el formulario
+            cerrando_modal = cerrar_modal,
+            limpiar_lista = limpiar_despues_de_confirmar,
+        )
+
+        # --------------- Crear la capa oscura (OVERLAY) --------------
+        capa_oscura = ft.Container(
+            expand = True,
+            bgcolor = ft.Colors.BLACK_45,
+            content = ft.Column(
+                controls = [contenido_modal],
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                expand = True,
+                width = 5000
+            ),
+            padding = ft.Padding.only(top = 40)
+        )
+
+        # -------------- Agregar la capa a la pila ---------------------
+        # La capa se superpone al contenido principal
+        pila.controls.append(capa_oscura)
+
+        # Guardar referencia a la capa
+        capa_oscura_modal = capa_oscura
+
+        # Cambiar el esado de "cerrado" a "abierto"
+        capa_oscura_abierta_modal = True
+
+        # Actualizar la interfaz
+        if pila.page:
+            pila.update() # Se actualiza la pila para mostrar cambios
         elif pagina_referencia:
             pagina_referencia.update()
 
@@ -327,7 +400,7 @@ def punto_de_venta(regresar=None):
                 e.control.value = "1"
             elif producto_seleccionado and valor > stock:
                 e.control.value = str(stock)
-                texto_existencias.value = f"⚠️ Máximo: {stock}"
+                texto_existencias.value = f"Máximo: {stock}"
                 texto_existencias.color = "#de3b40"
             else:
                 texto_existencias.value = f"Existencias: {stock}"
@@ -508,7 +581,7 @@ def punto_de_venta(regresar=None):
             if existente.cantidad + cantidad <= producto_seleccionado.articulo_stock:
                 existente.cantidad += cantidad
             else:
-                texto_existencias.value = f"⚠️ Stock insuficiente"
+                texto_existencias.value = f"Stock insuficiente"
                 texto_existencias.color = "#de3b40"
                 pila.page.update()
                 return
@@ -565,13 +638,16 @@ def punto_de_venta(regresar=None):
                     )
                 )
             )
+            grid_lista.max_extent = 1500
             pila.page.update()
             return
+            
 
         for item in lista_compra:
             tarjeta = crear_tarjeta_lista(item)
             grid_lista.controls.append(tarjeta)
 
+        grid_lista.max_extent = 500
         pila.page.update()
 
     def crear_tarjeta_lista(item):
@@ -720,16 +796,13 @@ def punto_de_venta(regresar=None):
         print(f"   Total: ${sum(item.articulo_precio * item.cantidad for item in lista_compra):.2f}")
 
     def confirmar_compra(e):
-        # Confirma la compra (por ahora solo imprime)
+        # Confirma la compra (limpia la lista de productos/articulos)
         if not lista_compra:
             print("Lista de compra vacía")
             return
-        print("Compra confirmada!")
-        for item in lista_compra:
-            print(f"   - {item.articulo_articulo} x{item.cantidad} = ${item.articulo_precio * item.cantidad:.2f}")
-        print(f"   Total: ${sum(item.articulo_precio * item.cantidad for item in lista_compra):.2f}")
-        # Limpiar lista después de confirmar
-        limpiar_lista(None)
+
+        # Abrir el modal pago
+        abrir_formulario_confirmar_modal(e)
 
     # Botones de incremento y decremento
     boton_decremento = ft.Container()
@@ -968,7 +1041,7 @@ def punto_de_venta(regresar=None):
                             ),
                             bgcolor = "#6b1d41",
                             color = "#ffffff",
-                            on_click = abrir_formulario_guardar_modal,
+                            on_click = abrir_formulario_confirmar_modal,
                         ),
                         ft.ElevatedButton(
                             "Cancelar",
@@ -989,7 +1062,7 @@ def punto_de_venta(regresar=None):
                                 shape = ft.RoundedRectangleBorder(radius = 10),
                                 padding = 20,
                             ),
-                            on_click=lambda e: regresar() if regresar else None,
+                            on_click = abrir_alerta_cancelar_venta,
                         ),
                     ]
                 )

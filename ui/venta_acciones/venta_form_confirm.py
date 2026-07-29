@@ -4,7 +4,7 @@ from datetime import datetime
 from models.venta import Venta
 from dao.venta_dao import VentaDAO
 
-def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None, total=0.0, lista_articulos=None, usuario_id=1):
+def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None, total=0.0, lista_articulos=None, usuario_id=1, limpiar_lista=None):
     # Estilos de los label
     estilo_de_label = ft.TextStyle(
         color="#926600",
@@ -23,9 +23,7 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
     articulos_ids = lista_articulos if lista_articulos else []
     usuario_actual = usuario_id
 
-    # ============================================================
-    # ====== FUNCIÓN PARA CALCULAR EL CAMBIO (DEFINIDA PRIMERO) ===
-    # ============================================================
+    # Función/Metodo para calcular el cambio
     def calcular_cambio(e):
         # Calcula el cambio en tiempo real mientras el usuario escribe
         nonlocal cambio_actual
@@ -56,9 +54,8 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
             boton_confirmar.disabled = True
             e.page.update()
 
-    # ============================================================
-    # ====== FUNCIÓN PARA CONFIRMAR LA VENTA =====================
-    # ============================================================
+
+    # ====== FUNCIÓN PARA CONFIRMAR LA VENTA =====
     def confirmar_venta(evento):
         # Guarda la venta en la base de datos
         try:
@@ -74,10 +71,13 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
                 return
             
             # Crear el nombre de la venta con timestamp
-            venta_nombre = f"Venta_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            venta_nombre = f"VEN-{datetime.now().strftime('%Y%m%d_%H%M%S')}-VINATA"
             
             # Convertir lista de IDs a formato PostgreSQL (array)
             articulos_array = "{" + ",".join(str(id) for id in articulos_ids) + "}"
+
+            # Estado de la venta (al confirmarse es utomaticamente "Concluida")
+            estado = "Concluida"
             
             # Crear objeto Venta
             nueva_venta = Venta(
@@ -86,14 +86,15 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
                 venta_fecha=None,
                 venta_ganancia=total_actual,
                 venta_usuario=usuario_actual,
-                venta_articulo=articulos_array
+                venta_articulo=articulos_array,
+                venta_estado=estado
             )
             
             # Insertar en la base de datos
             venta_dao = VentaDAO()
             venta_dao.insertar(nueva_venta)
             
-            mensaje.value = f"✅ Venta {venta_nombre} registrada exitosamente"
+            mensaje.value = f"Venta {venta_nombre} registrada exitosamente"
             mensaje.color = ft.Colors.GREEN
             
             # Limpiar formulario
@@ -106,6 +107,12 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
             # Cerrar el modal después de un momento
             import time
             time.sleep(0.5)
+
+            # Ejecutar el "llamado al metodo" de Limpiar_lista:
+            if limpiar_lista:
+                limpiar_lista()
+
+
             if formulario_visible and cerrando_modal:
                 cerrando_modal()
                 return

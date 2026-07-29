@@ -24,7 +24,8 @@ class VentaDAO:
                 venta_fecha=registro[2],
                 venta_ganancia=registro[3],
                 venta_usuario=registro[4],
-                venta_articulo=registro[5]
+                venta_articulo=registro[5],
+                venta_estado=registro[6],
             )
             ventas.append(venta)
         cursor.close()
@@ -36,7 +37,7 @@ class VentaDAO:
         cursor = conexion.cursor()
 
         cursor.execute(
-            "SELECT venta_id, venta_venta, venta_fecha, venta_ganancia, venta_usuario, venta_articulo FROM ventas WHERE venta_id = %s",
+            "SELECT venta_id, venta_venta, venta_fecha, venta_ganancia, venta_usuario, venta_articulo, venta_estado FROM ventas WHERE venta_id = %s",
             (venta_id,)
         )
 
@@ -51,7 +52,8 @@ class VentaDAO:
                 venta_fecha = datos_venta[2],
                 venta_ganancia = datos_venta[3],
                 venta_usuario = datos_venta[4],
-                venta_articulo = datos_venta[5]
+                venta_articulo = datos_venta[5],
+                venta_estado = datos_venta[6],
             )
 
         return None
@@ -60,8 +62,8 @@ class VentaDAO:
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
         sql = """
-            INSERT INTO ventas (venta_venta, venta_ganancia, venta_usuario, venta_articulo)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO ventas (venta_venta, venta_ganancia, venta_usuario, venta_articulo, venta_estado)
+            VALUES (%s, %s, %s, %s, %s)
         """
 
         # venta_fecha se omitirá para usar CURRENT_DATE en la BD
@@ -72,6 +74,7 @@ class VentaDAO:
                 venta.venta_ganancia,
                 venta.venta_usuario,
                 venta.venta_articulo,
+                venta.venta_estado,
             )
         )
         
@@ -84,7 +87,7 @@ class VentaDAO:
         cursor = conexion.cursor()
         sql = """
             UPDATE ventas 
-            SET venta_venta = %s, venta_ganancia = %s, venta_usuario = %s, venta_articulo = %s
+            SET venta_venta = %s, venta_ganancia = %s, venta_usuario = %s, venta_articulo = %s, venta_estado = %s
             WHERE venta_id = %s
         """
         cursor.execute(
@@ -94,6 +97,7 @@ class VentaDAO:
                 venta.venta_ganancia,
                 venta.venta_usuario,
                 venta.venta_articulo,
+                venta.venta_estado,
                 venta.venta_id
             )
         )
