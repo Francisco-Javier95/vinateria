@@ -135,6 +135,26 @@ def punto_de_venta(regresar=None):
 
         if not lista_compra:
             print("Lista de compra vacía")
+            grid_lista.controls.append(
+                ft.Container(
+                    content = ft.Row(
+                        controls = [
+                            ft.Icon(ft.Icons.WARNING, size=26, color="#efb034"),
+                            ft.Text("No se puede confirmar una lista de compras vacia", size = 20, color = "#efb034"),
+                        ],
+                        alignment = ft.MainAxisAlignment.CENTER,
+                        spacing = 10,
+                    )
+                )
+            )
+            grid_lista.max_extent = 1500
+
+            # Actualizar la interfaz
+            if pila.page:
+                pila.update()
+            elif pagina_referencia:
+                pagina_referencia.update()
+
             return
 
         # Guardar referencia a la página
@@ -187,6 +207,9 @@ def punto_de_venta(regresar=None):
         capa_oscura_modal = capa_oscura
         capa_oscura_abierta_modal = True
 
+        # Regresar a la normalida el tamaño maximo de las tarjetas de productos
+        grid_lista.max_extent = 500
+
         # Actualizar la interfaz
         if pila.page:
             pila.update()
@@ -197,9 +220,31 @@ def punto_de_venta(regresar=None):
         # Crear y mostrar el modal con el formulario de "Guardar venta"
         nonlocal capa_oscura_abierta_modal, capa_oscura_modal, lista_compra
 
+        # Guardar la compra (y limpia la lista de productos/articulos)
         if not lista_compra:
             print("Lista de compra vacía")
+            grid_lista.controls.append(
+                ft.Container(
+                    content = ft.Row(
+                        controls = [
+                            ft.Icon(ft.Icons.WARNING, size=26, color="#efb034"),
+                            ft.Text("No se puede guardar una lista de compras vacia", size = 20, color = "#efb034"),
+                        ],
+                        alignment = ft.MainAxisAlignment.CENTER,
+                        spacing = 10,
+                    )
+                )
+            )
+            grid_lista.max_extent = 1500
+
+            # Actualizar la interfaz
+            if pila.page:
+                pila.update()
+            elif pagina_referencia:
+                pagina_referencia.update()
+
             return
+        
 
         # Guardar referencia a la página
         if evento and evento.page:
@@ -250,6 +295,9 @@ def punto_de_venta(regresar=None):
         pila.controls.append(capa_oscura)
         capa_oscura_modal = capa_oscura
         capa_oscura_abierta_modal = True
+
+        # Regresar a la normalida el tamaño maximo de las tarjetas de productos
+        grid_lista.max_extent = 500
 
         # Actualizar la interfaz
         if pila.page:
@@ -341,9 +389,11 @@ def punto_de_venta(regresar=None):
 
         # Actualizar existencias
         texto_existencias.value = f"Existencias: {articulo.articulo_stock}"
+        texto_existencias.color = "#926600"
 
         # Habilitar boton de agregar
         boton_agregar.disabled = False
+        boton_agregar.bgcolor = "#6b1d41"
 
         # Resetear cantidad a 1
         cantidad_input.value = "1"
@@ -469,7 +519,7 @@ def punto_de_venta(regresar=None):
                 texto_existencias.color = "#de3b40"
             else:
                 texto_existencias.value = f"Existencias: {stock}"
-                texto_existencias.color = "#9095a0"
+                texto_existencias.color = "#926600"
 
             actualizar_estado_botones()
             if pila.page:
@@ -507,7 +557,7 @@ def punto_de_venta(regresar=None):
             # Convertir a entero, sumar 1 y convertir de nuevo a string
             cantidad_input.value = str(valor + 1)
             texto_existencias.value = f"Existencias: {stock}"
-            texto_existencias.color = "#9095a0"
+            texto_existencias.color = "#926600"
             # Actualizar la interfaz para actualizar el estado de los botones
             actualizar_estado_botones()
 
@@ -679,7 +729,10 @@ def punto_de_venta(regresar=None):
         imagen_producto.visible = False
         texto_existencias.value = "Existencias: ---"
         texto_existencias.color = "#9095a0"
+
         boton_agregar.disabled = True
+        boton_agregar.bgcolor = "#696768"
+
         campo_codigo.value = ""
         campo_nombre.value = ""
         cantidad_input.value = "1"
@@ -850,17 +903,6 @@ def punto_de_venta(regresar=None):
         grid_lista.controls = []
 
     # === FUNCIONES DE ACCIONES ===
-    def guardar_compra(e):
-        # Guarda la compra (y limpia la lista de productos/articulos)
-        if not lista_compra:
-            print("Lista de compra vacía")
-            return
-        
-        print("Guardando compra...")
-        for item in lista_compra:
-            print(f"   - {item.articulo_articulo} x{item.cantidad} = ${item.articulo_precio * item.cantidad:.2f}")
-        print(f"   Total: ${sum(item.articulo_precio * item.cantidad for item in lista_compra):.2f}")
-
     def confirmar_compra(e):
         # Confirma la compra (y limpia la lista de productos/articulos)
         if not lista_compra:
@@ -876,7 +918,12 @@ def punto_de_venta(regresar=None):
             print("Lista de compra vacía")
             return
 
-        # Abrir el modal pago
+        print("Guardando compra...")
+        for item in lista_compra:
+            print(f"   - {item.articulo_articulo} x{item.cantidad} = ${item.articulo_precio * item.cantidad:.2f}")
+        print(f"   Total: ${sum(item.articulo_precio * item.cantidad for item in lista_compra):.2f}")
+
+        # Abrir el modal guardar
         abrir_formulario_guardar_modal(e)
 
     # Botones de incremento y decremento
@@ -910,21 +957,9 @@ def punto_de_venta(regresar=None):
     
     boton_agregar = ft.ElevatedButton(
         "Agregar",
+
+        bgcolor = "#696768",  # Color de fondo
         style = ft.ButtonStyle(
-            bgcolor = "#6b1d41",  # Color de fondo
-            side = {
-                ft.ControlState.DEFAULT: 
-                ft.BorderSide(
-                    width = 2,
-                    color = "#a11e2f"
-                ),
-                # Borde rojo de 2 píxeles al pasar el mouse
-                ft.ControlState.HOVERED: 
-                ft.BorderSide(
-                    width = 2,
-                    color = "#6b1d41"
-                )
-            },
             color = "#ffffff",
             shape = ft.RoundedRectangleBorder(radius = 10)
         ),
@@ -1034,28 +1069,7 @@ def punto_de_venta(regresar=None):
         weight = ft.FontWeight.BOLD,
         color = "#c9a03d",
     )
-
-    boton_limpiar = ft.OutlinedButton(
-        "Limpiar lista",
-        icon = ft.Icons.DELETE,
-        on_click = limpiar_lista,
-        style = ft.ButtonStyle(
-            bgcolor = {
-                ft.ControlState.HOVERED: "#de3b40",
-                ft.ControlState.DEFAULT: "#f3f4f6",
-            },
-            side = {
-                ft.ControlState.DEFAULT: ft.BorderSide(width=2, color="#de3b40"),
-                ft.ControlState.HOVERED: ft.BorderSide(width=2, color="#de3b40"),
-            },
-            color = {
-                ft.ControlState.HOVERED: "#ffffff",
-                ft.ControlState.DEFAULT: "#de3b40",
-            },
-            shape = ft.RoundedRectangleBorder(radius = 10),
-            padding = ft.Padding.symmetric(horizontal = 10, vertical = 17),
-        )
-    )
+    
 
     # === BARRA DE ACCIONES INFERIOR ===
     barra_acciones = ft.Container(
@@ -1166,8 +1180,7 @@ def punto_de_venta(regresar=None):
                             controls = [
                                 ft.Row(
                                     controls = [
-                                        titulo_lista,
-                                        boton_limpiar,
+                                        titulo_lista
                                     ],
                                     alignment = ft.MainAxisAlignment.SPACE_BETWEEN,
                                     margin = ft.Margin.only(left = 15, right = 15, top = 15, bottom = 5)

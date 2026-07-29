@@ -5,6 +5,7 @@ from ui.punto_de_venta import punto_de_venta
 from ui.articulos_list import articulos_list
 from ui.proveedores_list import proveedores_list
 from ui.usuarios_list import usuarios_list
+from ui.corte_list import ventas_list
 
 def main_window(page: ft.Page):
     # Definir configuración de la página principal
@@ -48,6 +49,10 @@ def main_window(page: ft.Page):
 
     def mostrar_lista_usuarios(e = None):
         contenido.content = usuarios_list(mostrar_inicio)
+        page.update()
+
+    def mostrar_lista_corte(e = None):
+        contenido.content = ventas_list(mostrar_inicio)
         page.update()
 
     menu_lateral = ft.Container(
@@ -274,7 +279,8 @@ def main_window(page: ft.Page):
                                 shape = ft.RoundedRectangleBorder(radius = 10)
                             ),
                             icon = ft.Icons.ATTACH_MONEY,
-                            width = 250
+                            width = 250,
+                            on_click = mostrar_lista_corte
                         )
                     ]
                 ),

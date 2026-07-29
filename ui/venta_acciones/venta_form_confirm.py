@@ -42,9 +42,12 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
                 texto_cambio.color = "#1B1C1D"
                 # Habilitar botón de confirmar si el pago es suficiente
                 boton_confirmar.disabled = False
+                boton_confirmar.bgcolor = "#6b1d41"
             else:
                 texto_cambio.value = f"{cambio:.2f}"
                 boton_confirmar.disabled = True
+                boton_confirmar.bgcolor = "#696768"
+                            
             
             e.page.update()
             
@@ -162,14 +165,10 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
     boton_confirmar = ft.ElevatedButton(
         "Confirmar",
         style=ft.ButtonStyle(
-            side={
-                ft.ControlState.DEFAULT: ft.BorderSide(width=2, color="#a11e2f"),
-                ft.ControlState.HOVERED: ft.BorderSide(width=2, color="#6b1d41")
-            },
             padding=20,
             shape=ft.RoundedRectangleBorder(radius=10)
         ),
-        bgcolor="#6b1d41",
+        bgcolor="#696768",
         color="#ffffff",
         width=500,
         disabled=True,  # Inicialmente deshabilitado

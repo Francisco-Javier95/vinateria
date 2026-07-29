@@ -23,11 +23,13 @@ def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, t
     total_actual = total
 
     def validar_campo(e):
-        """Habilita el botón cuando el campo tiene texto"""
+        # Habilita el botón cuando el campo tiene texto
         if nombre_input.value and nombre_input.value.strip() != "":
             boton_guardar.disabled = False
+            boton_guardar.bgcolor = "#6b1d41"
         else:
             boton_guardar.disabled = True
+            boton_guardar.bgcolor = "#696768"
         e.page.update()
 
     # Función/metodo para guardar la venta
@@ -97,14 +99,10 @@ def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, t
     boton_guardar = ft.ElevatedButton(
         "Guardar",
         style=ft.ButtonStyle(
-            side={
-                ft.ControlState.DEFAULT: ft.BorderSide(width=2, color="#a11e2f"),
-                ft.ControlState.HOVERED: ft.BorderSide(width=2, color="#6b1d41")
-            },
             padding=20,
             shape=ft.RoundedRectangleBorder(radius=10)
         ),
-        bgcolor="#6b1d41",
+        bgcolor="#696768",
         color="#ffffff",
         width=500,
         disabled=True,  # Deshabilitado hasta que se escriba

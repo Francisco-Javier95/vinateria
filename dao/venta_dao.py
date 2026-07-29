@@ -6,6 +6,7 @@
 
 from database.conexion import Conexion
 from models.venta import Venta
+from models.venta import Venta_sin_articulo
 
 class VentaDAO:
 
@@ -13,26 +14,42 @@ class VentaDAO:
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
 
-        cursor.execute("SELECT * FROM ventas ORDER BY venta_id ASC")
+        cursor.execute("SELECT v.venta_id, v.venta_venta, v.venta_fecha, v.venta_ganancia, u.usuario_usuario, v.venta_estado FROM ventas v INNER JOIN usuarios u ON v.venta_usuario = u.usuario_id ORDER BY venta_id ASC")
         registros = cursor.fetchall()
 
         ventas = []
         for registro in registros:
-            venta = Venta(
+            venta = Venta_sin_articulo(
                 venta_id=registro[0],
                 venta_venta=registro[1],
                 venta_fecha=registro[2],
                 venta_ganancia=registro[3],
                 venta_usuario=registro[4],
-                venta_articulo=registro[5],
-                venta_estado=registro[6],
+                venta_estado=registro[5],
             )
             ventas.append(venta)
         cursor.close()
         conexion.close()
         return ventas
 
-    def obtener_id_del_proveedor(self, venta_id):
+    def obtener_estados(self):
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+
+        cursor.execute("SELECT venta_estado FROM ventas ORDER BY venta_id ASC")
+        registros = cursor.fetchall()
+
+        estados = []
+        for registro in registros:
+            venta = Venta(
+                venta_estado=registro[0],
+            )
+            estados.append(venta)
+        cursor.close()
+        conexion.close()
+        return estados
+
+    def obtener_id_de_la_venta(self, venta_id):
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
 
@@ -111,7 +128,7 @@ class VentaDAO:
         cursor = conexion.cursor()
         cursor.execute(
             "DELETE FROM ventas WHERE venta_id = %s",
-            (venta_id,)
+            (venta_id.venta_id,)
         )
 
         conexion.commit()
