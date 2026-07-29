@@ -3,12 +3,18 @@ import flet as ft
 from models.articulo import Articulo
 from dao.articulo_dao import ArticuloDAO
 
+from ui.venta_acciones.venta_form_confirm import confirmar_form
+
 def punto_de_venta(regresar=None):
     # ---------------- Variables de estado -------------------
     todos_los_articulos = []
     lista_compra = []  # Lista de productos agregados
     producto_seleccionado = None
     sugerencias_visibles = False
+
+    capa_oscura_abierta_modal = False # Indica si el modal esta visible/activo
+    capa_oscura_modal = None # Es el contenido con backgroud oscuro semitransparente (capa oscuara)
+    pagina_referencia = None # Guardar la referencia a la pagina (contenido)
 
     # -------------- Contenedor de capas ---------------------
     pila = ft.Stack(expand = True) # ft.Stack permite superponer widgets (elementos)
@@ -95,6 +101,86 @@ def punto_de_venta(regresar=None):
         contenedor_sugerencias.visible = True
         if pila.page:
             pila.page.update()
+
+    # ------------------- Función para cerrar la modal --------------------
+    def cerrar_modal():
+        # Cierra el modal, eliminando la capa oscura de la pila
+
+        # 'nonlocal' permite modificar variables de la función padre (articulos_list)
+        nonlocal capa_oscura_abierta_modal, capa_oscura_modal
+
+        # Varificar si el modal está abierto y la capa oscura exite en la pila
+        if capa_oscura_abierta_modal and capa_oscura_modal in pila.controls:
+            # Remover la capa uscura del Stack (la elimina visualemente)
+            pila.controls.remove(capa_oscura_modal)
+
+            # limpiar las capas
+            capa_oscura_modal = None
+            capa_oscura_abierta_modal = False
+
+            # Volver a cargar la lista de los productos/articulos
+            cargar_articulos()
+
+            # Actualizar la interfaz
+            if pila.page:
+                pila.update() # Se actualiza la pila para mostrar cambios
+            elif pagina_referencia:
+                pagina_referencia.update()
+
+    def abrir_formulario_guardar_modal(evento):
+        # Crear y mostrar el modal con el formulario de "Guardar venta"
+        nonlocal capa_oscura_abierta_modal, capa_oscura_modal, lista_compra
+
+        if not lista_compra:
+            print("❌ Lista de compra vacía")
+            return
+
+        # Guardar referencia a la página
+        if evento and evento.page:
+            pagina_referencia = evento.page
+
+        if capa_oscura_abierta_modal:
+            return
+        
+        # === CALCULAR TOTAL Y OBTENER IDs DE ARTÍCULOS ===
+        total = sum(item.articulo_precio * item.cantidad for item in lista_compra)
+        articulos_ids = [item.articulo_id for item in lista_compra]
+        
+        # === USUARIO (por ahora fijo, luego con login) ===
+        usuario_id = 1  # Temporal, luego se obtendrá del login
+        
+        # --------------- Crear el contenido del modal -----------------
+        contenido_modal = confirmar_form(
+            formulario_visible=True,
+            cerrando_modal=cerrar_modal,
+            total=total,
+            lista_articulos=articulos_ids,
+            usuario_id=usuario_id,
+        )
+
+        # --------------- Crear la capa oscura (OVERLAY) --------------
+        capa_oscura = ft.Container(
+            expand=True,
+            bgcolor=ft.Colors.BLACK_45,
+            content=ft.Column(
+                controls=[contenido_modal],
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                alignment=ft.MainAxisAlignment.CENTER,
+                expand=True,
+                width = 5000
+            )
+        )
+
+        # -------------- Agregar la capa a la pila ---------------------
+        pila.controls.append(capa_oscura)
+        capa_oscura_modal = capa_oscura
+        capa_oscura_abierta_modal = True
+
+        # Actualizar la interfaz
+        if pila.page:
+            pila.update()
+        elif pagina_referencia:
+            pagina_referencia.update()
 
     # ----------------- Funciones de selección ---------------
     def seleccionar_producto(articulo, tipo):
@@ -882,7 +968,7 @@ def punto_de_venta(regresar=None):
                             ),
                             bgcolor = "#6b1d41",
                             color = "#ffffff",
-                            on_click=confirmar_compra,
+                            on_click = abrir_formulario_guardar_modal,
                         ),
                         ft.ElevatedButton(
                             "Cancelar",
