@@ -4,6 +4,7 @@ from models.articulo import Articulo
 from dao.articulo_dao import ArticuloDAO
 
 from ui.venta_acciones.venta_form_confirm import confirmar_form
+from ui.venta_acciones.venta_form_save import guardar_form
 from ui.venta_acciones.venta_alert_cancel import alerta_cancelar
 
 def punto_de_venta(regresar=None):
@@ -129,7 +130,7 @@ def punto_de_venta(regresar=None):
                 pagina_referencia.update()
 
     def abrir_formulario_confirmar_modal(evento):
-        # Crear y mostrar el modal con el formulario de "Guardar venta"
+        # Crear y mostrar el modal con el formulario de "Pago"
         nonlocal capa_oscura_abierta_modal, capa_oscura_modal, lista_compra
 
         if not lista_compra:
@@ -160,6 +161,70 @@ def punto_de_venta(regresar=None):
         
         # --------------- Crear el contenido del modal -----------------
         contenido_modal = confirmar_form(
+            formulario_visible=True,
+            cerrando_modal=cerrar_modal,
+            total=total,
+            lista_articulos=articulos_ids,
+            usuario_id=usuario_id,
+            limpiar_lista = limpiar_despues_de_confirmar,
+        )
+
+        # --------------- Crear la capa oscura (OVERLAY) --------------
+        capa_oscura = ft.Container(
+            expand=True,
+            bgcolor=ft.Colors.BLACK_45,
+            content=ft.Column(
+                controls=[contenido_modal],
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                alignment=ft.MainAxisAlignment.CENTER,
+                expand=True,
+                width = 5000
+            )
+        )
+
+        # -------------- Agregar la capa a la pila ---------------------
+        pila.controls.append(capa_oscura)
+        capa_oscura_modal = capa_oscura
+        capa_oscura_abierta_modal = True
+
+        # Actualizar la interfaz
+        if pila.page:
+            pila.update()
+        elif pagina_referencia:
+            pagina_referencia.update()
+
+    def abrir_formulario_guardar_modal(evento):
+        # Crear y mostrar el modal con el formulario de "Guardar venta"
+        nonlocal capa_oscura_abierta_modal, capa_oscura_modal, lista_compra
+
+        if not lista_compra:
+            print("Lista de compra vacía")
+            return
+
+        # Guardar referencia a la página
+        if evento and evento.page:
+            pagina_referencia = evento.page
+
+        if capa_oscura_abierta_modal:
+            return
+        
+        # === CALCULAR TOTAL Y OBTENER IDs DE ARTÍCULOS ===
+        total = sum(item.articulo_precio * item.cantidad for item in lista_compra)
+        articulos_ids = [item.articulo_id for item in lista_compra]
+        
+        # === USUARIO (por ahora fijo, luego con login) ===
+        usuario_id = 1  # Temporal, luego se obtendrá del login
+
+        def limpiar_despues_de_confirmar():
+            # Limpiar la lista de compra despues de confirmar la venta
+            nonlocal lista_compra
+            lista_compra = []
+            actualizar_lista_compra()
+            actualizar_resumen()
+            print("Lista de compra limpiada")
+        
+        # --------------- Crear el contenido del modal -----------------
+        contenido_modal = guardar_form(
             formulario_visible=True,
             cerrando_modal=cerrar_modal,
             total=total,
@@ -786,23 +851,33 @@ def punto_de_venta(regresar=None):
 
     # === FUNCIONES DE ACCIONES ===
     def guardar_compra(e):
-        # Guarda la compra (por ahora solo imprime)
+        # Guarda la compra (y limpia la lista de productos/articulos)
         if not lista_compra:
             print("Lista de compra vacía")
             return
+        
         print("Guardando compra...")
         for item in lista_compra:
             print(f"   - {item.articulo_articulo} x{item.cantidad} = ${item.articulo_precio * item.cantidad:.2f}")
         print(f"   Total: ${sum(item.articulo_precio * item.cantidad for item in lista_compra):.2f}")
 
     def confirmar_compra(e):
-        # Confirma la compra (limpia la lista de productos/articulos)
+        # Confirma la compra (y limpia la lista de productos/articulos)
         if not lista_compra:
             print("Lista de compra vacía")
             return
 
         # Abrir el modal pago
         abrir_formulario_confirmar_modal(e)
+
+    def guardar_compra(e):
+        # Confirma la compra (y limpia la lista de productos/articulos)
+        if not lista_compra:
+            print("Lista de compra vacía")
+            return
+
+        # Abrir el modal pago
+        abrir_formulario_guardar_modal(e)
 
     # Botones de incremento y decremento
     boton_decremento = ft.Container()
@@ -1011,7 +1086,7 @@ def punto_de_venta(regresar=None):
                     bgcolor = "#c9a03d",
                     color = "#ffffff",
                     width = 130,
-                    on_click = guardar_compra,
+                    on_click = abrir_formulario_guardar_modal,
                 ),
 
                 texto_total_precio,

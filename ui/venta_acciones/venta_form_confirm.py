@@ -65,8 +65,7 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
             
             # Validar que el pago sea suficiente
             if efectivo < total_actual:
-                mensaje.value = "El pago es insuficiente"
-                mensaje.color = ft.Colors.RED
+                print("El pago es insuficiente")
                 evento.page.update()
                 return
             
@@ -94,8 +93,7 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
             venta_dao = VentaDAO()
             venta_dao.insertar(nueva_venta)
             
-            mensaje.value = f"Venta {venta_nombre} registrada exitosamente"
-            mensaje.color = ft.Colors.GREEN
+            print(f"Venta {venta_nombre} registrada exitosamente")
             
             # Limpiar formulario
             efectivo_input.value = "0.00"
@@ -118,15 +116,11 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
                 return
             
         except Exception as error:
-            mensaje.value = f"Error al registrar la venta: {error}"
-            mensaje.color = ft.Colors.RED
+            print(f"Error al registrar la venta: {error}")
             evento.page.update()
 
-    # ============================================================
-    # ====== CREAR LOS CONTROLES DESPUÉS DE LAS FUNCIONES ========
-    # ============================================================
 
-    mensaje = ft.Text("", color=ft.Colors.GREEN)
+    # ====== CREAR LOS CONTROLES DESPUÉS DE LAS FUNCIONES ========
 
     # ------------ Campos del formulario ------------------
     efectivo_input = ft.TextField(
@@ -140,7 +134,7 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
         ),
         on_focus=lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(),
         on_blur=lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(),
-        on_change=calcular_cambio,  # <--- AHORA calcular_cambio YA está definida
+        on_change=calcular_cambio,  # Calcular cambio dinamiacamente
         hint_text="0.00",
         focused_border_color="#c9a03d",
         expand=True,
@@ -149,10 +143,6 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
         max_length=10,
         counter=ft.Container(),
     )
-
-    # ============================================================
-    # ====== TEXTOS Y BOTONES ====================================
-    # ============================================================
 
     # Texto del total a pagar
     texto_total = ft.Text(
