@@ -123,6 +123,27 @@ class VentaDAO:
         cursor.close()
         conexion.close()
 
+    def editar_nombre_usuario(self, venta):
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+        sql = """
+            UPDATE ventas 
+            SET venta_venta = %s, venta_usuario = %s
+            WHERE venta_id = %s
+        """
+        cursor.execute(
+            sql,
+            (
+                venta.venta_venta,
+                venta.venta_usuario,
+                venta.venta_id
+            )
+        )
+        
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+
     def eliminar(self, venta_id):
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()

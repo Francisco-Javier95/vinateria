@@ -3,6 +3,7 @@
 
 from database.conexion import Conexion
 from models.usuario import Usuario
+from models.usuario import Usuario_nombre
 
 class UsuarioDAO:
 
@@ -21,6 +22,22 @@ class UsuarioDAO:
         cursor.close()
         conexion.close()
         return usuarios
+
+    # SELECT usuario_usuario FROM usuarios
+    def nombres_usuarios(self):
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+
+        cursor.execute("SELECT usuario_usuario FROM usuarios ORDER BY usuario_id ASC")
+        registros = cursor.fetchall()
+
+        nombres = []
+        for registro in registros:
+            usuario = Usuario_nombre(usuario_usuario = registro[0])
+            nombres.append(usuario)
+        cursor.close()
+        conexion.close()
+        return nombres
 
     # SELECT * FROM usuarios WHERE usuario_id = %s
     def obtener_id_del_usuario (self, usuario_id):

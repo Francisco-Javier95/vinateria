@@ -4,7 +4,7 @@ from models.venta import Venta
 from dao.venta_dao import VentaDAO
 
 # from ui.proveedor_acciones.proveedor_alert_delete import alerta_eliminar
-# from ui.venta_acciones.venta_form_edit import 
+from ui.venta_acciones.venta_form_edit import venta_form_edit
 from ui.venta_acciones.venta_alert_cancel_2 import alerta_cancelar_2
 
 def ventas_list(regresar):
@@ -153,7 +153,7 @@ def ventas_list(regresar):
 
                 #f"Editar ID:{venta.venta_id}",
                 "Editar",
-                # data = None, # data = venta.venta_id (cambiara el valor en la tabla)
+                data = venta.venta_id,
 
                 style = ft.ButtonStyle(
                     bgcolor = "#c9a03d",  # Color de fondo
@@ -288,14 +288,91 @@ def ventas_list(regresar):
         pila.page.update()
 
     def abrir_formulario_editar_venta(evento):
-        # Abre el formulario para editar una venta
-        venta_id = evento.control.data if evento.control else None
+        # Crear y mostrar el modal con el formulario de "Editar venta"
+        # evento: El evento del clic en el boton "Editar" del registro correspondiente
+
+        # "nonlocal" para modificar variables de la función padre
+        nonlocal capa_oscura_abierta_modal, capa_oscura_modal
+
+        # Guardar referencia a la pagina desde el evento
+        if evento and evento.page:
+            pagina_referencia = evento.page
+
+        # Si el modal ya esta abierto, no hacer nada
+        if capa_oscura_abierta_modal:
+            return
+        
+        # ======== Obtener el ID de la venta desde el boton =========
+        # El ID se guarda en la propiedad 'data' del boton
+        venta_id = evento.control.data if evento.control else None # Obtener el venta_id del boton
 
         if venta_id is None:
-            print("No se pudo obtener el Id de la venta")
+            print("No se pudo obtener el ID de la venta (editar)")
+            return
+        
+        try:
+            # === Obtener los datos de la venta desde la BD ===
+            venta_dao = VentaDAO()
+            venta = venta_dao.obtener_id_de_la_venta(venta_id)
 
+            if venta is None:
+                print(f"No se encontro la venta con ID: {venta_id}")
+                return
 
-        pila.page.updat()
+            nombre_completo = venta.venta_venta
+
+            # Eliminar 'VEN-' al inicio y '-VINATA' al final
+            nombre_limpio = nombre_completo.replace("VEN-", "").replace("-VINATA", "")
+
+            # Preparar los datos para el formulario
+            registro = {
+                'id': venta.venta_id,
+                'nombre': nombre_limpio,
+                'usuario_id': venta.venta_usuario
+            }
+
+            print(f"Datos cargados: {registro}")
+
+        except Exception as error:
+            print(f"Error al obtener la venta: {error}")
+            return
+        # ======= FIN Obtener el ID de la venta desde el boton ========
+        
+        # --------------- Crear el contenido del modal -----------------
+        contenido_modal = venta_form_edit(
+            formulario_visible = True, # Activar el modal, mostrando el formulario
+            cerrando_modal = cerrar_modal,
+            registro = registro # Enviar los datos al formulario
+        )
+
+        # --------------- Crear la capa oscura (OVERLAY) --------------
+        capa_oscura = ft.Container(
+            expand = True,
+            bgcolor = ft.Colors.BLACK_45,
+            content = ft.Column(
+                controls = [contenido_modal],
+                horizontal_alignment = ft.CrossAxisAlignment.CENTER,
+                alignment = ft.MainAxisAlignment.CENTER,
+                expand = True,
+                width = 5000
+            )
+        )
+
+        # -------------- Agregar la capa a la pila ---------------------
+        # La capa se superpone al contenido principal
+        pila.controls.append(capa_oscura)
+
+        # Guardar referencia a la capa
+        capa_oscura_modal = capa_oscura
+
+        # Cambiar el esado de "cerrado" a "abierto"
+        capa_oscura_abierta_modal = True
+
+        # Actualizar la interfaz
+        if pila.page:
+            pila.update() # Se actualiza la pila para mostrar cambios
+        elif pagina_referencia:
+            pagina_referencia.update()
 
     def mostrar_ventas_en_tabla(ventas):
         # Muestra una lista de ventas en la tabla

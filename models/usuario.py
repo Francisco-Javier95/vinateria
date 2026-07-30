@@ -13,7 +13,13 @@ class Usuario:
 
     def mostrar_info(self):
         return f"Nombre: {self.usuario_usuario}, Apellido paterno: {self.usuario_apaterno}, Apellido materno: {self.usuario_amaterno}, Número empleado: {self.usuario_nuempleado}, Correo: {self.usuario_correo}, Contraseña: {self.usuario_contrasenia}, Privilegio: {self.usuario_privilegio}"
-    
+
+class Usuario_nombre:
+    # Constructor
+    def __init__(self, usuario_usuario):
+        self.usuario_usuario = usuario_usuario
+
+
 class Usuario_eliminar:
     # Constructor
     def __init__(self, usuario_id):

@@ -24,8 +24,14 @@ class Venta_sin_articulo:
         self.venta_usuario = venta_usuario
         self.venta_estado = venta_estado
 
+class Venta_nombre_usuario:
+    # Constructor
+    def __init__(self, venta_id, venta_venta, venta_usuario):
+        self.venta_id = venta_id
+        self.venta_venta = venta_venta
+        self.venta_usuario = venta_usuario
 
 class Venta_eliminar:
-
+    # Constructor
     def __init__(self, venta_id):
         self.venta_id = venta_id

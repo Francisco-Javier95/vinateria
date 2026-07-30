@@ -27,7 +27,7 @@ def categoria_form_create(regresar = None, tabla_categoria_visible = False, cerr
         expand = True,
         color = "#424955"
     )
-    # --------- Dropdown para categorìas ---------
+    # --------- Dropdown para tipos ---------
     tipo_input = ft.Dropdown(
         label = "Tipo: ",
         on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(),
