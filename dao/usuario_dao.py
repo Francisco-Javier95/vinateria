@@ -23,17 +23,21 @@ class UsuarioDAO:
         conexion.close()
         return usuarios
 
-    # SELECT usuario_usuario FROM usuarios
+    # SELECT usuario_usuario, usuario_apaterno, usuario_amaterno FROM usuarios
     def nombres_usuarios(self):
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
 
-        cursor.execute("SELECT usuario_usuario FROM usuarios ORDER BY usuario_id ASC")
+        cursor.execute("SELECT usuario_usuario, usuario_apaterno, usuario_amaterno FROM usuarios ORDER BY usuario_id ASC")
         registros = cursor.fetchall()
 
         nombres = []
         for registro in registros:
-            usuario = Usuario_nombre(usuario_usuario = registro[0])
+            usuario = Usuario_nombre(
+                usuario_usuario = registro[0],
+                usuario_apaterno = registro[1],
+                usuario_amaterno = registro[2]
+            )
             nombres.append(usuario)
         cursor.close()
         conexion.close()

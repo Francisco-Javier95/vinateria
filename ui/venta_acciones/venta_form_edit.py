@@ -29,7 +29,11 @@ def venta_form_edit(regresar = None, formulario_visible = False, cerrando_modal 
         expand = True,
         color = "#424955",
 
-        value = registro.get('nombre') if registro else "" # Cargar datos
+        value = registro.get('nombre') if registro else "", # Cargar datos
+
+        # Numero maximo de caracteres
+        max_length = 39, # Limita a 39 caracteres (+ 11 de "VEN-" Y "-VINATA") / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container() # No mostrar contador
     )
 
     # --------- Dropdown para usuarios ---------
@@ -61,10 +65,11 @@ def venta_form_edit(regresar = None, formulario_visible = False, cerrando_modal 
 
             valor_usuario = 1
             for usuario in usuarios:
+                nombre_usuario_completo = f"{usuario.usuario_usuario} {usuario.usuario_apaterno} {usuario.usuario_amaterno}"
                 usuario_input.options.append(
                     ft.dropdown.Option(
                         key = valor_usuario,
-                        text = usuario.usuario_usuario,
+                        text = nombre_usuario_completo,
                         style=ft.TextStyle(
                             color="#6b1d41",
                             size=14

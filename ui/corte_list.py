@@ -3,6 +3,8 @@ import flet as ft
 from models.venta import Venta
 from dao.venta_dao import VentaDAO
 
+from globals import venta_pendiente_global  # importar venta global
+
 # from ui.proveedor_acciones.proveedor_alert_delete import alerta_eliminar
 from ui.venta_acciones.venta_form_edit import venta_form_edit
 from ui.venta_acciones.venta_alert_cancel_2 import alerta_cancelar_2
@@ -184,9 +186,11 @@ def ventas_list(regresar):
             boton_secundario = ft.Text("", color = "9095a0")
 
         return boton_primario, boton_secundario
+    
 
     def continuar_venta(evento):
-        # Continua una venta "Pendiente" (redirige a punto_de_venta.py)
+        # Continúa una venta "Pendiente" (redirige a punto_de_venta.py)
+        
         venta_id = evento.control.data if evento.control else None
 
         if venta_id is None:
@@ -194,7 +198,21 @@ def ventas_list(regresar):
             return
 
         print(f"Continuando venta ID: {venta_id}")
-        pila.page.update()
+        
+        # === ASIGNAR A LA VARIABLE GLOBAL ===
+        # Asignar a la variable global del módulo globals
+        import globals
+        globals.venta_pendiente_global = venta_id
+
+        venta_pendiente_global = venta_id
+        print(f"Venta ID {venta_pendiente_global} guardada en variable global")
+        
+        # Redirigir a punto_de_venta
+        if regresar:
+            regresar()  # Esto ejecuta mostrar_inicio que carga punto_de_venta
+        else:
+            print("No se pudo redirigir a punto_de_venta")
+
 
     def abrir_alerta_cancelar_venta(evento):
         # Crear y muestrar el modal con la alerta de "La Vinata dice: ¿Desea cancelar esta venta?"
@@ -387,7 +405,15 @@ def ventas_list(regresar):
             tabla.rows.append(
                 ft.DataRow(
                     cells = [
-                        ft.DataCell(ft.Text(venta.venta_venta, color = "#0d1b2a", weight = ft.FontWeight.BOLD)),
+                        ft.DataCell(
+                            ft.Text(
+                                venta.venta_venta, 
+                                color = "#0d1b2a", 
+                                weight = ft.FontWeight.BOLD,
+                                overflow = ft.TextOverflow.ELLIPSIS,  # Agrega "..." al final
+                                width = 250,  # Ancho aproximado para 20 caracteres
+                            )
+                        ),
                         ft.DataCell(ft.Text(str(venta.venta_fecha), color = "#0d1b2a")),
                         ft.DataCell(ft.Text(f"${venta.venta_ganancia:.2f}", color = "#6b1d41", weight = ft.FontWeight.BOLD)),
                         ft.DataCell(ft.Text(venta.venta_usuario, color = "#0d1b2a", width = 150)),

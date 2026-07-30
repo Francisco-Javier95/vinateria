@@ -3,6 +3,8 @@ import flet as ft
 from models.articulo import Articulo
 from dao.articulo_dao import ArticuloDAO
 
+import globals # Importar el archivo de la variable local "venta_pediente_global"
+
 from ui.venta_acciones.venta_form_confirm import confirmar_form
 from ui.venta_acciones.venta_form_save import guardar_form
 from ui.venta_acciones.venta_alert_cancel import alerta_cancelar
@@ -104,6 +106,111 @@ def punto_de_venta(regresar=None):
         if pila.page:
             pila.page.update()
 
+    grid_lista = ft.GridView(
+        controls = [],
+        runs_count = 3,  # 3 columnas
+        max_extent = 500,
+        child_aspect_ratio = 3.00,  # Relación de aspecto (ancho/alto)
+        spacing = 10,
+        scroll = ft.ScrollMode.AUTO,
+        width = 5000,
+        height = 420
+    )
+
+    def cargar_venta_pendiente():
+        # Carga una venta pendiente desde la variable global
+        nonlocal lista_compra
+        
+        # === USAR LA VARIABLE GLOBAL IMPORTADA ===
+        # Asignar a la variable global del módulo globals
+        venta_id = globals.venta_pendiente_global
+
+        print(f"La variable de venta_id GUARDA el valor de la variable venta_pendiente_gobal: ({globals.venta_pendiente_global})")
+        
+        # Limpiar la variable global para no reutilizarla
+        globals.venta_pendiente_global = None
+
+        print("Verificando si hay una venta pendiente")
+        
+        if venta_id is None:
+            print("No hay venta pendiente para cargar")
+            return
+        
+        print(f"Cargando venta pendiente ID: {venta_id}")
+        
+        try:
+            from dao.venta_dao import VentaDAO
+            venta_dao = VentaDAO()
+            venta = venta_dao.obtener_id_de_la_venta(venta_id)
+
+            print(type(venta.venta_articulo))
+            
+            if venta is None:
+                print(f"No se encontró la venta con ID: {venta_id}")
+                return
+
+            print(f"Contenido de venta_articulo: {venta.venta_articulo}")
+            print(f"Tipo: {type(venta.venta_articulo)}")
+            
+            # Obtener los artículos de la venta
+            articulos_ids = venta.venta_articulo
+
+
+            # Obtener los artículos de la venta
+            venta_articulo = venta.venta_articulo
+
+            # Si es una lista de strings o enteros
+            if isinstance(venta_articulo, list):
+                articulos_ids = [int(id) for id in venta_articulo]
+            elif isinstance(venta_articulo, str):
+                # Si es un string con formato '{1,2,3}'
+                articulos_ids_str = venta_articulo.strip("{}")
+                if articulos_ids_str:
+                    articulos_ids = [int(id) for id in articulos_ids_str.split(",")]
+                else:
+                    articulos_ids = []
+            else:
+                articulos_ids = []
+
+            print(f"IDs de artículos: {articulos_ids}")
+
+            if not articulos_ids:
+                print("La venta no tiene artículos asociados")
+                return
+
+            
+            # Limpiar la lista actual
+            lista_compra = []
+            
+            # Cargar los artículos
+            articulo_dao = ArticuloDAO()
+            for id_articulo in articulos_ids:
+                articulo = articulo_dao.obtener_id_del_articulo(id_articulo)
+                if articulo:
+                    item = Articulo(
+                        articulo_id = articulo.articulo_id,
+                        articulo_articulo = articulo.articulo_articulo,
+                        articulo_codigo = articulo.articulo_codigo,
+                        articulo_categoria = articulo.articulo_categoria,
+                        articulo_imagen = articulo.articulo_imagen,
+                        articulo_precio = articulo.articulo_precio,
+                        articulo_stock = articulo.articulo_stock,
+                        articulo_proveedor = articulo.articulo_proveedor,
+                    )
+                    item.cantidad = 1
+                    lista_compra.append(item)
+                    print(f"Artículo cargado: {articulo.articulo_articulo}")
+            
+            # Actualizar la interfaz
+            actualizar_lista_compra()
+            actualizar_resumen()
+            print(f"Venta pendiente cargada: {len(lista_compra)} artículos")
+            
+        except Exception as error:
+            print(f"Error al cargar la venta pendiente: {error}")
+            import traceback
+            traceback.print_exc()
+
     # ------------------- Función para cerrar la modal --------------------
     def cerrar_modal():
         # Cierra el modal, eliminando la capa oscura de la pila
@@ -122,6 +229,9 @@ def punto_de_venta(regresar=None):
 
             # Volver a cargar la lista de los productos/articulos
             cargar_articulos()
+
+            # Volver a rectificar
+            cargar_venta_pendiente()
 
             # Actualizar la interfaz
             if pila.page:
@@ -933,6 +1043,9 @@ def punto_de_venta(regresar=None):
     # ===== CARGAR DATOS INICIALES ====
     cargar_articulos()
 
+    # ===== VERIFICAR SI HAY UNA VENTA PENDIENTE =====
+    cargar_venta_pendiente()
+
 
     texto_existencias = ft.Text(
         "Existencias: ---",
@@ -1052,16 +1165,7 @@ def punto_de_venta(regresar=None):
         color = "#6b1d41",
     )
 
-    grid_lista = ft.GridView(
-        controls = [],
-        runs_count = 3,  # 3 columnas
-        max_extent = 500,
-        child_aspect_ratio = 3.00,  # Relación de aspecto (ancho/alto)
-        spacing = 10,
-        scroll = ft.ScrollMode.AUTO,
-        width = 5000,
-        height = 420
-    )
+    
 
     texto_total_precio = ft.Text(
         "Total | $0.00",
@@ -1221,6 +1325,7 @@ def punto_de_venta(regresar=None):
         # Se ejecuta cuando el Stack se agrega a la página
         actualizar_estado_botones()
         cargar_articulos()
+        cargar_venta_pendiente()
 
     pila.on_mount = inicializar_botones
 
