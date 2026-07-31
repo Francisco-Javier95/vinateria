@@ -8,6 +8,7 @@ import globals # Importar el archivo de la variable local "venta_pediente_global
 from ui.venta_acciones.venta_form_confirm import confirmar_form
 from ui.venta_acciones.venta_form_save import guardar_form
 from ui.venta_acciones.venta_alert_cancel import alerta_cancelar
+from ui.venta_acciones.venta_alert_cancel_2 import alerta_cancelar_2
 
 def punto_de_venta(regresar=None):
     # ---------------- Variables de estado -------------------
@@ -15,6 +16,7 @@ def punto_de_venta(regresar=None):
     lista_compra = []  # Lista de productos agregados
     producto_seleccionado = None
     sugerencias_visibles = False
+    venta_actual_id = None
 
     capa_oscura_abierta_modal = False # Indica si el modal esta visible/activo
     capa_oscura_modal = None # Es el contenido con backgroud oscuro semitransparente (capa oscuara)
@@ -119,7 +121,7 @@ def punto_de_venta(regresar=None):
 
     def cargar_venta_pendiente():
         # Carga una venta pendiente desde la variable global
-        nonlocal lista_compra
+        nonlocal lista_compra, venta_actual_id
         
         # === USAR LA VARIABLE GLOBAL IMPORTADA ===
         # Asignar a la variable global del módulo globals
@@ -155,6 +157,8 @@ def punto_de_venta(regresar=None):
             # Obtener los artículos de la venta
             articulos_ids = venta.venta_articulo
 
+            # === GUARDAR EL ID DE LA VENTA ===
+            venta_actual_id = venta_id
 
             # Obtener los artículos de la venta
             venta_articulo = venta.venta_articulo
@@ -227,6 +231,9 @@ def punto_de_venta(regresar=None):
             capa_oscura_modal = None
             capa_oscura_abierta_modal = False
 
+            # Limpiar el ID de la venta actual después de cerrar
+            venta_actual_id = None  # LIMPIAR
+
             # Volver a cargar la lista de los productos/articulos
             cargar_articulos()
 
@@ -241,7 +248,7 @@ def punto_de_venta(regresar=None):
 
     def abrir_formulario_confirmar_modal(evento):
         # Crear y mostrar el modal con el formulario de "Pago"
-        nonlocal capa_oscura_abierta_modal, capa_oscura_modal, lista_compra
+        nonlocal capa_oscura_abierta_modal, capa_oscura_modal, lista_compra, venta_actual_id
 
         if not lista_compra:
             print("Lista de compra vacía")
@@ -291,23 +298,24 @@ def punto_de_venta(regresar=None):
         
         # --------------- Crear el contenido del modal -----------------
         contenido_modal = confirmar_form(
-            formulario_visible=True,
-            cerrando_modal=cerrar_modal,
-            total=total,
-            lista_articulos=articulos_ids,
-            usuario_id=usuario_id,
+            formulario_visible = True,
+            cerrando_modal = cerrar_modal,
+            total = total,
+            lista_articulos = articulos_ids,
+            usuario_id = usuario_id,
             limpiar_lista = limpiar_despues_de_confirmar,
+            venta_id_actual = venta_actual_id, # PASAR EL VALOR DEL ID
         )
 
         # --------------- Crear la capa oscura (OVERLAY) --------------
         capa_oscura = ft.Container(
-            expand=True,
-            bgcolor=ft.Colors.BLACK_45,
-            content=ft.Column(
-                controls=[contenido_modal],
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                alignment=ft.MainAxisAlignment.CENTER,
-                expand=True,
+            expand = True,
+            bgcolor = ft.Colors.BLACK_45,
+            content = ft.Column(
+                controls = [contenido_modal],
+                horizontal_alignment = ft.CrossAxisAlignment.CENTER,
+                alignment = ft.MainAxisAlignment.CENTER,
+                expand = True,
                 width = 5000
             )
         )
@@ -380,23 +388,24 @@ def punto_de_venta(regresar=None):
         
         # --------------- Crear el contenido del modal -----------------
         contenido_modal = guardar_form(
-            formulario_visible=True,
-            cerrando_modal=cerrar_modal,
-            total=total,
-            lista_articulos=articulos_ids,
-            usuario_id=usuario_id,
+            formulario_visible = True,
+            cerrando_modal = cerrar_modal,
+            total = total,
+            lista_articulos = articulos_ids,
+            usuario_id = usuario_id,
             limpiar_lista = limpiar_despues_de_confirmar,
+            venta_id_actual = venta_actual_id, # PASAR EL VALOR DEL ID
         )
 
         # --------------- Crear la capa oscura (OVERLAY) --------------
         capa_oscura = ft.Container(
-            expand=True,
-            bgcolor=ft.Colors.BLACK_45,
-            content=ft.Column(
-                controls=[contenido_modal],
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                alignment=ft.MainAxisAlignment.CENTER,
-                expand=True,
+            expand = True,
+            bgcolor = ft.Colors.BLACK_45,
+            content = ft.Column(
+                controls = [contenido_modal],
+                horizontal_alignment = ft.CrossAxisAlignment.CENTER,
+                alignment = ft.MainAxisAlignment.CENTER,
+                expand = True,
                 width = 5000
             )
         )
@@ -441,13 +450,30 @@ def punto_de_venta(regresar=None):
             actualizar_lista_compra()
             actualizar_resumen()
             print("Lista de compra limpiada")
-        
-        # --------------- Crear el contenido del modal -----------------
-        contenido_modal = alerta_cancelar(
-            formulario_visible = True, # Activar el modal, mostrando el formulario
-            cerrando_modal = cerrar_modal,
-            limpiar_lista = limpiar_despues_de_confirmar,
-        )
+
+        venta_id_actual = venta_actual_id, # PASAR EL VALOR DEL ID
+
+        if venta_id_actual is None:
+            # --------------- Crear el contenido del modal -----------------
+            contenido_modal = alerta_cancelar(
+                formulario_visible = True, # Activar el modal, mostrando el formulario
+                cerrando_modal = cerrar_modal,
+                limpiar_lista = limpiar_despues_de_confirmar,
+            )
+        else:
+            # Preparar los datos para la alerta
+            id_y_nombre = {
+                'id': venta_id_actual,
+                'nombre': "Nombre_reyeno"
+            }
+            # --------------- Crear el contenido del modal -----------------
+            contenido_modal = alerta_cancelar_2(
+                formulario_visible = True, # Activar el modal, mostrando el formulario
+                cerrando_modal = cerrar_modal,
+                registro = id_y_nombre, # Enviar los datos a la alerta
+                limpiar_lista = limpiar_despues_de_confirmar
+            )
+
 
         # --------------- Crear la capa oscura (OVERLAY) --------------
         capa_oscura = ft.Container(

@@ -4,7 +4,7 @@ from datetime import datetime
 from models.venta import Venta
 from dao.venta_dao import VentaDAO
 
-def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, total=0.0, lista_articulos=None, usuario_id=1, limpiar_lista=None):
+def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, total=0.0, lista_articulos=None, usuario_id=1, limpiar_lista=None, venta_id_actual=None):
     # Estilos de los label
     estilo_de_label = ft.TextStyle(
         color="#926600",
@@ -47,28 +47,50 @@ def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, t
             # Estado de la venta (Pendiente por defecto)
             estado = "Pendiente"
 
-            # Crear objeto Venta
-            nueva_venta = Venta(
-                venta_id=None,
-                venta_venta=venta_nombre,
-                venta_fecha=None,
-                venta_ganancia=total_actual,
-                venta_usuario=usuario_actual,
-                venta_articulo=articulos_array,
-                venta_estado=estado
-            )
-
             # Insertar en la base de datos
             venta_dao = VentaDAO()
-            venta_dao.insertar(nueva_venta)
 
+            # === VERIFICAR SI ES ACTUALIZACIÓN O INSERCIÓN ===
+            if venta_id_actual is not None:
+                # === ACTUALIZAR VENTA EXISTENTE ===
+                venta_existente = venta_dao.obtener_id_de_la_venta(venta_id_actual)
+                if venta_existente:
+                    venta_actualizada = Venta(
+                        venta_id = venta_id_actual,
+                        venta_venta = venta_nombre,  # Actualizar el nombre
+                        venta_fecha = venta_existente.venta_fecha,
+                        venta_ganancia = total_actual,
+                        venta_usuario = usuario_actual,
+                        venta_articulo = articulos_array,
+                        venta_estado = estado
+                    )
+                    venta_dao.actualizar(venta_actualizada)
+                    print(f"Venta {venta_nombre} actualizada exitosamente")
+                else:
+                    print("No se encontró la venta a actualizar")
+                    evento.page.update()
+                    return
+            else:
+                # === CREAR NUEVA VENTA ===
+                nueva_venta = Venta(
+                    venta_id = None,
+                    venta_venta = venta_nombre,
+                    venta_fecha = None,
+                    venta_ganancia = total_actual,
+                    venta_usuario = usuario_actual,
+                    venta_articulo = articulos_array,
+                    venta_estado = estado
+                )
+                venta_dao.insertar(nueva_venta)
+                print(f"Venta {venta_nombre} guardada exitosamente")
+
+            evento.page.update()
 
             # === LIMPIAR LISTA Y CERRAR MODAL ===
             import time
             time.sleep(0.5)
 
-            # Ejecutar el callback para limpiar la lista
-            if limpiar_lista:
+            if limpiar_lista: # Ejecutar el callback para limpiar la lista
                 limpiar_lista()
 
             # Cerrar el modal

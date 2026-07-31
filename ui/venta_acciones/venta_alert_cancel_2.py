@@ -3,7 +3,7 @@ import flet as ft
 from models.venta import Venta_eliminar
 from dao.venta_dao import VentaDAO
 
-def alerta_cancelar_2(regresar = None, formulario_visible = False, cerrando_modal = None, registro = None):
+def alerta_cancelar_2(regresar = None, formulario_visible = False, cerrando_modal = None, registro = None, limpiar_lista = None):
 
     mensaje = ft.Text(
         "",
@@ -21,6 +21,10 @@ def alerta_cancelar_2(regresar = None, formulario_visible = False, cerrando_moda
             cancelar_venta = Venta_eliminar(venta_id = venta_id,)
 
             venta_dao.eliminar(cancelar_venta)
+
+            # Ejecutar el "llamado al metodo" de Limpiar_lista:
+            if limpiar_lista:
+                limpiar_lista()
 
             mensaje.value = f"Venta {venta_venta} ha sido cancelada exitosamente"
             mensaje.color = ft.Colors.GREEN

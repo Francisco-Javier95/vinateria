@@ -99,6 +99,7 @@ class VentaDAO:
         cursor.close()
         conexion.close()
 
+
     def actualizar(self, venta):
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
@@ -107,6 +108,7 @@ class VentaDAO:
             SET venta_venta = %s, venta_ganancia = %s, venta_usuario = %s, venta_articulo = %s, venta_estado = %s
             WHERE venta_id = %s
         """
+
         cursor.execute(
             sql,
             (
@@ -118,10 +120,10 @@ class VentaDAO:
                 venta.venta_id
             )
         )
-        
         conexion.commit()
         cursor.close()
         conexion.close()
+        
 
     def editar_nombre_usuario(self, venta):
         conexion = Conexion.obtener_conexion()
