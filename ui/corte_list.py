@@ -596,7 +596,7 @@ def ventas_list(regresar):
                                 # Titulo de la sección
                                 ft.Text(
                                     "Ventas",
-                                    size = 24,
+                                    size = 28,
                                     weight = ft.FontWeight.BOLD,
                                     color = "#6b1d41"
                                 ),

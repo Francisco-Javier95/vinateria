@@ -676,7 +676,7 @@ def articulos_list(regresar):
                                 # Titulo del segmento
                                 ft.Text(
                                     "Inventario",
-                                    size = 24,
+                                    size = 28,
                                     weight = ft.FontWeight.BOLD,
                                     color = "#6b1d41"
                                 ),

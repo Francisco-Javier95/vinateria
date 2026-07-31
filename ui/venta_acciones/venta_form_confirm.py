@@ -68,27 +68,39 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
             # Obtener el valor del efectivo
             efectivo_texto = efectivo_input.value.strip() if efectivo_input.value else "0"
             efectivo = float(efectivo_texto) if efectivo_texto else 0.0
+
             
             # Validar que el pago sea suficiente
             if efectivo < total_actual:
                 print("El pago es insuficiente")
                 evento.page.update()
                 return
+            
 
-            # === ACTUALIZAR STOCK ===
+            # === ACTUALIZAR STOCK Y VENDIDOS ===
             articulo_dao = ArticuloDAO()
+
             for i, id_articulo in enumerate(articulos_ids):
-                if i < len(articulos_cantidades):
-                    cantidad_vendida = articulos_cantidades[i]
-                    articulo = articulo_dao.obtener_id_del_articulo(id_articulo)
-                    if articulo:
-                        nuevo_stock = articulo.articulo_stock - cantidad_vendida
-                        if nuevo_stock < 0:
-                            raise Exception(f"Stock insufisiente para {articulo.articulo_articulo}")
+                cantidad_vendida = articulos_cantidades[i]
+                articulo = articulo_dao.obtener_id_del_articulo(id_articulo)
+                if not articulo:
+                    raise Exception(f"Producto ID {id_articulo} no encontrado")
+                if articulo.articulo_stock < cantidad_vendida:
+                    raise Exception(f"Stock insuficiente para '{articulo.articulo_articulo}'. "
+                                    f"Disponible: {articulo.articulo_stock}, solicitado: {cantidad_vendida}")
+                # Descontar stock y sumar vendidos
+                articulo.articulo_stock -= cantidad_vendida
+                articulo.articulo_vendidos += cantidad_vendida
+                articulo_dao.actualizar(articulo)
+                print(f"Stock actualizado: {articulo.articulo_articulo} → "
+                    f"Stock: {articulo.articulo_stock}, Vendidos: {articulo.articulo_vendidos}")
+                
 
-                        articulo.articulo_stock = nuevo_stock
-                        articulo_dao.actualizar(articulo)
-
+            # Guardar la venta
+            venta_dao = VentaDAO()
+            articulos_array = "{" + ",".join(str(id) for id in articulos_ids) + "}"
+            estado = "Concluida"
+            
             
             # Crear el nombre de la venta con timestamp
             venta_nombre = f"VEN-{datetime.now().strftime('%Y%m%d_%H%M%S')}-VINATA"

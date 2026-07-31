@@ -4,6 +4,7 @@ from ui.punto_de_venta import punto_de_venta
 
 from ui.articulos_list import articulos_list
 from ui.proveedores_list import proveedores_list
+from ui.informes import informes
 from ui.usuarios_list import usuarios_list
 from ui.corte_list import ventas_list
 
@@ -45,6 +46,10 @@ def main_window(page: ft.Page):
 
     def mostrar_lista_proveedores(e = None):
         contenido.content = proveedores_list(mostrar_inicio)
+        page.update()
+
+    def mostrar_informes(e = None):
+        contenido.content = informes(mostrar_inicio)
         page.update()
 
     def mostrar_lista_usuarios(e = None):
@@ -173,7 +178,7 @@ def main_window(page: ft.Page):
                             ),
                             icon = ft.Icons.LOCAL_SHIPPING,
                             width = 250,
-                            on_click = mostrar_lista_proveedores # Redirigir a "proveedores_list.py"
+                            on_click = mostrar_lista_proveedores # Traer el contenido de "proveedores_list.py"
                         ),
                         ft.ElevatedButton(
                             "Informes",
@@ -208,7 +213,8 @@ def main_window(page: ft.Page):
                                 shape = ft.RoundedRectangleBorder(radius = 10)
                             ),
                             icon = ft.Icons.TRENDING_UP,
-                            width = 250
+                            width = 250,
+                            on_click = mostrar_informes # Traer el contenido de "informes.py"
                         ),
                         ft.ElevatedButton(
                             "Usuarios",
@@ -244,7 +250,7 @@ def main_window(page: ft.Page):
                             ),
                             icon = ft.Icons.PERSON,
                             width = 250,
-                            on_click = mostrar_lista_usuarios # Redirigir a "usuarios_list.py"
+                            on_click = mostrar_lista_usuarios # Traer el contenido de "usuarios_list.py"
                         ),
                         ft.ElevatedButton(
                             "Corte",

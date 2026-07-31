@@ -497,7 +497,7 @@ def proveedores_list(regresar):
                                 # Titulo de la sección
                                 ft.Text(
                                     "Proveedores",
-                                    size = 24,
+                                    size = 28,
                                     weight = ft.FontWeight.BOLD,
                                     color = "#6b1d41"
                                 ),

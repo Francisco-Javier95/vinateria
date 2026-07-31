@@ -200,6 +200,7 @@ def punto_de_venta(regresar=None):
                         articulo_precio = articulo.articulo_precio,
                         articulo_stock = articulo.articulo_stock,
                         articulo_proveedor = articulo.articulo_proveedor,
+                        articulo_vendidos = articulo.articulo_vendidos,
                     )
                     item.cantidad = 1
                     lista_compra.append(item)
@@ -706,9 +707,9 @@ def punto_de_venta(regresar=None):
     
     titulo = ft.Text(
         "Punto de Venta",
-        size=28,
-        weight=ft.FontWeight.BOLD,
-        color="#6b1d41",
+        size = 28,
+        weight = ft.FontWeight.BOLD,
+        color = "#6b1d41",
     )
 
     # Estilos de los label
@@ -849,6 +850,7 @@ def punto_de_venta(regresar=None):
                 articulo_precio = producto_seleccionado.articulo_precio,
                 articulo_stock = producto_seleccionado.articulo_stock,
                 articulo_proveedor = producto_seleccionado.articulo_proveedor,
+                articulo_vendidos = producto_seleccionado.articulo_vendidos,
             )
             item.cantidad = cantidad
             lista_compra.append(item)

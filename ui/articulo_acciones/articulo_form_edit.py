@@ -1,6 +1,7 @@
 import flet as ft
 
 from models.articulo import Articulo
+from models.articulo import Articulo_editar
 from dao.articulo_dao import ArticuloDAO
 from dao.categoria_dao import CategoriaDAO
 from dao.proveedor_dao import ProveedorDAO
@@ -347,7 +348,7 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
             articulo_dao = ArticuloDAO()
             articulo_id = registro.get('id') if registro else None
 
-            editar_articulo = Articulo(
+            editar_articulo = Articulo_editar(
                 articulo_id = articulo_id,
                 articulo_articulo = articulo_articulo,
                 articulo_codigo = articulo_codigo,
@@ -355,12 +356,12 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
                 articulo_imagen = articulo_imagen,
                 articulo_precio = float(articulo_precio), # Convertir a numero real
                 articulo_stock = int(articulo_stock), # Convertir a entero
-                articulo_proveedor = int(articulo_proveedor) # Convertir a entero
+                articulo_proveedor = int(articulo_proveedor), # Convertir a entero
             )
 
             print(articulo_id, articulo_articulo, articulo_codigo, articulo_categoria, articulo_imagen, articulo_precio, articulo_stock, articulo_proveedor)
 
-            articulo_dao.actualizar(editar_articulo)
+            articulo_dao.editar_form(editar_articulo)
 
             mensaje.value = f"Articulo {articulo_articulo} ha sido editado exitosamente"
             mensaje.color = ft.Colors.GREEN

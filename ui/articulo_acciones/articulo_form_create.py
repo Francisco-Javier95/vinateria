@@ -310,6 +310,7 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
         articulo_precio = precio_input.value
         articulo_stock = stock_input.value
         articulo_proveedor = proveedor_input.value
+        articulo_vendidos = 0
 
         # Validación de campos vacíos
         if articulo_articulo == "" or articulo_codigo == "" or articulo_categoria == None or articulo_imagen == "" or articulo_precio == "" or articulo_stock == "" or articulo_proveedor == "":
@@ -330,7 +331,8 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
                 articulo_imagen = articulo_imagen,
                 articulo_precio = float(articulo_precio), # Convertir a numero real
                 articulo_stock = int(articulo_stock), # Convertir a numero entero
-                articulo_proveedor = int(articulo_proveedor) # Convertir a numero entero
+                articulo_proveedor = int(articulo_proveedor), # Convertir a numero entero
+                articulo_vendidos = articulo_vendidos
             )
 
             articulo_dao.insertar(nuevo_articulo)

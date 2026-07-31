@@ -28,7 +28,7 @@ class CategoriaDAO:
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
 
-        cursor.execute("SELECT categoria_categoria FROM categorias")
+        cursor.execute("SELECT categoria_categoria FROM categorias ORDER BY categoria_id ASC")
         registros = cursor.fetchall()
 
         nombres = []
