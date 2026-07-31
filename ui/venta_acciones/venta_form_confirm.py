@@ -4,7 +4,9 @@ from datetime import datetime
 from models.venta import Venta
 from dao.venta_dao import VentaDAO
 
-def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None, total=0.0, lista_articulos=None, usuario_id=1, limpiar_lista=None, venta_id_actual=None):
+from dao.articulo_dao import ArticuloDAO
+
+def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None, total=0.0, lista_articulos=None, lista_cantidades = None, usuario_id=1, limpiar_lista=None, venta_id_actual=None):
     # Estilos de los label
     estilo_de_label = ft.TextStyle(
         color="#926600",
@@ -21,6 +23,7 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
     cambio_actual = 0.0
     total_actual = total
     articulos_ids = lista_articulos if lista_articulos else []
+    articulos_cantidades = lista_cantidades if lista_cantidades else []
     usuario_actual = usuario_id
 
     # Función/Metodo para calcular el cambio
@@ -71,6 +74,21 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
                 print("El pago es insuficiente")
                 evento.page.update()
                 return
+
+            # === ACTUALIZAR STOCK ===
+            articulo_dao = ArticuloDAO()
+            for i, id_articulo in enumerate(articulos_ids):
+                if i < len(articulos_cantidades):
+                    cantidad_vendida = articulos_cantidades[i]
+                    articulo = articulo_dao.obtener_id_del_articulo(id_articulo)
+                    if articulo:
+                        nuevo_stock = articulo.articulo_stock - cantidad_vendida
+                        if nuevo_stock < 0:
+                            raise Exception(f"Stock insufisiente para {articulo.articulo_articulo}")
+
+                        articulo.articulo_stock = nuevo_stock
+                        articulo_dao.actualizar(articulo)
+
             
             # Crear el nombre de la venta con timestamp
             venta_nombre = f"VEN-{datetime.now().strftime('%Y%m%d_%H%M%S')}-VINATA"

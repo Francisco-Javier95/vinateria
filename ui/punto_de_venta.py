@@ -284,6 +284,7 @@ def punto_de_venta(regresar=None):
         # === CALCULAR TOTAL Y OBTENER IDs DE ARTÍCULOS ===
         total = sum(item.articulo_precio * item.cantidad for item in lista_compra)
         articulos_ids = [item.articulo_id for item in lista_compra]
+        articulos_cantidades = [item.cantidad for item in lista_compra]
         
         # === USUARIO (por ahora fijo, luego con login) ===
         usuario_id = 1  # Temporal, luego se obtendrá del login
@@ -302,6 +303,7 @@ def punto_de_venta(regresar=None):
             cerrando_modal = cerrar_modal,
             total = total,
             lista_articulos = articulos_ids,
+            lista_cantidades = articulos_cantidades,
             usuario_id = usuario_id,
             limpiar_lista = limpiar_despues_de_confirmar,
             venta_id_actual = venta_actual_id, # PASAR EL VALOR DEL ID
@@ -374,6 +376,7 @@ def punto_de_venta(regresar=None):
         # === CALCULAR TOTAL Y OBTENER IDs DE ARTÍCULOS ===
         total = sum(item.articulo_precio * item.cantidad for item in lista_compra)
         articulos_ids = [item.articulo_id for item in lista_compra]
+        articulos_cantidades = [item.cantidad for item in lista_compra]
         
         # === USUARIO (por ahora fijo, luego con login) ===
         usuario_id = 1  # Temporal, luego se obtendrá del login
@@ -392,6 +395,7 @@ def punto_de_venta(regresar=None):
             cerrando_modal = cerrar_modal,
             total = total,
             lista_articulos = articulos_ids,
+            # lista_cantidades=articulos_cantidades,
             usuario_id = usuario_id,
             limpiar_lista = limpiar_despues_de_confirmar,
             venta_id_actual = venta_actual_id, # PASAR EL VALOR DEL ID
@@ -820,7 +824,7 @@ def punto_de_venta(regresar=None):
 
         # Validar que no exceda el stock
         if cantidad > producto_seleccionado.articulo_stock:
-            texto_existencias.value = f"Máximo: {producto_seleccionado.articulo_stock}"
+            texto_existencias.value = f"Existencias: {producto_seleccionado.articulo_stock}"
             texto_existencias.color = "#de3b40"
             pila.page.update()
             return
@@ -829,13 +833,11 @@ def punto_de_venta(regresar=None):
         existente = next((p for p in lista_compra if p.articulo_id == producto_seleccionado.articulo_id), None)
 
         if existente:
-            if existente.cantidad + cantidad <= producto_seleccionado.articulo_stock:
-                existente.cantidad += cantidad
-            else:
-                texto_existencias.value = f"Stock insuficiente"
-                texto_existencias.color = "#de3b40"
-                pila.page.update()
-                return
+            boton_agregar.disabled = True
+            boton_agregar.bgcolor = "#696768"
+
+            pila.page.update()
+            return
         else:
             # Crear nuevo item
             item = Articulo(

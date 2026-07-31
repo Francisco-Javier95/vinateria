@@ -4,7 +4,9 @@ from datetime import datetime
 from models.venta import Venta
 from dao.venta_dao import VentaDAO
 
-def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, total=0.0, lista_articulos=None, usuario_id=1, limpiar_lista=None, venta_id_actual=None):
+# from dao.articulo_dao import ArticuloDAO
+
+def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, total=0.0, lista_articulos=None,  usuario_id=1, limpiar_lista=None, venta_id_actual=None):
     # Estilos de los label
     estilo_de_label = ft.TextStyle(
         color="#926600",
@@ -19,6 +21,7 @@ def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, t
 
     # Variables de estado
     articulos_ids = lista_articulos if lista_articulos else []
+    # articulos_cantidades = lista_cantidades if lista_cantidades else []
     usuario_actual = usuario_id
     total_actual = total
 
@@ -46,6 +49,20 @@ def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, t
 
             # Estado de la venta (Pendiente por defecto)
             estado = "Pendiente"
+
+            # # === ACTUALIZAR STOCK ===
+            # articulo_dao = ArticuloDAO()
+            # for i, id_articulo in enumerate(articulos_ids):
+            #     if i < len(articulos_cantidades):
+            #         cantidad_vendida = articulos_cantidades[i]
+            #         articulo = articulo_dao.obtener_id_del_articulo(id_articulo)
+            #         if articulo:
+            #             nuevo_stock = articulo.articulo_stock - cantidad_vendida
+            #             if nuevo_stock < 0:
+            #                 raise Exception(f"Stock insufisiente para {articulo.articulo_articulo}")
+
+            #             articulo.articulo_stock = nuevo_stock
+            #             articulo_dao.actualizar(articulo)
 
             # Insertar en la base de datos
             venta_dao = VentaDAO()
