@@ -3,6 +3,11 @@ from database.conexion import Conexion
 from datetime import datetime
 import psycopg2
 
+import flet.canvas as cv
+
+import math
+from math import pi
+
 def informes(regresar):
 
     pila = ft.Stack(expand=True)
@@ -97,6 +102,97 @@ def informes(regresar):
                 for id_art, nombre, categoria, unidades, ingresos in datos]
 
 
+    def obtener_ganancia_por_tipo(tipo):
+        """
+        Devuelve la ganancia total (ingresos) de productos
+        que pertenecen a categorías del tipo especificado.
+        Ganancia = precio * unidades_vendidas.
+        """
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+        cursor.execute("""
+            SELECT COALESCE(SUM(a.articulo_precio * a.articulo_vendidos), 0)
+            FROM articulos_1 a
+            INNER JOIN categorias c ON a.articulo_categoria = c.categoria_id
+            WHERE c.categoria_tipo = %s
+        """, (tipo,))
+        total = cursor.fetchone()[0]
+        cursor.close()
+        conexion.close()
+        return float(total)
+
+
+
+
+    def dibujar_pastel(categorias, total):
+        """
+        Dibuja una gráfica de pastel con ft.Canvas.
+        categorias: lista de tuplas (nombre, cantidad)
+        total: suma de cantidades (para calcular porcentajes)
+        """
+        colores = ["#6b1d41", "#c9a03d", "#926600", "#d30000", "#96C61B", "#AC0A32", "#33011C"]
+        
+        # Crear canvas
+        canvas = cv.Canvas(width=350, height=350)
+        
+        # Centro y radio
+        cx, cy = 125, 125
+        radio = 1
+        
+        angulo_inicio = -90  # Comienza desde arriba (12 en punto)
+        
+        for i, (nombre, cantidad) in enumerate(categorias):
+            if total == 0:
+                break
+            angulo = (cantidad / total) * 360
+            color = colores[i % len(colores)]
+            
+            # Calcular ángulo de fin
+            angulo_fin = angulo_inicio + angulo
+            
+            # Convertir a radianes
+            inicio_rad = math.radians(angulo_inicio)
+            fin_rad = math.radians(angulo_fin)
+            
+            # Calcular puntos para el arco
+            # Usamos arcos con ft.Arc
+            canvas.shapes.append(
+                cv.Arc(
+                    x=cx - radio,
+                    y=cy - radio,
+                    width=radio * 2,
+                    height=radio * 2,
+                    start_angle=inicio_rad,
+                    sweep_angle=fin_rad - inicio_rad,
+                    paint=ft.Paint(
+                        style=ft.PaintingStyle.STROKE,
+                        color=color,
+                        stroke_width=210
+                    ),
+                )
+            )
+            
+            # También podemos agregar una línea divisoria (opcional)
+            # y un punto central (para que parezca un pastel)
+            
+            angulo_inicio = angulo_fin
+        
+        # Agregar un círculo interior blanco para efecto de anillo (opcional)
+        canvas.shapes.append(
+            cv.Circle(
+                x=cx,
+                y=cy,
+                radius=radio * 0.5,
+                paint=ft.Paint(
+                    style=ft.PaintingStyle.FILL,
+                    color="#ffffff",
+                ),
+            )
+        )
+
+        return canvas
+
+
     # === OBTENER DATOS ===
     ingresos_totales = obtener_ingresos_totales()
     ventas_vino = obtener_ventas_por_tipo("Vino")
@@ -106,72 +202,177 @@ def informes(regresar):
     ventas_por_categoria = obtener_ventas_por_categoria()
     top_productos = obtener_top_productos()
 
+    ganancia_vino = obtener_ganancia_por_tipo("Vino")
+    ganancia_licor = obtener_ganancia_por_tipo("Licor")
+
     # === TARJETAS DE RESUMEN ===
     tarjeta_ingresos = ft.Container(
-        content=ft.Column([
-            ft.Text(
-                "Ingresos Totales", 
-                size=16, 
-                color="#7c5700", 
-                weight=ft.FontWeight.BOLD
-            ),
-            ft.Text(f"${ingresos_totales:,.2f}", size=24, color="#0d1b2a", weight=ft.FontWeight.BOLD),
-        ]),
+        content = ft.Row(
+            controls = [
+                ft.Container(
+                    content = ft.Container(
+                        content = ft.Icon(
+                            ft.Icons.ATTACH_MONEY,
+                            size = 45,
+                            color = "#c9a03d"
+                        ),
+                        bgcolor = "#fff6e5",
+                        border = ft.Border.all(
+                            1,
+                            "#c9a03d"
+                        ),
+                        border_radius = 60,
+                        width = 60,
+                        height = 60,
+                        alignment = ft.Alignment.CENTER
+                    ),
+                    bgcolor = "#ffe8b2",
+                    padding = ft.Padding.symmetric(vertical=30, horizontal=5),
+                ),
+                ft.Column([
+                    ft.Text(
+                        "Ingresos Totales", 
+                        size=16, 
+                        color="#7c5700", 
+                        weight=ft.FontWeight.BOLD
+                    ),
+                    ft.Text(f"${ingresos_totales:,.2f}", size=24, color="#6b1d41", weight=ft.FontWeight.BOLD),
+                ], alignment = ft.MainAxisAlignment.CENTER, spacing=0)
+            ],
+            height = 200
+        ),
         bgcolor="#ffffff",
         border=ft.Border.all(2, "#ffe8b2"),
         border_radius=10,
-        padding=20,
+        height = 120, 
         expand=True,
     )
 
     tarjeta_vino = ft.Container(
-        content=ft.Column([
-            ft.Text(
-                "Ventas de Vinos", 
-                size=16, 
-                color="#7c5700", 
-                weight=ft.FontWeight.BOLD
-            ),
-            ft.Text(f"{ventas_vino}", size=24, color="#0d1b2a", weight=ft.FontWeight.BOLD),
-        ]),
+        content = ft.Row(
+            controls = [
+                ft.Container(
+                    content = ft.Container(
+                        content = ft.Icon(
+                            ft.Icons.WINE_BAR,
+                            size = 45,
+                            color = "#c9a03d"
+                        ),
+                        bgcolor = "#fff6e5",
+                        border = ft.Border.all(
+                            1,
+                            "#c9a03d"
+                        ),
+                        border_radius = 60,
+                        width = 60,
+                        height = 60,
+                        alignment = ft.Alignment.CENTER
+                    ),
+                    bgcolor = "#ffe8b2",
+                    padding = ft.Padding.symmetric(vertical=30, horizontal=5),
+                ),
+                ft.Column([
+                    ft.Text(
+                        "Ventas de Vinos", 
+                        size=16, 
+                        color="#7c5700", 
+                        weight=ft.FontWeight.BOLD
+                    ),
+                    ft.Text(f"${ganancia_vino:,.2f}", size = 24, color="#6b1d41", weight=ft.FontWeight.BOLD),
+                    ft.Text(f"Unidades: {ventas_vino}", size=18, color="#4c4c4c")
+                ], alignment = ft.MainAxisAlignment.CENTER, spacing=0)
+            ],
+            height = 200
+        ),
         bgcolor="#ffffff",
         border=ft.Border.all(2, "#ffe8b2"),
         border_radius=10,
-        padding=20,
+        height = 120, 
         expand=True,
     )
 
     tarjeta_licor = ft.Container(
-        content=ft.Column([
-            ft.Text(
-                "Ventas de Licores", 
-                size=16, 
-                color="#7c5700",
-                weight=ft.FontWeight.BOLD
-            ),
-            ft.Text(f"{ventas_licor}", size=24, color="#0d1b2a", weight=ft.FontWeight.BOLD),
-        ]),
+        content = ft.Row(
+            controls = [
+                ft.Container(
+                    content = ft.Container(
+                        content = ft.Icon(
+                            ft.Icons.LOCAL_BAR,
+                            size = 45,
+                            color = "#c9a03d"
+                        ),
+                        bgcolor = "#fff6e5",
+                        border = ft.Border.all(
+                            1,
+                            "#c9a03d"
+                        ),
+                        border_radius = 60,
+                        width = 60,
+                        height = 60,
+                        alignment = ft.Alignment.CENTER
+                    ),
+                    bgcolor = "#ffe8b2",
+                    padding = ft.Padding.symmetric(vertical=30, horizontal=5),
+                ),
+                ft.Column([
+                    ft.Text(
+                        "Ventas de Licores", 
+                        size=16, 
+                        color="#7c5700", 
+                        weight=ft.FontWeight.BOLD
+                    ),
+                    ft.Text(f"${ganancia_licor:,.2f}", size = 24, color="#6b1d41", weight=ft.FontWeight.BOLD),
+                    ft.Text(f"Unidades: {ventas_licor}", size=18, color="#4c4c4c")
+                ], alignment = ft.MainAxisAlignment.CENTER, spacing=0)
+            ],
+            height = 200
+        ),
         bgcolor="#ffffff",
         border=ft.Border.all(2, "#ffe8b2"),
         border_radius=10,
-        padding=20,
+        height = 120, 
         expand=True,
     )
 
     tarjeta_promedio = ft.Container(
-        content=ft.Column([
-            ft.Text(
-                "Ganancia Promedio", 
-                size=16, 
-                color="#7c5700",
-                weight=ft.FontWeight.BOLD
-            ),
-            ft.Text(f"${ganancia_promedio:,.2f}", size=24, color="#0d1b2a", weight=ft.FontWeight.BOLD),
-        ]),
+        content = ft.Row(
+            controls = [
+                ft.Container(
+                    content = ft.Container(
+                        content = ft.Icon(
+                            ft.Icons.RECEIPT,
+                            size = 45,
+                            color = "#c9a03d"
+                        ),
+                        bgcolor = "#fff6e5",
+                        border = ft.Border.all(
+                            1,
+                            "#c9a03d"
+                        ),
+                        border_radius = 60,
+                        width = 60,
+                        height = 60,
+                        alignment = ft.Alignment.CENTER
+                    ),
+                    bgcolor = "#ffe8b2",
+                    padding = ft.Padding.symmetric(vertical=30, horizontal=5),
+                ),
+                ft.Column([
+                    ft.Text(
+                        "Ganancia Promedio", 
+                        size=16, 
+                        color="#7c5700",
+                        weight=ft.FontWeight.BOLD
+                    ),
+                    ft.Text(f"${ganancia_promedio:,.2f}", size=24, color="#6b1d41", weight=ft.FontWeight.BOLD),
+                ], alignment = ft.MainAxisAlignment.CENTER, spacing=0)
+            ],
+            height = 200
+        ),
         bgcolor="#ffffff",
         border=ft.Border.all(2, "#ffe8b2"),
         border_radius=10,
-        padding=20,
+        height = 120, 
         expand=True,
     )
 
@@ -239,51 +440,95 @@ def informes(regresar):
     )
 
     # === GRÁFICA DE PASTEL (VENTAS POR CATEGORÍA) ===
-    total_categorias = sum(cantidad for _, cantidad in ventas_por_categoria) or 1
-    colores = ["#6b1d41", "#c9a03d", "#926600", "#de3b40", "#4CAF50"]
+    # total_categorias = sum(cantidad for _, cantidad in ventas_por_categoria) or 1
+    # colores = ["#6b1d41", "#c9a03d", "#926600", "#de3b40", "#4CAF50"]
 
-    pastel = ft.Column(
+    # pastel = ft.Column(
+    #     controls=[
+    #         ft.Row(
+    #             controls=[
+    #                 ft.Container(width=20, height=20, bgcolor=colores[i % len(colores)], border_radius=25),
+    #                 ft.Text(f"{nombre} ({cantidad})", size=12, color="#171a1f"),
+    #             ],
+    #             spacing=5,
+    #         ) for i, (nombre, cantidad) in enumerate(ventas_por_categoria)
+    #     ],
+    #     alignment=ft.MainAxisAlignment.CENTER,
+    #     height = 250,
+    #     scroll = ft.ScrollMode.AUTO,
+    #     spacing=10,
+    #     margin=ft.Margin.only(bottom=50),
+    # )
+
+    # pastel_visual = ft.Container(
+    #     width=250,
+    #     height=250,
+    #     margin=ft.Margin.only(bottom=50),
+
+    #     bgcolor="#000000",
+    #     border_radius=250,
+    #     content=ft.Stack(
+    #         controls=[
+    #             ft.Container(
+    #                 content=ft.Text("Ventas por\nCategoría", size=14, text_align=ft.TextAlign.CENTER),
+    #                 alignment=ft.MainAxisAlignment.CENTER,
+    #             )
+    #         ]
+    #     ),
+    # )
+
+    # contenedor_pastel = ft.Container(
+    #     content=ft.Column([
+    #         ft.Text("Ventas por Categoría", size=18, weight=ft.FontWeight.BOLD, color="#6b1d41"),
+    #         ft.Row([
+    #             pastel_visual,
+    #             pastel,
+    #         ], alignment=ft.MainAxisAlignment.CENTER, spacing=30),
+    #     ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+    #     bgcolor="#f9f6f0",
+    #     border=ft.Border.all(1, "#e2dcd5"),
+    #     border_radius=10,
+    #     padding=20,
+    #     expand=True,
+    # )
+
+    # === GRÁFICA DE PASTEL (VENTAS POR CATEGORÍA) ===
+    total_categorias = sum(cantidad for _, cantidad in ventas_por_categoria) or 1
+    colores = ["#6b1d41", "#c9a03d", "#926600", "#d30000", "#96C61B", "#AC0A32", "#33011C"]
+
+    # Dibujar la gráfica de pastel con Canvas
+    pastel_canvas = ft.Container(
+        content=dibujar_pastel(ventas_por_categoria, total_categorias),
+        width=250,
+        height=250,
+    )
+
+    # Leyenda de categorías
+    leyenda = ft.Column(
         controls=[
             ft.Row(
                 controls=[
-                    ft.Container(width=20, height=20, bgcolor=colores[i % len(colores)], border_radius=25),
-                    ft.Text(f"{nombre} ({cantidad})", size=12, color="#171a1f"),
+                    ft.Container(width=16, height=16, bgcolor=colores[i % len(colores)], border_radius=16),
+                    ft.Text(f"{nombre} ({cantidad}) - {cantidad/total_categorias*100:.1f}%", size=12, color = "#171a1f"),
                 ],
-                spacing=5,
+                spacing=8,
             ) for i, (nombre, cantidad) in enumerate(ventas_por_categoria)
         ],
         alignment=ft.MainAxisAlignment.CENTER,
-        height = 250,
+        height = 200,
         scroll = ft.ScrollMode.AUTO,
         spacing=10,
         margin=ft.Margin.only(bottom=50),
     )
 
-    pastel_visual = ft.Container(
-        width=250,
-        height=250,
-        margin=ft.Margin.only(bottom=50),
-
-        bgcolor="#000000",
-        border_radius=250,
-        content=ft.Stack(
-            controls=[
-                ft.Container(
-                    content=ft.Text("Ventas por\nCategoría", size=14, text_align=ft.TextAlign.CENTER),
-                    alignment=ft.MainAxisAlignment.CENTER,
-                )
-            ]
-        ),
-    )
-
     contenedor_pastel = ft.Container(
         content=ft.Column([
-            ft.Text("Ventas por Categoría", size=18, weight=ft.FontWeight.BOLD, color="#6b1d41"),
+            ft.Text("Ventas por Categoría", size=18, weight=ft.FontWeight.BOLD, color="#6b1d41", margin = ft.Margin.only(bottom = 20)),
             ft.Row([
-                pastel_visual,
-                pastel,
-            ], alignment=ft.MainAxisAlignment.CENTER, spacing=30),
-        ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                pastel_canvas,
+                leyenda,
+            ], alignment=ft.MainAxisAlignment.CENTER, spacing=30, vertical_alignment=ft.CrossAxisAlignment.CENTER),
+        ]),
         bgcolor="#f9f6f0",
         border=ft.Border.all(1, "#e2dcd5"),
         border_radius=10,
@@ -294,24 +539,25 @@ def informes(regresar):
     # === TABLA DE PRODUCTOS MÁS VENDIDOS ===
     tabla_top = ft.DataTable(
         columns=[
-            ft.DataColumn(ft.Text("Posición", color="#926600", weight=ft.FontWeight.BOLD)),
+            ft.DataColumn(ft.Text("#", color="#926600", weight=ft.FontWeight.BOLD)),
             ft.DataColumn(ft.Text("Nombre", color="#926600", weight=ft.FontWeight.BOLD)),
             ft.DataColumn(ft.Text("Categoría", color="#926600", weight=ft.FontWeight.BOLD)),
-            ft.DataColumn(ft.Text("Unidades", color="#926600", weight=ft.FontWeight.BOLD)),
+            ft.DataColumn(ft.Text("Unidades vendidas", color="#926600", weight=ft.FontWeight.BOLD)),
             ft.DataColumn(ft.Text("Ingresos", color="#926600", weight=ft.FontWeight.BOLD)),
         ],
         rows=[
             ft.DataRow(
                 cells=[
-                    ft.DataCell(ft.Text(f"#{i+1}", color="#0d1b2a", weight=ft.FontWeight.BOLD)),
+                    ft.DataCell(ft.Text(f"{i+1}", color="#0d1b2a", weight=ft.FontWeight.BOLD)),
                     ft.DataCell(ft.Text(nombre, color="#0d1b2a")),
-                    ft.DataCell(ft.Text(categoria, color="#0d1b2a")),
-                    ft.DataCell(ft.Text(str(unidades), color="#0d1b2a")),
-                    ft.DataCell(ft.Text(f"${ingresos:,.2f}", color="#6b1d41", weight=ft.FontWeight.BOLD)),
+                    ft.DataCell(ft.Row(controls =[ft.Container(width=16, height=16, bgcolor=colores[i % len(colores)], border_radius=16), ft.Text(categoria, color="#0d1b2a") ])),
+                    ft.DataCell(ft.Text(str(unidades), color="#0d1b2a", weight = ft.FontWeight.BOLD, text_align= ft.TextAlign.CENTER, width = 130, expand = True)),
+                    ft.DataCell(ft.Row(controls = [ft.Icon(ft.Icons.ATTACH_MONEY, size = 20, color = "#c9a03d"), ft.Text(f"{ingresos:,.2f}", color="#0d1b2a") ], spacing = 0)),
                 ]
             ) for i, (id_art, nombre, categoria, unidades, ingresos) in enumerate(top_productos)
         ],
         expand=True,
+        divider_thickness=0,
         width = 5000 
     )
 
