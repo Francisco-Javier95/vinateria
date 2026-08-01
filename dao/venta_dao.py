@@ -54,23 +54,29 @@ class VentaDAO:
         cursor = conexion.cursor()
 
         cursor.execute(
-            "SELECT venta_id, venta_venta, venta_fecha, venta_ganancia, venta_usuario, venta_articulo, venta_estado FROM ventas WHERE venta_id = %s",
+            """
+                SELECT v.venta_id, v.venta_venta, v.venta_fecha, v.venta_ganancia, 
+                    v.venta_usuario, u.usuario_usuario, v.venta_articulo, v.venta_estado
+                FROM ventas v
+                INNER JOIN usuarios u ON v.venta_usuario = u.usuario_id
+                WHERE v.venta_id = %s
+            """,
             (venta_id,)
         )
 
-        datos_venta = cursor.fetchone()
+        datos = cursor.fetchone()
         cursor.close()
         conexion.close()
 
-        if datos_venta:
+        if datos:
             return Venta(
-                venta_id = datos_venta[0],
-                venta_venta = datos_venta[1],
-                venta_fecha = datos_venta[2],
-                venta_ganancia = datos_venta[3],
-                venta_usuario = datos_venta[4],
-                venta_articulo = datos_venta[5],
-                venta_estado = datos_venta[6],
+                venta_id=datos[0],
+                venta_venta=datos[1],
+                venta_fecha=datos[2],
+                venta_ganancia=datos[3],
+                venta_usuario=datos[5],          # Aquí guardamos el nombre del usuario
+                venta_articulo=datos[6],
+                venta_estado=datos[7]
             )
 
         return None

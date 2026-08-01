@@ -585,15 +585,31 @@ def informes(regresar):
                         weight=ft.FontWeight.BOLD, 
                         color="#6b1d41"
                     ),
+                    # Boton de exportar
                     ft.OutlinedButton(
-                        "Regresar",
-                        icon=ft.Icons.ARROW_BACK,
-                        on_click=lambda e: regresar(),
-                        style=ft.ButtonStyle(
-                            bgcolor="#6b1d41",
-                            color="#ffffff",
-                            shape=ft.RoundedRectangleBorder(radius=10),
+                        "Exportar",
+                        style = ft.ButtonStyle(
+                            bgcolor = "#6b1d41",  # Color de fondo
+                            side = {
+                                ft.ControlState.DEFAULT: 
+                                ft.BorderSide(
+                                    width = 2,
+                                    color = "#a11e2f"
+                                ),
+                                # Borde rojo de 2 píxeles al pasar el mouse
+                                ft.ControlState.HOVERED: 
+                                ft.BorderSide(
+                                    width = 2,
+                                    color = "#6b1d41"
+                                )
+                            },
+                            color = "#ffffff",
+                            shape = ft.RoundedRectangleBorder(radius = 10)
                         ),
+                        height = 40,
+                                                    
+                        icon = ft.Icons.FILE_DOWNLOAD,
+                        # on_click = abrir_formulario_registrar_modal # Al hacer clic, sobre el boton de "Registrar" se abrira el modal
                     ),
                 ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
 

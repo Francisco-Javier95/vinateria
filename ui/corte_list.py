@@ -9,6 +9,8 @@ from globals import venta_pendiente_global  # importar venta global
 from ui.venta_acciones.venta_form_edit import venta_form_edit
 from ui.venta_acciones.venta_alert_cancel_2 import alerta_cancelar_2
 
+from ui.ver_detalles_venta import ver_detalles
+
 def ventas_list(regresar):
     # ---------------- Variables de estado -------------------
     capa_oscura_abierta_modal = False # Indica si el modal esta visible/activo
@@ -296,14 +298,21 @@ def ventas_list(regresar):
             pagina_referencia.update()
 
     def ver_detalles_venta(evento):
-        # Muestra los detalles de una venta concluida
         venta_id = evento.control.data if evento.control else None
-
         if venta_id is None:
             print("No se pudo obtener el ID de la venta")
             return
 
-        pila.page.update()
+        print(f"Viendo detalles de venta ID: {venta_id}")
+        
+        # Cargar la vista de detalles en el contenedor principal
+        # 'regresar' es la función que muestra la lista de ventas
+        contenido = ver_detalles(venta_id, regresar)
+        # Asumiendo que tienes un contenedor en tu layout para mostrar el contenido
+        # Por ejemplo, si estás usando un Stack con páginas:
+        pila.controls.clear()
+        pila.controls.append(contenido)
+        pila.update()
 
     def abrir_formulario_editar_venta(evento):
         # Crear y mostrar el modal con el formulario de "Editar venta"
@@ -561,7 +570,6 @@ def ventas_list(regresar):
         suffix_icon = ft.Icon(
             ft.Icons.SEARCH_OUTLINED, # Icono de $
             color = "#6b1d41"
-
         ),
     )
 
