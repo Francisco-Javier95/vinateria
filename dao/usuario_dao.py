@@ -135,3 +135,63 @@ class UsuarioDAO:
         conexion.commit()
         cursor.close()
         conexion.close()
+
+
+    def obtener_por_correo(self, correo):
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+        cursor.execute(
+            "SELECT usuario_id, usuario_usuario, usuario_apaterno, usuario_amaterno, usuario_nuempleado, usuario_correo, usuario_contrasenia, usuario_privilegio FROM usuarios WHERE usuario_correo = %s",
+            (correo,)
+        )
+        datos = cursor.fetchone()
+        cursor.close()
+        conexion.close()
+        if datos:
+            from models.usuario import Usuario
+            return Usuario(
+                usuario_id=datos[0],
+                usuario_usuario=datos[1],
+                usuario_apaterno=datos[2],
+                usuario_amaterno=datos[3],
+                usuario_nuempleado=datos[4],
+                usuario_correo=datos[5],
+                usuario_contrasenia=datos[6],
+                usuario_privilegio=datos[7]
+            )
+        return None
+
+    def obtener_por_correo_y_empleado(self, correo, nuempleado):
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+        cursor.execute(
+            "SELECT usuario_id, usuario_usuario, usuario_apaterno, usuario_amaterno, usuario_nuempleado, usuario_correo, usuario_contrasenia, usuario_privilegio FROM usuarios WHERE usuario_correo = %s AND usuario_nuempleado = %s",
+            (correo, nuempleado)
+        )
+        datos = cursor.fetchone()
+        cursor.close()
+        conexion.close()
+        if datos:
+            from models.usuario import Usuario
+            return Usuario(
+                usuario_id=datos[0],
+                usuario_usuario=datos[1],
+                usuario_apaterno=datos[2],
+                usuario_amaterno=datos[3],
+                usuario_nuempleado=datos[4],
+                usuario_correo=datos[5],
+                usuario_contrasenia=datos[6],
+                usuario_privilegio=datos[7]
+            )
+        return None
+
+    def actualizar_contrasenia(self, usuario_id, nueva_contrasenia_hash):
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+        cursor.execute(
+            "UPDATE usuarios SET usuario_contrasenia = %s WHERE usuario_id = %s",
+            (nueva_contrasenia_hash, usuario_id)
+        )
+        conexion.commit()
+        cursor.close()
+        conexion.close()

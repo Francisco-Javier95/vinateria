@@ -126,10 +126,18 @@ def usuarios_list(regresar):
                                 ),
                                 ft.Text(usuario_nombre_completo, color = "#0d1b2a", weight = ft.FontWeight.BOLD)
                             ],
-                            width = 300
+                            width = 250
                         ),
                     ),
-                    ft.DataCell(ft.Text(usuario.usuario_contrasenia, color = "#0d1b2a")),
+                    ft.DataCell(
+                        ft.Text(
+                            usuario.usuario_contrasenia, 
+                            color = "#0d1b2a", 
+                            weight = ft.FontWeight.BOLD,
+                            overflow = ft.TextOverflow.ELLIPSIS,  # Agrega "..." al final
+                            width = 100,  # Ancho aproximado para 20 caracteres
+                        )
+                    ),
                     ft.DataCell(ft.Text(usuario.usuario_nuempleado, color = "#0d1b2a", text_align = ft.TextAlign.CENTER, weight = ft.FontWeight.BOLD, width = 100, expand = True)),
                     ft.DataCell(ft.Text(usuario.usuario_correo, color = "#0d1b2a")),
                     ft.DataCell(ft.Container(ft.Text(usuario.usuario_privilegio, color = "#926600"), bgcolor = "#ffde93", padding = ft.Padding.symmetric(vertical = 4, horizontal = 8), border_radius = 4)),

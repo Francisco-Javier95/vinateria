@@ -1,5 +1,5 @@
 import flet as ft
-from ui.main_window import main_window
+from ui.main import main
 
 from dao.articulo_dao import ArticuloDAO
 from dao.categoria_dao import CategoriaDAO
@@ -615,4 +615,4 @@ def punto_de_venta():
 #     main()
 
 # Es obligatorio declarar assets_dir para que Flet pueda encontrar la carpeta donde se encuetra la imagen del Logotipo
-ft.app(target = main_window, assets_dir = "assets")
+ft.app(target = main, assets_dir = "assets")

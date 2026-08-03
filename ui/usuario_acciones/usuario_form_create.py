@@ -1,4 +1,5 @@
 import flet as ft
+import hashlib
 
 from models.usuario import Usuario
 from dao.usuario_dao import UsuarioDAO
@@ -172,7 +173,7 @@ def usuario_form(regresar = None, formulario_visible = False, cerrando_modal = N
     )
     contrasenia_input = ft.TextField(
         label = "Contraseña: ",
-        password = True, # Oculta ek texto por defecto
+        password = True, # Oculta el texto por defecto
         can_reveal_password = True, # Habilita el bóton para ver/ocultar
         label_style = estilo_de_label,
         on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(), # Estilo del label en focus
@@ -262,9 +263,18 @@ def usuario_form(regresar = None, formulario_visible = False, cerrando_modal = N
             # Actualizar la interfaz para mostrar el mensaje
             evento.page.update()
             return
+
+        if len(usuario_contrasenia) < 8:
+            mensaje.value = "La contraseña debe tener al menos 8 caracteres"
+            mensaje.color = ft.Colors.RED
+            evento.page.update()
+            return
+        
         try:
             usuario_dao = UsuarioDAO()
             usuario_id = None
+
+            nueva_contrasenia = hashlib.sha256(usuario_contrasenia.encode()).hexdigest()
 
             nuevo_usuario = Usuario(
                 usuario_id = usuario_id,
@@ -273,7 +283,7 @@ def usuario_form(regresar = None, formulario_visible = False, cerrando_modal = N
                 usuario_amaterno = usuario_amaterno,
                 usuario_nuempleado = int(usuario_nuempleado), # Convertir a numero entero
                 usuario_correo = usuario_correo,
-                usuario_contrasenia = usuario_contrasenia,
+                usuario_contrasenia = nueva_contrasenia,
                 usuario_privilegio = int(usuario_privilegio) # Convertir a numero entero
             )
 
