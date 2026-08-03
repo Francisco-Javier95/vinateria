@@ -86,7 +86,7 @@ def informes(regresar):
         cursor = conexion.cursor()
         cursor.execute("""
             SELECT a.articulo_id, a.articulo_articulo,
-                c.categoria_categoria,
+                c.categoria_categoria, a.articulo_imagen,
                 a.articulo_vendidos as unidades_vendidas,
                 a.articulo_vendidos * a.articulo_precio as ingresos
             FROM articulos_1 a
@@ -98,8 +98,8 @@ def informes(regresar):
         datos = cursor.fetchall()
         cursor.close()
         conexion.close()
-        return [(id_art, nombre, categoria, int(unidades), float(ingresos))
-                for id_art, nombre, categoria, unidades, ingresos in datos]
+        return [(id_art, nombre, categoria, imagen, int(unidades), float(ingresos))
+                for id_art, nombre, categoria, imagen, unidades, ingresos in datos]
 
 
     def obtener_ganancia_por_tipo(tipo):
@@ -548,13 +548,13 @@ def informes(regresar):
         rows=[
             ft.DataRow(
                 cells=[
-                    ft.DataCell(ft.Text(f"{i+1}", color="#0d1b2a", weight=ft.FontWeight.BOLD)),
+                    ft.DataCell(ft.Row( controls = [ ft.Text(f"{i+1}", color="#0d1b2a", weight=ft.FontWeight.BOLD), ft.Image(src = f"assets/imagenes/imagenes_DB/{imagen}", width=100, margin = ft.Margin.only(left = 80)) ])),
                     ft.DataCell(ft.Text(nombre, color="#0d1b2a")),
                     ft.DataCell(ft.Row(controls =[ft.Container(width=16, height=16, bgcolor=colores[i % len(colores)], border_radius=16), ft.Text(categoria, color="#0d1b2a") ])),
                     ft.DataCell(ft.Text(str(unidades), color="#0d1b2a", weight = ft.FontWeight.BOLD, text_align= ft.TextAlign.CENTER, width = 130, expand = True)),
                     ft.DataCell(ft.Row(controls = [ft.Icon(ft.Icons.ATTACH_MONEY, size = 20, color = "#c9a03d"), ft.Text(f"{ingresos:,.2f}", color="#0d1b2a") ], spacing = 0)),
                 ]
-            ) for i, (id_art, nombre, categoria, unidades, ingresos) in enumerate(top_productos)
+            ) for i, (id_art, nombre, categoria, imagen, unidades, ingresos) in enumerate(top_productos)
         ],
         expand=True,
         divider_thickness=0,

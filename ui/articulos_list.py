@@ -27,7 +27,7 @@ def articulos_list(regresar):
         expand = True,
         runs_count = 5,  # 5 columnas
         max_extent = 300,
-        child_aspect_ratio = 0.80,  # Relación de aspecto (ancho/alto)
+        child_aspect_ratio = 0.75,  # Relación de aspecto (ancho/alto)
         spacing = 15,
         run_spacing = 15,
         padding = 0,
@@ -42,7 +42,7 @@ def articulos_list(regresar):
         
         # --- IMAGEN (estática por ahora) ---
         imagen = ft.Image(
-            src = f"imagenes/imagenes_DB/dramatic-shadows-enhance-premium-wine-bottle-s-luxurious-appearance-showcasing-rich-color-photo.webp",  # Imagen estática de ejemplo
+            src = f"assets/imagenes/imagenes_DB/{articulo.articulo_imagen}",  # Imagen estática de ejemplo
             expand = True
         )
         
@@ -188,7 +188,11 @@ def articulos_list(regresar):
                         content = (
                             imagen
                         ),
-                        border_radius = 5
+                        border_radius = 5,
+                        height = 170,
+                        width = 275,
+                        bgcolor = "#000000",
+                        align=ft.Alignment.CENTER
                     ),
                     # Contenido de la tarjeta
                     ft.Container(
@@ -220,7 +224,7 @@ def articulos_list(regresar):
                 "#e2dcd5"
             ),
             border_radius = 10,
-            height = 800
+            height = 900
         )
         
         return tarjeta

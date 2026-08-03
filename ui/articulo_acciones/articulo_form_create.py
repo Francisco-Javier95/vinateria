@@ -1,4 +1,9 @@
 import flet as ft
+import os
+import shutil
+from datetime import datetime
+import tkinter as tk
+from tkinter import filedialog
 
 from models.articulo import Articulo
 from dao.articulo_dao import ArticuloDAO
@@ -6,6 +11,7 @@ from dao.categoria_dao import CategoriaDAO
 from dao.proveedor_dao import ProveedorDAO
 
 def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = None):
+
     # Estilos de los label
     estilo_de_label = ft.TextStyle(
         color = "#926600", 
@@ -89,17 +95,108 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
         except Exception as error:
             mensaje.value = f"Error al consultar las categorías: {error}"
             mensaje.color = ft.Colors.RED
-    
-    imagen_input = ft.TextField(
-        label = "Imagen: ",
-        label_style = estilo_de_label,
-        on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(),
-        on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(),
-        hint_text = "imagen.jpg",  # Esto es el placeholder
-        focused_border_color = "#c9a03d", # Borde al enfocar
+
+    # ----------------- Campo de imagen ---------------------
+    # === CONFIGURACIÓN DE CARPETA DE IMÁGENES ===
+    CARPETA_IMAGENES = "assets/imagenes/imagenes_DB"
+    if not os.path.exists(CARPETA_IMAGENES):
+        os.makedirs(CARPETA_IMAGENES)
+
+    # Variable para almacenar la ruta temporal de la imagen seleccionada
+    ruta_imagen_temporal = None  # Ruta original del archivo seleccionado
+    nombre_archivo_destino = None  # Nombre que tendrá en la carpeta assets
+
+    # === FUNCIÓN PARA SELECCIONAR IMAGEN CON TKINTER ===
+    def seleccionar_imagen_tkinter():
+        """Abre un diálogo de selección de archivo con tkinter"""
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes('-topmost', True)
+        archivo = filedialog.askopenfilename(
+            title="Selecciona una imagen",
+            filetypes=[("Imágenes", "*.jpg;*.jpeg;*.png;*.gif;*.bmp;*.webp")]
+        )
+        root.destroy()
+        return archivo
+
+    # === FUNCIÓN PARA PROCESAR LA IMAGEN SELECCIONADA ===
+    def on_seleccionar_imagen(e):
+        nonlocal ruta_imagen_temporal, nombre_archivo_destino
+
+        archivo = seleccionar_imagen_tkinter()
+        
+        if archivo:
+            # Guardar la ruta original
+            ruta_imagen_temporal = archivo
+            
+            # Generar el nombre que tendrá en assets (sin copiar aún)
+            nombre_original = os.path.basename(archivo)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            nombre_base, extension = os.path.splitext(nombre_original)
+            nombre_archivo_destino = f"{nombre_base}_{timestamp}{extension}"
+            
+            # Mostrar la imagen en el botón (cargando desde la ruta original)
+            btn_seleccionar.content = ft.Image(
+                src=archivo,  # Ruta original temporal
+                width=150,
+                height=175,
+                border_radius=10,
+            )
+            
+            e.page.update()
+        else:
+            print("Selección cancelada")
+            e.page.update()
+
+    # === CONTROLES DE INTERFAZ PARA LA IMAGEN ===
+    # Botón que actúa como contenedor de la imagen (fondo por defecto)
+    btn_seleccionar = ft.OutlinedButton(
+        content=ft.Image(
+            src = f"assets/imagenes/imagen_default_campo_imagen.png",
+            width=150,
+            height=175,
+            border_radius=10,
+        ),
+        on_click=on_seleccionar_imagen,
+        style=ft.ButtonStyle(
+            bgcolor = {
+                ft.ControlState.HOVERED: "#ede9e4",
+                ft.ControlState.DEFAULT: "#ffffff",
+            },
+            side = {
+                ft.ControlState.DEFAULT: ft.BorderSide(width=1, color="#ede9e4"),
+                ft.ControlState.HOVERED: ft.BorderSide(width=1, color="#916500"),
+            },
+            shape=ft.RoundedRectangleBorder(radius=10),
+            padding=0,
+        ),
         expand = True,
-        color = "#424955"
+        tooltip = "Añadir imagen"
     )
+
+    campo_imagen = ft.Column(
+        controls=[
+            ft.Row(
+                controls=[btn_seleccionar],
+                spacing=10,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            ),
+        ],
+        spacing=5,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+    )
+    
+    # imagen_input = ft.TextField(
+    #     label = "Imagen: ",
+    #     label_style = estilo_de_label,
+    #     on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(),
+    #     on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(),
+    #     hint_text = "imagen.jpg",  # Esto es el placeholder
+    #     focused_border_color = "#c9a03d", # Borde al enfocar
+    #     expand = True,
+    #     color = "#424955"
+    # )
+
 
     precio_input = ft.TextField(
         label = "Precio: ",
@@ -295,31 +392,36 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
         articulo_input.value = ""
         codigo_input.value = ""
         categoria_input.value = categoria_input.options[0].key if categoria_input.options else ""
-        imagen_input.value = ""
         precio_input.value = ""
         stock_input.value = ""
         proveedor_input.value = proveedor_input.options[0].key if proveedor_input.options else ""
         boton_decremento_activo()
 
     def guardar_articulo(evento):
+        nonlocal ruta_imagen_temporal, nombre_archivo_destino
+
         # Recuperar los valores de los TextFile
         articulo_articulo = articulo_input.value
         articulo_codigo = codigo_input.value
         articulo_categoria = categoria_input.value # El valor seleccionado del Dropdown
-        articulo_imagen = imagen_input.value
         articulo_precio = precio_input.value
         articulo_stock = stock_input.value
         articulo_proveedor = proveedor_input.value
         articulo_vendidos = 0
 
         # Validación de campos vacíos
-        if articulo_articulo == "" or articulo_codigo == "" or articulo_categoria == None or articulo_imagen == "" or articulo_precio == "" or articulo_stock == "" or articulo_proveedor == "":
+        if (articulo_articulo == "" or articulo_codigo == "" or articulo_categoria is None or articulo_precio == "" or articulo_stock == "" or articulo_proveedor == "" or ruta_imagen_temporal is None or nombre_archivo_destino is None):
             mensaje.value = "Todos los campos son obligatorios"
             mensaje.color = ft.Colors.RED
             # Actualizar la interfaz para mostrar el mensaje
             evento.page.update()
             return
         try:
+            # === COPIAR LA IMAGEN A LA CARPETA ASSETS ===
+            ruta_destino = os.path.join(CARPETA_IMAGENES, nombre_archivo_destino)
+            shutil.copy2(ruta_imagen_temporal, ruta_destino)
+            print(f"Imagen copiada: {ruta_destino}")
+
             articulo_dao = ArticuloDAO()
             articulo_id = None
 
@@ -328,7 +430,7 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
                 articulo_articulo = articulo_articulo,
                 articulo_codigo = articulo_codigo,
                 articulo_categoria = int(articulo_categoria), # Convertir a entero
-                articulo_imagen = articulo_imagen,
+                articulo_imagen = nombre_archivo_destino, # Solo se guarda el nombre de la imagen
                 articulo_precio = float(articulo_precio), # Convertir a numero real
                 articulo_stock = int(articulo_stock), # Convertir a numero entero
                 articulo_proveedor = int(articulo_proveedor), # Convertir a numero entero
@@ -341,6 +443,18 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
             mensaje.color = ft.Colors.GREEN
             
             limpiar_formualrio()
+
+            # Restaurar la imagen por defecto en el botón
+            btn_seleccionar.content = ft.Image(
+                src = f"assets/imagenes/imagen_default_campo_imagen.png",
+                width=150,
+                height=175,
+                border_radius=10,
+            )
+
+            # === LIMPIAR LA SELECCIÓN DE IMAGEN ===
+            ruta_imagen_temporal = None
+            nombre_archivo_destino = None
 
             # # ---------------------- Si el modal esta activo y si existe la función para cerrar
             # if formulario_visible and cerrando_modal:
@@ -437,7 +551,7 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
         controls = [
             # Campo Imagen (ocupara 3 celdas de alto)
             ft.Container(
-                content = imagen_input,
+                content = campo_imagen,
                 height = 174,
                 expand = True
             ),
@@ -617,4 +731,6 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
             padding = 30,
             content = contenido_formulario,
         )
+
+    
     

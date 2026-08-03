@@ -1,5 +1,11 @@
 import flet as ft
 
+import os
+import shutil
+from datetime import datetime
+import tkinter as tk
+from tkinter import filedialog
+
 from models.articulo import Articulo
 from models.articulo import Articulo_editar
 from dao.articulo_dao import ArticuloDAO
@@ -103,19 +109,103 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
         except Exception as error:
             mensaje.value = f"Error al consultar las categorías: {error}"
             mensaje.color = ft.Colors.RED
-    
-    imagen_input = ft.TextField(
-        label = "Imagen: ",
-        label_style = estilo_de_label,
-        on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(),
-        on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(),
-        hint_text = "imagen.jpg",  # Esto es el placeholder
-        focused_border_color = "#c9a03d", # Borde al enfocar
-        expand = True,
-        color = "#424955",
 
-        value = registro.get('imagen') if registro else "" # Cargar datos
+    # ----------------- Campo de imagen ---------------------
+    CARPETA_IMAGENES = "assets/imagenes/imagenes_DB"
+    if not os.path.exists(CARPETA_IMAGENES):
+        os.makedirs(CARPETA_IMAGENES)
+
+    # === VARIABLES DE ESTADO PARA LA IMAGEN ===
+    nombre_imagen_antigua = registro.get('imagen') if registro else None  # Imagen actual en BD
+    nombre_imagen_nueva = None  # Nueva imagen seleccionada (temporal)
+    eliminar_imagen_actual = False  # Bandera para eliminar la imagen antigua al guardar
+
+    # === FUNCIÓN PARA SELECCIONAR IMAGEN CON TKINTER ===
+    def seleccionar_imagen_tkinter():
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes('-topmost', True)
+        archivo = filedialog.askopenfilename(
+            title="Selecciona una imagen",
+            filetypes=[("Imágenes", "*.jpg;*.jpeg;*.png;*.gif;*.bmp;*.webp")]
+        )
+        root.destroy()
+        return archivo
+
+    # === FUNCIÓN PARA PROCESAR LA IMAGEN SELECCIONADA ===
+    def on_seleccionar_imagen(e):
+        nonlocal nombre_imagen_nueva, eliminar_imagen_actual
+
+        archivo = seleccionar_imagen_tkinter()
+        if archivo:
+            # Generar nombre único para la nueva imagen
+            nombre_original = os.path.basename(archivo)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            nombre_base, extension = os.path.splitext(nombre_original)
+            nombre_nuevo = f"{nombre_base}_{timestamp}{extension}"
+
+            # Guardar el nombre de la nueva imagen (aún no se copia físicamente)
+            nombre_imagen_nueva = nombre_nuevo
+
+            # Mostrar la vista previa (usando la ruta temporal del archivo original)
+            imagen_previa.src = archivo  # Mostrar desde la ubicación original
+            imagen_previa.visible = True
+            e.page.update()
+
+            # Si hay una imagen antigua y no se ha marcado para eliminar, la marcamos
+            if nombre_imagen_antigua and not eliminar_imagen_actual:
+                eliminar_imagen_actual = True
+        else:
+            print("Selección cancelada")
+
+    # === CONTROLES DE INTERFAZ ===
+    imagen_previa = ft.Image(
+        src = f"assets/imagenes/imagenes_DB/{nombre_imagen_antigua}" if nombre_imagen_antigua else "",
+        width=150,
+        height=175,
+        border_radius=10,
+        visible=bool(nombre_imagen_antigua)
     )
+
+    # Botón que actúa como contenedor de la imagen (fondo por defecto)
+    btn_seleccionar = ft.OutlinedButton(
+        content=imagen_previa,
+        on_click=on_seleccionar_imagen,
+        style=ft.ButtonStyle(
+            bgcolor = {
+                ft.ControlState.HOVERED: "#ede9e4",
+                ft.ControlState.DEFAULT: "#ffffff",
+            },
+            side = {
+                ft.ControlState.DEFAULT: ft.BorderSide(width=1, color="#ede9e4"),
+                ft.ControlState.HOVERED: ft.BorderSide(width=1, color="#916500"),
+            },
+            shape=ft.RoundedRectangleBorder(radius=10),
+            padding=0,
+        ),
+        expand = True,
+        tooltip = "Añadir imagen"
+    )
+
+    campo_imagen = ft.Column(
+        controls=[
+            ft.Row(controls=[btn_seleccionar], spacing=10),
+        ],
+        spacing=5,
+    )
+    
+    # imagen_input = ft.TextField(
+    #     label = "Imagen: ",
+    #     label_style = estilo_de_label,
+    #     on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(),
+    #     on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(),
+    #     hint_text = "imagen.jpg",  # Esto es el placeholder
+    #     focused_border_color = "#c9a03d", # Borde al enfocar
+    #     expand = True,
+    #     color = "#424955",
+
+    #     value = registro.get('imagen') if registro else "" # Cargar datos
+    # )
 
     precio_input = ft.TextField(
         label = "Precio: ",
@@ -328,17 +418,58 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
     #     proveedor_input.value = proveedor_input.options[0].key if proveedor_input.options else ""
 
     def editar_articulo(evento):
+        nonlocal nombre_imagen_antigua, nombre_imagen_nueva, eliminar_imagen_actual
+
         # Recuperar los valores de los TextFile
         articulo_articulo = articulo_input.value
         articulo_codigo = codigo_input.value
         articulo_categoria = categoria_input.value # El valor seleccionado del Dropdown
-        articulo_imagen = imagen_input.value
         articulo_precio = precio_input.value
         articulo_stock = stock_input.value
         articulo_proveedor = proveedor_input.value # El valor seleccionado del Dropdown
 
+        # --- Manejo de la imagen ---
+        imagen_final = None
+
+        # Si hay una nueva imagen seleccionada, la copiamos y eliminamos la antigua
+        if nombre_imagen_nueva:
+            # Copiar la nueva imagen a la carpeta assets
+            ruta_origen = imagen_previa.src  # Ruta temporal de la imagen seleccionada
+            if os.path.exists(ruta_origen):
+                ruta_destino = os.path.join(CARPETA_IMAGENES, nombre_imagen_nueva)
+                try:
+                    shutil.copy2(ruta_origen, ruta_destino)
+                    print(f"✅ Nueva imagen copiada: {ruta_destino}")
+                    imagen_final = nombre_imagen_nueva
+                except Exception as error:
+                    print(f"❌ Error al copiar la nueva imagen: {error}")
+                    mensaje.value = f"Error al copiar la imagen: {error}"
+                    mensaje.color = ft.Colors.RED
+                    evento.page.update()
+                    return
+            else:
+                mensaje.value = "❌ No se encontró el archivo de imagen temporal"
+                mensaje.color = ft.Colors.RED
+                evento.page.update()
+                return
+
+            # Eliminar la imagen antigua si existe y está marcada para eliminar
+            if eliminar_imagen_actual and nombre_imagen_antigua:
+                ruta_antigua = os.path.join(CARPETA_IMAGENES, nombre_imagen_antigua)
+                if os.path.exists(ruta_antigua):
+                    try:
+                        os.remove(ruta_antigua)
+                        print(f"🗑️ Imagen antigua eliminada: {ruta_antigua}")
+                    except Exception as error:
+                        print(f"⚠️ No se pudo eliminar la imagen antigua: {error}")
+                # Limpiar la bandera después de eliminar
+                eliminar_imagen_actual = False
+        # Si no hay cambios en la imagen, mantener la existente
+        else:
+            imagen_final = nombre_imagen_antigua
+
         # Validación de campos vacíos
-        if articulo_articulo == "" or articulo_codigo == "" or articulo_categoria == None or articulo_imagen == "" or articulo_precio == "" or articulo_stock == "" or articulo_proveedor == "":
+        if articulo_articulo == "" or articulo_codigo == "" or articulo_categoria == None or articulo_precio == "" or articulo_stock == "" or articulo_proveedor == "":
             mensaje.value = "Todos los campos son obligatorios"
             mensaje.color = ft.Colors.RED
             # Actualizar la interfaz para mostrar el mensaje
@@ -353,13 +484,13 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
                 articulo_articulo = articulo_articulo,
                 articulo_codigo = articulo_codigo,
                 articulo_categoria = int(articulo_categoria), # Convertir a entero
-                articulo_imagen = articulo_imagen,
+                articulo_imagen = imagen_final,
                 articulo_precio = float(articulo_precio), # Convertir a numero real
                 articulo_stock = int(articulo_stock), # Convertir a entero
                 articulo_proveedor = int(articulo_proveedor), # Convertir a entero
             )
 
-            print(articulo_id, articulo_articulo, articulo_codigo, articulo_categoria, articulo_imagen, articulo_precio, articulo_stock, articulo_proveedor)
+            print(articulo_id, articulo_articulo, articulo_codigo, articulo_categoria, imagen_final, articulo_precio, articulo_stock, articulo_proveedor)
 
             articulo_dao.editar_form(editar_articulo)
 
@@ -463,7 +594,7 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
         controls = [
             # Campo Imagen (ocupara 3 celdas de alto)
             ft.Container(
-                content = imagen_input,
+                content = campo_imagen,
                 height = 174,
                 expand = True
             ),

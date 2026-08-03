@@ -1,5 +1,7 @@
 import flet as ft
 
+import math
+
 from models.articulo import Articulo
 from dao.articulo_dao import ArticuloDAO
 
@@ -525,7 +527,7 @@ def punto_de_venta(regresar=None):
             campo_codigo.value = articulo.articulo_codigo
 
         # Acutalizar imagen
-        imagen_producto.src = f"imagenes/imagenes_DB/a-bottle-of-wine-on-a-dark-background_acostada.jpg"
+        imagen_producto.src = f"assets/imagenes/imagenes_DB/{articulo.articulo_imagen}"
         imagen_producto.visible = True
 
         # Actualizar existencias
@@ -783,8 +785,8 @@ def punto_de_venta(regresar=None):
     )
     
     imagen_producto = ft.Image(
-        src = f"imagenes/imagenes_DB/a-bottle-of-wine-on-a-dark-background_acostada.jpg",
-        expand = True
+        src = f"assets/imagenes/botella_negra_default_Punto_de_Venta.jpg",
+        expand = True,
     )
 
 
@@ -866,7 +868,7 @@ def punto_de_venta(regresar=None):
         # Limpia la selección actual
         nonlocal producto_seleccionado
         producto_seleccionado = None
-        imagen_producto.visible = False
+        imagen_producto.src = f"assets/imagenes/botella_negra_default_Punto_de_Venta.jpg"
         texto_existencias.value = "Existencias: ---"
         texto_existencias.color = "#9095a0"
 
@@ -923,14 +925,17 @@ def punto_de_venta(regresar=None):
             actualizar_lista_compra()
             actualizar_resumen()
 
+        imagen_rotada = ft.Container(
+            rotate=ft.Rotate(angle=-math.pi/2, alignment=ft.Alignment.CENTER),
+            content=ft.Image(src=f"imagenes/imagenes_DB/{item.articulo_imagen}", width=110, height=110),
+            bgcolor="#000000",
+            border_radius = 5
+        )
+
         return ft.Container(
             content=ft.Row(
                 controls=[
-                    ft.Image(
-                        src = f"imagenes/imagenes_DB/a-bottle-of-wine-on-a-dark-background_acostada.jpg",
-                        expand = True,
-                        border_radius = 8,
-                    ),
+                    imagen_rotada,
                     
                     ft.Column(
                         controls = [
@@ -938,11 +943,11 @@ def punto_de_venta(regresar=None):
 
                             ft.Row(
                                 controls = [
-                                    ft.Text(item.articulo_categoria, size = 16, color = "#9095a0"),
+                                    ft.Text(item.articulo_categoria, size = 12, color = "#9095a0"),
 
                                     ft.Container(content = ft.Text(""), height = 20, width = 1, bgcolor = "#e2dcd5"),
 
-                                    ft.Text(item.articulo_proveedor, size = 16, color = "#9095a0")
+                                    ft.Text(item.articulo_proveedor, size = 12, color = "#9095a0")
                                 ]
                             ),
 
@@ -1023,7 +1028,7 @@ def punto_de_venta(regresar=None):
             bgcolor = "#ffffff",
             border = ft.Border.all(1, "#e2dcd5"),
             border_radius = 10,
-            padding = ft.Padding.symmetric(horizontal = 15, vertical = 10),
+            padding = ft.Padding.symmetric(horizontal = 10, vertical = 10),
             margin = ft.Margin.only(bottom = 5),
         )
 
