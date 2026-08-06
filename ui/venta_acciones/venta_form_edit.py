@@ -52,7 +52,7 @@ def venta_form_edit(regresar = None, formulario_visible = False, cerrando_modal 
         focused_border_color = "#c9a03d", # Borde al enfocar
         bgcolor = "#f9f6f0", # Fondo del menú desplegable
 
-        value = registro.get('usuario_id') if registro else None # Cargar datos
+        value = registro.get('usuario_id') # Cargar datos
     )
 
     # Metodo para cargar los usuarios desde la Base de Datos

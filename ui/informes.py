@@ -586,31 +586,31 @@ def informes(regresar):
                         color="#6b1d41"
                     ),
                     # Boton de exportar
-                    ft.OutlinedButton(
-                        "Exportar",
-                        style = ft.ButtonStyle(
-                            bgcolor = "#6b1d41",  # Color de fondo
-                            side = {
-                                ft.ControlState.DEFAULT: 
-                                ft.BorderSide(
-                                    width = 2,
-                                    color = "#a11e2f"
-                                ),
-                                # Borde rojo de 2 píxeles al pasar el mouse
-                                ft.ControlState.HOVERED: 
-                                ft.BorderSide(
-                                    width = 2,
-                                    color = "#6b1d41"
-                                )
-                            },
-                            color = "#ffffff",
-                            shape = ft.RoundedRectangleBorder(radius = 10)
-                        ),
-                        height = 40,
+                    # ft.OutlinedButton(
+                    #     "Exportar BD",
+                    #     style = ft.ButtonStyle(
+                    #         bgcolor = "#6b1d41",  # Color de fondo
+                    #         side = {
+                    #             ft.ControlState.DEFAULT: 
+                    #             ft.BorderSide(
+                    #                 width = 2,
+                    #                 color = "#a11e2f"
+                    #             ),
+                    #             # Borde rojo de 2 píxeles al pasar el mouse
+                    #             ft.ControlState.HOVERED: 
+                    #             ft.BorderSide(
+                    #                 width = 2,
+                    #                 color = "#6b1d41"
+                    #             )
+                    #         },
+                    #         color = "#ffffff",
+                    #         shape = ft.RoundedRectangleBorder(radius = 10)
+                    #     ),
+                    #     height = 40,
                                                     
-                        icon = ft.Icons.FILE_DOWNLOAD,
-                        # on_click = abrir_formulario_registrar_modal # Al hacer clic, sobre el boton de "Registrar" se abrira el modal
-                    ),
+                    #     icon = ft.Icons.FILE_DOWNLOAD,
+                    #     on_click = lambda e: exportar_bd_simple(e.page),
+                    # ),
                 ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
 
 

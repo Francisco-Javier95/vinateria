@@ -606,7 +606,7 @@ def categorias_list(regresar = None, tabla_categoria_visible = False, cerrando_m
             "#e2dcd5"
         ),
         border_radius = 20,
-        margin = ft.Margin.only(top = 90,left = 150),
+        margin = ft.Margin.only(top = 70, left = 150),
         padding = 30,
         shadow = ft.BoxShadow(
             spread_radius = 1, # Expansión de la sombra
@@ -614,7 +614,7 @@ def categorias_list(regresar = None, tabla_categoria_visible = False, cerrando_m
             color = ft.Colors.BLACK_38
         ),
         width = 1000,
-        height = 700
+        height = 600
     )
 
     # --------------- Agregar el contenido principal a la pila ----------------

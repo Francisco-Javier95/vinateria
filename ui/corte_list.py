@@ -591,6 +591,60 @@ def ventas_list(regresar):
         border_radius = 4
     )
 
+    def exportar_ventas_directo(e):
+        import csv
+        import os
+        from datetime import datetime
+        from database.conexion import Conexion
+
+        try:
+            carpeta_backup = "backups"
+            if not os.path.exists(carpeta_backup):
+                os.makedirs(carpeta_backup)
+
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            nombre_archivo = f"ventas_{timestamp}.csv"
+            ruta_completa = os.path.join(carpeta_backup, nombre_archivo)
+
+            conexion = Conexion.obtener_conexion()
+            cursor = conexion.cursor()
+
+            cursor.execute("""
+                SELECT venta_id, venta_venta, venta_fecha, venta_ganancia, 
+                    venta_usuario, venta_articulo, venta_estado 
+                FROM ventas 
+                ORDER BY venta_id DESC
+            """)
+            datos = cursor.fetchall()
+            columnas = [desc[0] for desc in cursor.description]
+
+            with open(ruta_completa, 'w', newline='', encoding='utf-8-sig') as f:
+                writer = csv.writer(f, delimiter=',')
+                writer.writerow(columnas)
+                for fila in datos:
+                    # Convertir array a string si es necesario
+                    fila_str = []
+                    for valor in fila:
+                        if valor is None:
+                            fila_str.append('')
+                        elif isinstance(valor, list):
+                            fila_str.append(str(valor))
+                        else:
+                            fila_str.append(str(valor))
+                    writer.writerow(fila_str)
+
+            cursor.close()
+            conexion.close()
+
+            mensaje.value = f"✅ {len(datos)} ventas exportadas a {nombre_archivo}"
+            mensaje.color = ft.Colors.GREEN
+            pila.update()
+
+        except Exception as error:
+            mensaje.value = f"❌ Error al exportar: {error}"
+            mensaje.color = ft.Colors.RED
+            pila.update()
+
 
     # ================= CONTENIDO PRINCIPAL =================
     contenido_principal = ft.Container(
@@ -636,7 +690,7 @@ def ventas_list(regresar):
                                     height = 40,
                                                     
                                     icon = ft.Icons.FILE_DOWNLOAD,
-                                    # on_click = abrir_formulario_registrar_modal # Al hacer clic, sobre el boton de "Registrar" se abrira el modal
+                                    on_click = exportar_ventas_directo # Al hacer clic, sobre el boton de "Registrar" se abrira el modal
                                 ),
                             ],
                             expand = True,

@@ -64,7 +64,7 @@ def main_window(page: ft.Page, cerrar_sesion):
     usuario_actual = globals.obtener_sesion()
 
     def crear_avatar(nombre_usuario, size=40):
-        """Crea un avatar circular con las iniciales del usuario"""
+        # Crea un avatar circular con las iniciales del usuario
         # Obtener iniciales del nombre
         if nombre_usuario:
             partes = nombre_usuario.split()
@@ -73,64 +73,117 @@ def main_window(page: ft.Page, cerrar_sesion):
             iniciales = "?"
         
         return ft.Container(
-            content=ft.Text(
+            content = ft.Text(
                 iniciales,
-                size=size // 2,
-                color="#ffffff",
-                weight=ft.FontWeight.BOLD,
+                color = "#ffffff",
+                weight = ft.FontWeight.BOLD,
+                size = 17
             ),
-            bgcolor="#6b1d41",
-            border_radius=size // 2,
-            width=size,
-            height=size,
-            alignment=ft.Alignment.CENTER,
-            tooltip=nombre_usuario,
+            bgcolor = "#1e1e1e",
+            border = ft.Border.all(
+                2,
+                "#ffffff"
+            ),
+            border_radius = 35,
+            width = 35,
+            height = 35,
+            alignment = ft.Alignment.CENTER,
+
+            tooltip = nombre_usuario
         )
 
 
-    # if usuario_actual:
-    #     nombre_usuario = usuario_actual.usuario_usuario
-    #     avatar = crear_avatar(nombre_usuario)
+    if usuario_actual:
+        nombre_usuario = usuario_actual.usuario_usuario
+        avatar = crear_avatar(nombre_usuario)
         
-    #     barra_usuario = ft.Row(
-    #         controls=[
-    #             avatar,
-    #             ft.Column(
-    #                 controls=[
-    #                     ft.Text(
-    #                         nombre_usuario,
-    #                         size=14,
-    #                         weight=ft.FontWeight.BOLD,
-    #                         color="#6b1d41",
-    #                     ),
-    #                     ft.Text(
-    #                         "Bienvenido",
-    #                         size=11,
-    #                         color="#926600",
-    #                     ),
-    #                 ],
-    #                 spacing=0,
-    #             ),
-    #         ],
-    #         spacing=10,
-    #         alignment=ft.MainAxisAlignment.START,
-    #     )
-    # else:
-    #     barra_usuario = ft.Text("Usuario no autenticado", size=14, color="#9095a0")
+        barra_usuario = ft.Row(
+            controls=[
+                avatar,
+                ft.Column(
+                    controls=[
+                        ft.Text(
+                            nombre_usuario,
+                            size = 14,
+                            weight = ft.FontWeight.BOLD,
+                            color = "#ffffff",
+                            overflow = ft.TextOverflow.ELLIPSIS,  # Agrega "..." al final
+                            width = 125,  # Ancho aproximado para 20 caracteres
+                        ),
+                    ],
+                    spacing=0,
+                ),
+            ],
+            spacing=10,
+            alignment=ft.MainAxisAlignment.START,
+        )
+    else:
+        barra_usuario = ft.Text("Usuario no autenticado", size=14, color="#9095a0")
 
 
     # Botón de cerrar sesión
-    # boton_cerrar_sesion = ft.ElevatedButton(
-    #     "Cerrar sesión",
-    #     icon=ft.Icons.LOGOUT,
-    #     style=ft.ButtonStyle(
-    #         bgcolor="#de3b40",
-    #         color="#ffffff",
-    #         shape=ft.RoundedRectangleBorder(radius=10),
-    #     ),
-    #     on_click=cerrar_sesion,
-    # )
+    boton_cerrar_sesion = ft.ElevatedButton(
+        "Salir",
+        icon = ft.Icons.LOGOUT,
+        style = ft.ButtonStyle(
+            bgcolor = "#1e1e1e",
+            color = "#ffffff",
+            shape = ft.RoundedRectangleBorder(radius = 10),
+        ),
+        on_click = cerrar_sesion,
+    )
 
+    boton_inicio = ft.IconButton(
+        icon = ft.Icons.HOUSE,
+        style = ft.ButtonStyle(
+            bgcolor = {
+                ft.ControlState.DEFAULT: "#1e1e1e",
+                ft.ControlState.HOVERED: "#c9a03d",
+            },
+            side = {
+                ft.ControlState.DEFAULT: ft.BorderSide(width=2, color="#c9a03d"),
+                ft.ControlState.HOVERED: ft.BorderSide(width=2, color="#926600"),
+            },
+            icon_color = {
+                ft.ControlState.DEFAULT: "#ffffff",
+                ft.ControlState.HOVERED: "#1e1e1e",
+            },
+            shape = ft.RoundedRectangleBorder(radius = 10),
+            padding = ft.Padding.symmetric(horizontal = 8, vertical = 8)
+        ),
+        height = 50,
+        width = 50,
+        align = ft.Alignment.CENTER,
+        tooltip = "Punto de Venta",
+
+        on_click = mostrar_inicio
+    )
+
+    imagen_vinateria = ft.Image(
+        src = f"imagenes/La_Vinata_Vinos_y_Licores_HEADER.png",
+        expand = True
+    )
+
+    inicio_imagen = ft.Row(
+        controls = [
+            boton_inicio,
+            imagen_vinateria
+        ],
+        height = 50,
+        alignment = ft.MainAxisAlignment.SPACE_BETWEEN
+    )
+
+    avatar_y_cerrar_sesion = ft.Row(
+        controls = [
+            barra_usuario,
+
+            ft.Container(content = ft.Text(""), height = 20, width = 1, bgcolor = "#c9a03d"),
+
+            boton_cerrar_sesion
+        ],
+        width = 300,
+        alignment = ft.MainAxisAlignment.SPACE_BETWEEN
+    )
 
     menu_lateral = ft.Container(
         width = 220,
@@ -367,44 +420,7 @@ def main_window(page: ft.Page, cerrar_sesion):
                             icon = ft.Icons.ATTACH_MONEY,
                             width = 250,
                             on_click = mostrar_lista_corte
-                        ),
-                        ft.ElevatedButton(
-                            "Salir",
-                            style = ft.ButtonStyle(
-                                # Borde sólido vino-caramelo de 2 píxeles por defecto
-                                side = {
-                                    ft.ControlState.DEFAULT: 
-                                        ft.BorderSide(
-                                            width = 2,
-                                            color = "#6b1d41"
-                                        ),
-                                    # Borde rojo de 2 píxeles al pasar el mouse
-                                    ft.ControlState.HOVERED:
-                                        ft.BorderSide(
-                                            width = 2,
-                                            color = "#6c4e07"
-                                    )
-                                },
-                                bgcolor = {
-                                    ft.ControlState.DEFAULT: "#ffffff",
-                                    ft.ControlState.HOVERED: "#efb034",
-                                },
-                                color = {
-                                    ft.ControlState.DEFAULT: "#efb034",
-                                    ft.ControlState.HOVERED: "#ffffff",
-                                },
-                                icon_color = {
-                                    ft.ControlState.DEFAULT: "#efb034",
-                                    ft.ControlState.HOVERED: "#ffffff",
-                                },
-                                padding = 20,
-                                shape = ft.RoundedRectangleBorder(radius = 10)
-                            ),
-                            icon = ft.Icons.LOGOUT,
-                            width = 250,
-                            margin = ft.Margin.only(top = 50),
-                            on_click = cerrar_sesion
-                        ),
+                        )
                     ]
                 ),
 
@@ -427,16 +443,128 @@ def main_window(page: ft.Page, cerrar_sesion):
         )
     )
 
-    layout = ft.Container(
+    copyright = ft.Column(
+        controls = [
+            ft.Text(
+                spans = [
+                    ft.TextSpan(
+                        "2026 © ",
+                        ft.TextStyle(color = "#ffffff", size = 12) # Texto en blanco
+                    ),
+                    ft.TextSpan(
+                        "La Vinata",
+                        ft.TextStyle(color = "#c9a03d", size = 12) # Texto color mostaza
+                    )
+                ],
+            ),
+            ft.Text(
+                "Todos los derechos reservados",
+                color = "#ffffff",
+                size = 12
+            )
+        ],
+        spacing = 0
+    )
+
+    telefono = "522471242745"
+
+    contacto = ft.Container(
         content = ft.Row(
             controls = [
-                menu_lateral,
-                contenido
-            ],
-            expand = True
-        ),
+                ft.Icon(
+                    ft.Icons.PHONE,
+                    color = "#ffffff",
+                    size = 30
+                ),
+
+                ft.Container(
+                    content = ft.Row(
+                        controls = [
+                            ft.Text(
+                                "Contacto:",
+                                color = "#ffffff",
+                                weight = ft.FontWeight.BOLD,
+                                size = 18
+                            ),
+                            ft.Text(
+                                "+52 247 124 2745",
+                                style = ft.TextStyle(
+                                    decoration = ft.TextDecoration.UNDERLINE,
+                                    decoration_color = "#c9a03d", # Color del subrayado
+                                    decoration_thickness = 1, # Grosor del subrayado
+                                ),
+                                color = "#c9a03d",
+                                size = 20,
+                            )
+                        ]
+                    ),
+                    url = f"https://wa.me/{telefono}",
+                    tooltip = "Hablar con el equipo"
+                )
+            ]
+        )
+    )
+    
+
+    footer = ft.Row(
+        controls = [
+            copyright,
+
+            ft.Container(
+                content = imagen_vinateria,
+                height = 50
+            ),
+
+            contacto
+        ],
         expand = True,
-        bgcolor = "#F9F6F0"
+        alignment = ft.MainAxisAlignment.SPACE_BETWEEN
+    )
+
+    layout = ft.Container(
+        content = ft.Column(
+            controls = [ 
+                # Primer nivel (HEADER)
+                ft.Container(
+                    content = ft.Row(
+                        controls = [
+                            inicio_imagen,
+                            avatar_y_cerrar_sesion
+                        ],
+                        expand = True,
+                        alignment = ft.MainAxisAlignment.SPACE_BETWEEN
+                    ),
+                    bgcolor = "#1e1e1e",
+                    padding = 10
+                ),
+
+                # Segundo nivel (Menú lateral y contenido)
+                ft.Container(
+                    content = ft.Row(
+                        controls = [
+                            menu_lateral,
+                            contenido
+                        ],
+                        expand = True
+                    ),
+                    expand = True,
+                    bgcolor = "#F9F6F0"
+                ),
+
+                # Tercer nivel (Footer)
+                ft.Container(
+                    content = ft.Row(
+                        controls = [
+                            footer
+                        ],
+                        expand = True,
+                    ),
+                    bgcolor = "#1e1e1e",
+                    padding = 10
+                )
+            ],
+            spacing = 0,
+        )
     )
 
     mostrar_inicio()

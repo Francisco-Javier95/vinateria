@@ -19,7 +19,8 @@ def inicio_sesion(page: ft.Page, on_restablecer, on_exito):
     # --------- Campos del formulario -------------
     correo_input = ft.TextField(
         label="Correo electrónico",
-        hint_text="ejemplo@correo.com",
+        hint_text="ejemplo@gmail.com",
+        value = "ejemplo@gmail.com",
 
         label_style = estilo_de_label,
         on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(), # Estilo del label en focus
@@ -40,6 +41,7 @@ def inicio_sesion(page: ft.Page, on_restablecer, on_exito):
         hint_text="********",
         password=True,
         can_reveal_password=True,
+        value = "12345678",
 
         label_style = estilo_de_label,
         on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(), # Estilo del label en focus
@@ -168,7 +170,7 @@ def inicio_sesion(page: ft.Page, on_restablecer, on_exito):
             width=400,
         ),
         bgcolor="#ffffff",
-        height = 400,
+        height = 420,
         border_radius=10,
         padding=ft.Padding.symmetric(horizontal=50, vertical=30),
         shadow=ft.BoxShadow(

@@ -289,8 +289,16 @@ def punto_de_venta(regresar=None):
         articulos_ids = [item.articulo_id for item in lista_compra]
         articulos_cantidades = [item.cantidad for item in lista_compra]
         
-        # === USUARIO (por ahora fijo, luego con login) ===
-        usuario_id = 1  # Temporal, luego se obtendrá del login
+        usuario_actual = globals.obtener_sesion()
+    
+        if usuario_actual is not None:
+            usuario_id = usuario_actual.usuario_id  # Obtener el ID del usuario
+            nombre_usuario = usuario_actual.usuario_usuario  # Opcional: también puedes obtener el nombre
+            print(f"Usuario actual: {nombre_usuario} (ID: {usuario_id})")
+        else:
+            # Si no hay sesión, usar un valor por defecto o manejar el error
+            usuario_id = 1  # ID por defecto (temporal)
+            print("No hay usuario autenticado, usando ID por defecto")
 
         def limpiar_despues_de_confirmar():
             # Limpiar la lista de compra despues de confirmar la venta

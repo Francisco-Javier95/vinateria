@@ -12,7 +12,7 @@ class ProveedorDAO:
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
 
-        cursor.execute("SELECT * FROM proveedores")
+        cursor.execute("SELECT * FROM proveedores ORDER BY proveedor_id ASC")
         registros = cursor.fetchall()
 
         proveedores = []

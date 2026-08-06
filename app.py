@@ -1,5 +1,6 @@
 import flet as ft
 from ui.main import main
+from ui.main_window import main_window
 
 from dao.articulo_dao import ArticuloDAO
 from dao.categoria_dao import CategoriaDAO

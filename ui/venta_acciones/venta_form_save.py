@@ -6,7 +6,7 @@ from dao.venta_dao import VentaDAO
 
 # from dao.articulo_dao import ArticuloDAO
 
-def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, total=0.0, lista_articulos=None,  usuario_id=1, limpiar_lista=None, venta_id_actual=None):
+def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, total=0.0, lista_articulos=None,  usuario_id = None, limpiar_lista=None, venta_id_actual=None):
     # Estilos de los label
     estilo_de_label = ft.TextStyle(
         color="#926600",

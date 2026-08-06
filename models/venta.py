@@ -1,5 +1,4 @@
 class Venta:
-
     # Constructor
     def __init__(self, venta_id, venta_venta, venta_fecha, venta_ganancia, venta_usuario, venta_articulo, venta_estado):
         self.venta_id = venta_id
@@ -12,6 +11,17 @@ class Venta:
 
     def mostrar_info(self):
         return f"ID: {self.venta_id}, Nombre: {self.venta_venta}, Fecha: {self.venta_fecha}, Ganancia: {self.venta_ganancia}, Empleado: {self.venta_usuario}, Lista de compras: {self.venta_articulo}, Estado: {self.venta_estado}"
+
+
+class Venta_confirmar:  
+    # Constructor
+    def __init__(self, venta_id, venta_venta, venta_ganancia, venta_usuario, venta_articulo, venta_estado):
+        self.venta_id = venta_id
+        self.venta_venta = venta_venta
+        self.venta_ganancia = venta_ganancia
+        self.venta_usuario = venta_usuario
+        self.venta_articulo = venta_articulo 
+        self.venta_estado = venta_estado
 
 
 class Venta_sin_articulo:

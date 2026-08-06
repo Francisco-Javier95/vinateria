@@ -1,6 +1,7 @@
 import flet as ft
 from datetime import datetime
 
+from dao.detalle_venta_dao import DetalleVentaDAO
 from dao.venta_dao import VentaDAO
 from dao.articulo_dao import ArticuloDAO
 
@@ -15,7 +16,7 @@ def ver_detalles(venta_id, regresar):
         # Si no se encuentra la venta, mostrar un mensaje de error
         return ft.Container(
             content=ft.Column([
-                ft.Text("❌ Venta no encontrada", size=20, color="#de3b40"),
+                ft.Text("Venta no encontrada", size=20, color="#de3b40"),
                 ft.ElevatedButton("Regresar", on_click=lambda e: regresar()),
             ], alignment=ft.MainAxisAlignment.CENTER, horizontal_alignment=ft.CrossAxisAlignment.CENTER),
             expand=True,
@@ -34,16 +35,33 @@ def ver_detalles(venta_id, regresar):
 
     # === OBTENER NOMBRES, PRECIOS Y SUBTOTALES ===
     articulo_dao = ArticuloDAO()
-    productos_detalle = []
+    productos = []
     for id_art in articulos_ids:
         articulo = articulo_dao.obtener_id_del_articulo(id_art)
         if articulo:
             # Por ahora, cantidad = 1 (puedes ajustar si tienes cantidades reales)
             cantidad = 1
             subtotal = articulo.articulo_precio * cantidad
-            productos_detalle.append({
+            productos.append({
                 'nombre': articulo.articulo_articulo,
                 'precio': articulo.articulo_precio,
+            })
+
+    # Obtener detalles de la venta
+    detalle_dao = DetalleVentaDAO()
+    detalles = detalle_dao.obtener_por_venta(venta_id)
+    
+    articulo_dao = ArticuloDAO()
+    productos_detalle = []
+
+    for detalle in detalles:
+        articulo = articulo_dao.obtener_id_del_articulo(detalle.detalle_articulo_id) 
+        if articulo:
+            productos_detalle.append({
+                'nombre': articulo.articulo_articulo,
+                'cantidad': detalle.detalle_cantidad, 
+                'precio_unitario': detalle.detalle_precio_unitario, 
+                'subtotal': detalle.detalle_subtotal
             })
 
     # ============================================================
@@ -93,7 +111,22 @@ def ver_detalles(venta_id, regresar):
             ft.Text("****************************************", size=18, color="#9095a0", weight=ft.FontWeight.BOLD),
             
             # === LISTA DE PRODUCTOS ===
-            ft.Text("Productos                               Precio unitario", size=16, weight=ft.FontWeight.BOLD, color="#926600"),
+            ft.Row(
+                controls = [
+                    ft.Text("Producto", size = 12, weight = ft.FontWeight.BOLD, color = "#926600"),
+                    ft.Text("Cantidad", size = 12, weight = ft.FontWeight.BOLD, color = "#926600"),
+                    ft.Column(
+                        controls = [
+                            ft.Text("Precio", size = 12, weight = ft.FontWeight.BOLD, color = "#926600", text_align = ft.TextAlign.CENTER),
+                            ft.Text("unitario", size = 12, weight = ft.FontWeight.BOLD, color = "#926600",  text_align = ft.TextAlign.CENTER)
+                        ],
+                        spacing = 0,
+                        margin = 0
+                    ),
+                    ft.Text("Subtotal", size = 12, weight = ft.FontWeight.BOLD, color = "#926600")
+                ],
+                alignment= ft.MainAxisAlignment.SPACE_BETWEEN
+            ),
 
             ft.Text("---------------------------------------------", size = 18, color="#c9a03d"),
 
@@ -101,16 +134,19 @@ def ver_detalles(venta_id, regresar):
                 controls=[
                     ft.Row(
                         controls=[
-                            ft.Text(f"- {item['nombre']}", size=14, color="#0d1b2a", expand=2),
-                            ft.Row( controls = [ ft.Icon(ft.Icons.ATTACH_MONEY, size = 18, color = "#c9a03d"), ft.Text(f"{item['precio']:.2f}", size=14, color="#0d1b2a", expand=1) ], spacing=0),
+                            ft.Text(f"- {item['nombre']}", size=12, color="#0d1b2a", expand=2),
+                            ft.Text(f"{item['cantidad']}", size=12, color="#0d1b2a", expand=2, margin = ft.Margin.only(left = 25)),
+                            ft.Row( controls = [ ft.Icon(ft.Icons.ATTACH_MONEY, size = 18, color = "#c9a03d"), ft.Text(f"{item['precio_unitario']:.2f}", size=12, color="#0d1b2a", expand=1) ], spacing=0, margin = ft.Margin.only(right = 20)),
+                            ft.Row( controls = [ ft.Icon(ft.Icons.ATTACH_MONEY, size = 18, color = "#c9a03d"), ft.Text(f"{item['subtotal']:.2f}", size=12, color="#0d1b2a", expand=1) ], spacing=0),
                         ],
+                        alignment = ft.MainAxisAlignment.SPACE_BETWEEN
                     ) 
                     for item in productos_detalle
                 ] if productos_detalle else [
                     ft.Text("No hay productos en esta venta", size=14, color="#9095a0")
                 ],
                 spacing=5,
-                height=300,
+                height=225,
                 scroll=ft.ScrollMode.AUTO,
             ),
             
@@ -154,7 +190,7 @@ def ver_detalles(venta_id, regresar):
         border_radius=5,
         padding=30,
         width=400,
-        height=700,
+        height=650,
     )
 
     # === BOTÓN REGRESAR ===

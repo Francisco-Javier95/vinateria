@@ -3,10 +3,13 @@ from datetime import datetime
 
 from models.venta import Venta
 from dao.venta_dao import VentaDAO
+from models.venta import Venta_confirmar
+from models.detalle_venta import DetalleVenta
+from dao.detalle_venta_dao import DetalleVentaDAO
 
 from dao.articulo_dao import ArticuloDAO
 
-def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None, total=0.0, lista_articulos=None, lista_cantidades = None, usuario_id=1, limpiar_lista=None, venta_id_actual=None):
+def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None, total=0.0, lista_articulos=None, lista_cantidades = None, usuario_id = None, limpiar_lista=None, venta_id_actual=None):
     # Estilos de los label
     estilo_de_label = ft.TextStyle(
         color="#926600",
@@ -24,7 +27,7 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
     total_actual = total
     articulos_ids = lista_articulos if lista_articulos else []
     articulos_cantidades = lista_cantidades if lista_cantidades else []
-    usuario_actual = usuario_id
+    usuario_actual = usuario_id  # Ahora usuario_actual contiene el ID del usuario
 
     # Función/Metodo para calcular el cambio
     def calcular_cambio(e):
@@ -77,36 +80,32 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
                 return
             
 
-            # === ACTUALIZAR STOCK Y VENDIDOS ===
-            articulo_dao = ArticuloDAO()
+            # # === ACTUALIZAR STOCK Y VENDIDOS ===
+            # articulo_dao = ArticuloDAO()
 
-            for i, id_articulo in enumerate(articulos_ids):
-                cantidad_vendida = articulos_cantidades[i]
-                articulo = articulo_dao.obtener_id_del_articulo(id_articulo)
-                if not articulo:
-                    raise Exception(f"Producto ID {id_articulo} no encontrado")
-                if articulo.articulo_stock < cantidad_vendida:
-                    raise Exception(f"Stock insuficiente para '{articulo.articulo_articulo}'. "
-                                    f"Disponible: {articulo.articulo_stock}, solicitado: {cantidad_vendida}")
-                # Descontar stock y sumar vendidos
-                articulo.articulo_stock -= cantidad_vendida
-                articulo.articulo_vendidos += cantidad_vendida
-                articulo_dao.actualizar(articulo)
-                print(f"Stock actualizado: {articulo.articulo_articulo} → "
-                    f"Stock: {articulo.articulo_stock}, Vendidos: {articulo.articulo_vendidos}")
+            # for i, id_articulo in enumerate(articulos_ids):
+            #     cantidad_vendida = articulos_cantidades[i]
+            #     articulo = articulo_dao.obtener_id_del_articulo(id_articulo)
+            #     if not articulo:
+            #         raise Exception(f"Producto ID {id_articulo} no encontrado")
+            #     if articulo.articulo_stock < cantidad_vendida:
+            #         raise Exception(f"Stock insuficiente para '{articulo.articulo_articulo}'. "
+            #                         f"Disponible: {articulo.articulo_stock}, solicitado: {cantidad_vendida}")
+            #     # Descontar stock y sumar vendidos
+            #     articulo.articulo_stock -= cantidad_vendida
+            #     articulo.articulo_vendidos += cantidad_vendida
+            #     articulo_dao.actualizar(articulo)
+            #     print(f"Stock actualizado: {articulo.articulo_articulo} → "
+            #         f"Stock: {articulo.articulo_stock}, Vendidos: {articulo.articulo_vendidos}")
                 
 
             # Guardar la venta
             venta_dao = VentaDAO()
-            articulos_array = "{" + ",".join(str(id) for id in articulos_ids) + "}"
-            estado = "Concluida"
+            # articulos_array = "{" + ",".join(str(id) for id in articulos_ids) + "}"
             
             
             # Crear el nombre de la venta con timestamp
             venta_nombre = f"VEN-{datetime.now().strftime('%Y%m%d_%H%M%S')}-VINATA"
-            
-            # Convertir lista de IDs a formato PostgreSQL (array)
-            articulos_array = "{" + ",".join(str(id) for id in articulos_ids) + "}"
 
             # Estado de la venta (al confirmarse es utomaticamente "Concluida")
             estado = "Concluida"
@@ -123,10 +122,10 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
                     venta_actualizada = Venta(
                         venta_id = venta_id_actual,
                         venta_venta = venta_existente.venta_venta,  # Mantener el nombre original
-                        venta_fecha = venta_existente.venta_fecha,
+                        venta_fecha = None,
                         venta_ganancia = total_actual,
                         venta_usuario = usuario_actual,
-                        venta_articulo = articulos_array,
+                        venta_articulo = None,
                         venta_estado = estado
                     )
                     venta_dao.actualizar(venta_actualizada)
@@ -137,16 +136,46 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
                     return
             else:
                 # === CREAR NUEVA VENTA ===
-                nueva_venta = Venta(
+                nueva_venta = Venta_confirmar(
                     venta_id = None,
                     venta_venta = venta_nombre,
-                    venta_fecha = None,
                     venta_ganancia = total_actual,
                     venta_usuario = usuario_actual,
-                    venta_articulo = articulos_array,
+                    venta_articulo = None,
                     venta_estado = estado
                 )
                 venta_dao.insertar(nueva_venta)
+                print(f"Venta {venta_nombre} registrada exitosamente")
+
+                # Obtener el ID de la venta recién insertada
+                venta_id = venta_dao.obtener_ultimo_id()
+
+                # Guardar los detalles de la venta
+                detalle_dao = DetalleVentaDAO()
+                for i, id_articulo in enumerate(articulos_ids):
+                    cantidad = articulos_cantidades[i]
+                    
+                    # Obtener el precio del artículo
+                    articulo_dao = ArticuloDAO()
+                    articulo = articulo_dao.obtener_id_del_articulo(id_articulo)
+                    precio_unitario = articulo.articulo_precio
+                    subtotal = precio_unitario * cantidad
+                    
+                    detalle = DetalleVenta(
+                        detalle_id = None,
+                        detalle_venta_id = venta_id,
+                        detalle_articulo_id = id_articulo,
+                        detalle_cantidad = cantidad,
+                        detalle_precio_unitario = precio_unitario,
+                        detalle_subtotal = subtotal
+                    )
+                    detalle_dao.insertar(detalle)
+
+                    # Actualizar stock y vendidos (como ya tenías)
+                    articulo.articulo_stock -= cantidad
+                    articulo.articulo_vendidos += cantidad
+                    articulo_dao.actualizar(articulo)
+
                 print(f"Venta {venta_nombre} registrada exitosamente")
 
             evento.page.update()
