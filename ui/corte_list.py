@@ -340,7 +340,7 @@ def ventas_list(regresar):
         try:
             # === Obtener los datos de la venta desde la BD ===
             venta_dao = VentaDAO()
-            venta = venta_dao.obtener_id_de_la_venta(venta_id)
+            venta = venta_dao.obtener_id_editar_venta(venta_id)
 
             if venta is None:
                 print(f"No se encontro la venta con ID: {venta_id}")

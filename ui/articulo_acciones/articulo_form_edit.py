@@ -82,11 +82,10 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
 
             categoria_input.options.clear() # Limpia las opciones del dropdown
 
-            valor_categoria = 1
             for categoria in categorias:
                 categoria_input.options.append(
                     ft.dropdown.Option(
-                        key = valor_categoria,
+                        key = categoria.categoria_id,
                         text = categoria.categoria_categoria,
                         style=ft.TextStyle(
                             color="#6b1d41",
@@ -94,7 +93,7 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
                         )
                     ),
                 )
-                valor_categoria = valor_categoria + 1
+                print(f"ID: {categoria.categoria_id}, Empleado: {categoria.categoria_categoria}")
             # Si hay categorias, seleccionar la primera por defecto
             if categoria_input.options:
                 if registro and registro.get('categoria_id'):
@@ -374,11 +373,10 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
 
             proveedor_input.options.clear() # Limpia las opciones del dropdown
 
-            valor_proveedor = 1
             for proveedor in proveedores:
                 proveedor_input.options.append(
                     ft.dropdown.Option(
-                        key = valor_proveedor,
+                        key = proveedor.proveedor_id,
                         text = proveedor.proveedor_proveedor,
                         style=ft.TextStyle(
                             color="#6b1d41",
@@ -386,7 +384,7 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
                         )
                     ),
                 )
-                valor_proveedor = valor_proveedor + 1
+                print(f"ID: {proveedor.proveedor_id}, Empleado: {proveedor.proveedor_proveedor}")
             # Si hay proveedores, seleccionar la primera por defecto
             if proveedor_input.options:
                 if registro and registro.get('proveedor_id'):

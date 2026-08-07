@@ -3,10 +3,12 @@ from datetime import datetime
 
 from models.venta import Venta
 from dao.venta_dao import VentaDAO
+from models.detalle_venta import DetalleVenta
+from dao.detalle_venta_dao import DetalleVentaDAO
 
-# from dao.articulo_dao import ArticuloDAO
+from dao.articulo_dao import ArticuloDAO
 
-def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, total=0.0, lista_articulos=None,  usuario_id = None, limpiar_lista=None, venta_id_actual=None):
+def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, total=0.0, lista_articulos=None, lista_cantidades=None,  usuario_id = None, limpiar_lista=None, venta_id_actual=None):
     # Estilos de los label
     estilo_de_label = ft.TextStyle(
         color="#926600",
@@ -21,7 +23,7 @@ def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, t
 
     # Variables de estado
     articulos_ids = lista_articulos if lista_articulos else []
-    # articulos_cantidades = lista_cantidades if lista_cantidades else []
+    articulos_cantidades = lista_cantidades if lista_cantidades else [] # Guardar las cantidades
     usuario_actual = usuario_id
     total_actual = total
 
@@ -50,20 +52,6 @@ def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, t
             # Estado de la venta (Pendiente por defecto)
             estado = "Pendiente"
 
-            # # === ACTUALIZAR STOCK ===
-            # articulo_dao = ArticuloDAO()
-            # for i, id_articulo in enumerate(articulos_ids):
-            #     if i < len(articulos_cantidades):
-            #         cantidad_vendida = articulos_cantidades[i]
-            #         articulo = articulo_dao.obtener_id_del_articulo(id_articulo)
-            #         if articulo:
-            #             nuevo_stock = articulo.articulo_stock - cantidad_vendida
-            #             if nuevo_stock < 0:
-            #                 raise Exception(f"Stock insufisiente para {articulo.articulo_articulo}")
-
-            #             articulo.articulo_stock = nuevo_stock
-            #             articulo_dao.actualizar(articulo)
-
             # Insertar en la base de datos
             venta_dao = VentaDAO()
 
@@ -73,13 +61,13 @@ def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, t
                 venta_existente = venta_dao.obtener_id_de_la_venta(venta_id_actual)
                 if venta_existente:
                     venta_actualizada = Venta(
-                        venta_id = venta_id_actual,
-                        venta_venta = venta_nombre,  # Actualizar el nombre
-                        venta_fecha = venta_existente.venta_fecha,
-                        venta_ganancia = total_actual,
-                        venta_usuario = usuario_actual,
-                        venta_articulo = articulos_array,
-                        venta_estado = estado
+                        venta_id=venta_id_actual,
+                        venta_venta=venta_nombre,
+                        venta_fecha=venta_existente.venta_fecha,
+                        venta_ganancia=total_actual,
+                        venta_usuario=usuario_actual,
+                        venta_articulo=articulos_array,
+                        venta_estado=estado
                     )
                     venta_dao.actualizar(venta_actualizada)
                     print(f"Venta {venta_nombre} actualizada exitosamente")
@@ -90,16 +78,46 @@ def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, t
             else:
                 # === CREAR NUEVA VENTA ===
                 nueva_venta = Venta(
-                    venta_id = None,
-                    venta_venta = venta_nombre,
-                    venta_fecha = None,
-                    venta_ganancia = total_actual,
-                    venta_usuario = usuario_actual,
-                    venta_articulo = articulos_array,
-                    venta_estado = estado
+                    venta_id=None,
+                    venta_venta=venta_nombre,
+                    venta_fecha=None,
+                    venta_ganancia=total_actual,
+                    venta_usuario=usuario_actual,
+                    venta_articulo=articulos_array,
+                    venta_estado=estado
                 )
                 venta_dao.insertar(nueva_venta)
                 print(f"Venta {venta_nombre} guardada exitosamente")
+
+                # Obtener el ID de la venta recién insertada
+                venta_id = venta_dao.obtener_ultimo_id()
+
+                # Guardar los detalles de la venta CON LAS CANTIDADES
+                detalle_dao = DetalleVentaDAO()
+                for i, id_articulo in enumerate(articulos_ids):
+                    # Usar las cantidades guardadas
+                    cantidad = articulos_cantidades[i] if i < len(articulos_cantidades) else 1
+                    
+                    # Obtener el precio del artículo
+                    articulo_dao = ArticuloDAO()
+                    articulo = articulo_dao.obtener_id_del_articulo(id_articulo)
+                    if articulo is None:
+                        raise Exception(f"Artículo con ID {id_articulo} no encontrado")
+                    
+                    precio_unitario = articulo.articulo_precio
+                    subtotal = precio_unitario * cantidad
+                    
+                    detalle = DetalleVenta(
+                        detalle_id=None,
+                        detalle_venta_id=venta_id,
+                        detalle_articulo_id=id_articulo,
+                        detalle_cantidad=cantidad, # Usar la cantidad
+                        detalle_precio_unitario=precio_unitario,
+                        detalle_subtotal=subtotal
+                    )
+                    detalle_dao.insertar(detalle)
+                    
+                    print(f"Detalle guardado: Artículo {id_articulo}, Cantidad: {cantidad}")
 
             evento.page.update()
 
@@ -107,7 +125,7 @@ def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, t
             import time
             time.sleep(0.5)
 
-            if limpiar_lista: # Ejecutar el callback para limpiar la lista
+            if limpiar_lista:
                 limpiar_lista()
 
             # Cerrar el modal
@@ -117,6 +135,8 @@ def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, t
 
         except Exception as error:
             print(f"Error al guardar la venta: {error}")
+            import traceback
+            traceback.print_exc()
             evento.page.update()
 
     # --------- Interfaz -----------------

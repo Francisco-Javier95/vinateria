@@ -20,5 +20,6 @@ class Proveedor_eliminar:
 
 class Proveedor_nombre:
     # Constructor
-    def __init__(self, proveedor_proveedor):
+    def __init__(self, proveedor_id, proveedor_proveedor):
+        self.proveedor_id = proveedor_id
         self.proveedor_proveedor = proveedor_proveedor

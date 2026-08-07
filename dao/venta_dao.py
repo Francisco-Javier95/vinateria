@@ -56,7 +56,7 @@ class VentaDAO:
         cursor.execute(
             """
                 SELECT v.venta_id, v.venta_venta, v.venta_fecha, v.venta_ganancia, 
-                    v.venta_usuario, u.usuario_usuario, v.venta_articulo, v.venta_estado
+                    u.usuario_usuario, v.venta_articulo, v.venta_estado
                 FROM ventas v
                 INNER JOIN usuarios u ON v.venta_usuario = u.usuario_id
                 WHERE v.venta_id = %s
@@ -74,9 +74,36 @@ class VentaDAO:
                 venta_venta=datos[1],
                 venta_fecha=datos[2],
                 venta_ganancia=datos[3],
-                venta_usuario=datos[5], # Guardar el nombre del usuario
-                venta_articulo=datos[6],
-                venta_estado=datos[7]
+                venta_usuario=datos[4], # Guardar el nombre del usuario
+                venta_articulo=datos[5],
+                venta_estado=datos[6]
+            )
+
+        return None
+
+    def obtener_id_editar_venta(self, venta_id):
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+
+        cursor.execute("""
+            SELECT venta_id, venta_venta, venta_fecha, venta_ganancia, venta_usuario, venta_articulo, venta_estado FROM ventas WHERE venta_id = %s
+        """,
+        (venta_id,)
+        )
+
+        datos = cursor.fetchone()
+        cursor.close()
+        conexion.close()
+
+        if datos:
+            return Venta(
+                venta_id = datos[0],
+                venta_venta = datos[1],
+                venta_fecha = datos[2],
+                venta_ganancia = datos[3],
+                venta_usuario = datos[4],
+                venta_articulo = datos[5],
+                venta_estado = datos[6]
             )
 
         return None
@@ -112,6 +139,7 @@ class VentaDAO:
         cursor.close()
         conexion.close()
         return ultimo_id
+
 
 
     def actualizar(self, venta):

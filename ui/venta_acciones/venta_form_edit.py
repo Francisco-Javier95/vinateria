@@ -63,12 +63,11 @@ def venta_form_edit(regresar = None, formulario_visible = False, cerrando_modal 
 
             usuario_input.options.clear() # Limpia las opciones del dropdown
 
-            valor_usuario = 1
             for usuario in usuarios:
                 nombre_usuario_completo = f"{usuario.usuario_usuario} {usuario.usuario_apaterno} {usuario.usuario_amaterno}"
                 usuario_input.options.append(
                     ft.dropdown.Option(
-                        key = valor_usuario,
+                        key = usuario.usuario_id,
                         text = nombre_usuario_completo,
                         style=ft.TextStyle(
                             color="#6b1d41",
@@ -76,7 +75,7 @@ def venta_form_edit(regresar = None, formulario_visible = False, cerrando_modal 
                         )
                     ),
                 )
-                valor_usuario = valor_usuario + 1
+                # print(f"ID: {usuario.usuario_id}, Empleado: {nombre_usuario_completo}")
             # Si hay usuarios, seleccionar la primera por defecto
             if usuario_input.options:
                 if registro and registro.get('usuario_id'):

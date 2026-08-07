@@ -28,12 +28,15 @@ class CategoriaDAO:
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
 
-        cursor.execute("SELECT categoria_categoria FROM categorias ORDER BY categoria_id ASC")
+        cursor.execute("SELECT categoria_id, categoria_categoria FROM categorias ORDER BY categoria_id ASC")
         registros = cursor.fetchall()
 
         nombres = []
         for registro in registros:
-            categoria = Categoria_nombre(categoria_categoria = registro[0])
+            categoria = Categoria_nombre(
+                categoria_id = registro[0],
+                categoria_categoria = registro[1]
+            )
             nombres.append(categoria)
         cursor.close()
         conexion.close()

@@ -17,5 +17,6 @@ class Categoria_eliminar:
 
 class Categoria_nombre:
     # Constructor
-    def __init__(self, categoria_categoria):
+    def __init__(self, categoria_id, categoria_categoria):
+        self.categoria_id = categoria_id
         self.categoria_categoria = categoria_categoria

@@ -225,11 +225,10 @@ def usuario_form_edit(regresar = None, formulario_visible = False, cerrando_moda
 
             privilegio_input.options.clear() # Limpia las opciones del dropdown
 
-            valor_privilegio = 1
             for privilegio in privilegios:
                 privilegio_input.options.append(
                     ft.dropdown.Option(
-                        key = valor_privilegio,
+                        key = privilegio.privilegio_id,
                         text = privilegio.privilegio_privilegio,
                         style = ft.TextStyle(
                             color = "#6b1d41",
@@ -237,7 +236,7 @@ def usuario_form_edit(regresar = None, formulario_visible = False, cerrando_moda
                         )
                     ),
                 )
-                valor_privilegio = valor_privilegio + 1
+                # print(f"ID: {privilegio.privilegio_id}, Empleado: {privilegio.privilegio_privilegio}")
             # Si hay privilegios, seleccionar la primera por defecto
             if privilegio_input.options:
                 if registro and registro.get('privilegio_id'):

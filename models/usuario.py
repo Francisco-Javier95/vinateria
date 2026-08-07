@@ -17,7 +17,8 @@ class Usuario:
 
 class Usuario_nombre:
     # Constructor
-    def __init__(self, usuario_usuario, usuario_apaterno, usuario_amaterno):
+    def __init__(self, usuario_id, usuario_usuario, usuario_apaterno, usuario_amaterno):
+        self.usuario_id = usuario_id
         self.usuario_usuario = usuario_usuario
         self.usuario_apaterno = usuario_apaterno
         self.usuario_amaterno = usuario_amaterno

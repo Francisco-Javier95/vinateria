@@ -125,88 +125,56 @@ def punto_de_venta(regresar=None):
         # Carga una venta pendiente desde la variable global
         nonlocal lista_compra, venta_actual_id
         
-        # === USAR LA VARIABLE GLOBAL IMPORTADA ===
-        # Asignar a la variable global del módulo globals
         venta_id = globals.venta_pendiente_global
-
-        print(f"La variable de venta_id GUARDA el valor de la variable venta_pendiente_gobal: ({globals.venta_pendiente_global})")
-        
-        # Limpiar la variable global para no reutilizarla
         globals.venta_pendiente_global = None
-
-        print("Verificando si hay una venta pendiente")
         
         if venta_id is None:
             print("No hay venta pendiente para cargar")
             return
         
-        print(f"Cargando venta pendiente ID: {venta_id}")
-        
         try:
             from dao.venta_dao import VentaDAO
+            from dao.detalle_venta_dao import DetalleVentaDAO
+            
             venta_dao = VentaDAO()
             venta = venta_dao.obtener_id_de_la_venta(venta_id)
-
-            print(type(venta.venta_articulo))
             
             if venta is None:
                 print(f"No se encontró la venta con ID: {venta_id}")
                 return
 
-            print(f"Contenido de venta_articulo: {venta.venta_articulo}")
-            print(f"Tipo: {type(venta.venta_articulo)}")
-            
-            # Obtener los artículos de la venta
-            articulos_ids = venta.venta_articulo
-
-            # === GUARDAR EL ID DE LA VENTA ===
             venta_actual_id = venta_id
 
-            # Obtener los artículos de la venta
-            venta_articulo = venta.venta_articulo
-
-            # Si es una lista de strings o enteros
-            if isinstance(venta_articulo, list):
-                articulos_ids = [int(id) for id in venta_articulo]
-            elif isinstance(venta_articulo, str):
-                # Si es un string con formato '{1,2,3}'
-                articulos_ids_str = venta_articulo.strip("{}")
-                if articulos_ids_str:
-                    articulos_ids = [int(id) for id in articulos_ids_str.split(",")]
-                else:
-                    articulos_ids = []
-            else:
-                articulos_ids = []
-
-            print(f"IDs de artículos: {articulos_ids}")
-
-            if not articulos_ids:
-                print("La venta no tiene artículos asociados")
+            # OBTENER DETALLES DE LA VENTA (incluye cantidades)
+            detalle_dao = DetalleVentaDAO()
+            detalles = detalle_dao.obtener_por_venta(venta_id)
+            
+            if not detalles:
+                print("La venta no tiene detalles asociados")
                 return
 
-            
             # Limpiar la lista actual
             lista_compra = []
             
-            # Cargar los artículos
+            # Cargar los artículos con sus cantidades
             articulo_dao = ArticuloDAO()
-            for id_articulo in articulos_ids:
-                articulo = articulo_dao.obtener_id_del_articulo(id_articulo)
+            for detalle in detalles:
+                articulo = articulo_dao.obtener_id_del_articulo(detalle.detalle_articulo_id)
                 if articulo:
                     item = Articulo(
-                        articulo_id = articulo.articulo_id,
-                        articulo_articulo = articulo.articulo_articulo,
-                        articulo_codigo = articulo.articulo_codigo,
-                        articulo_categoria = articulo.articulo_categoria,
-                        articulo_imagen = articulo.articulo_imagen,
-                        articulo_precio = articulo.articulo_precio,
-                        articulo_stock = articulo.articulo_stock,
-                        articulo_proveedor = articulo.articulo_proveedor,
-                        articulo_vendidos = articulo.articulo_vendidos,
+                        articulo_id=articulo.articulo_id,
+                        articulo_articulo=articulo.articulo_articulo,
+                        articulo_codigo=articulo.articulo_codigo,
+                        articulo_categoria=articulo.articulo_categoria,
+                        articulo_imagen=articulo.articulo_imagen,
+                        articulo_precio=articulo.articulo_precio,
+                        articulo_stock=articulo.articulo_stock,
+                        articulo_proveedor=articulo.articulo_proveedor,
+                        articulo_vendidos=articulo.articulo_vendidos,
                     )
-                    item.cantidad = 1
+                    item.cantidad = detalle.detalle_cantidad  # Usar la cantidad del detalle
                     lista_compra.append(item)
-                    print(f"Artículo cargado: {articulo.articulo_articulo}")
+                    print(f"Artículo cargado: {articulo.articulo_articulo} x{detalle.detalle_cantidad}")
             
             # Actualizar la interfaz
             actualizar_lista_compra()
@@ -406,7 +374,7 @@ def punto_de_venta(regresar=None):
             cerrando_modal = cerrar_modal,
             total = total,
             lista_articulos = articulos_ids,
-            # lista_cantidades=articulos_cantidades,
+            lista_cantidades = articulos_cantidades,
             usuario_id = usuario_id,
             limpiar_lista = limpiar_despues_de_confirmar,
             venta_id_actual = venta_actual_id, # PASAR EL VALOR DEL ID

@@ -28,12 +28,15 @@ class ProveedorDAO:
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
 
-        cursor.execute("SELECT proveedor_proveedor FROM proveedores ORDER BY proveedor_id ASC")
+        cursor.execute("SELECT proveedor_id, proveedor_proveedor FROM proveedores ORDER BY proveedor_id ASC")
         registros = cursor.fetchall()
 
         nombres = []
         for registro in registros:
-            proveedor = Proveedor_nombre(proveedor_proveedor = registro[0])
+            proveedor = Proveedor_nombre(
+                proveedor_id = registro[0],
+                proveedor_proveedor = registro[1]
+            )
             nombres.append(proveedor)
         cursor.close()
         conexion.close()

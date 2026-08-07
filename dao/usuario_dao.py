@@ -28,15 +28,16 @@ class UsuarioDAO:
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
 
-        cursor.execute("SELECT usuario_usuario, usuario_apaterno, usuario_amaterno FROM usuarios ORDER BY usuario_id ASC")
+        cursor.execute("SELECT usuario_id, usuario_usuario, usuario_apaterno, usuario_amaterno FROM usuarios ORDER BY usuario_id ASC")
         registros = cursor.fetchall()
 
         nombres = []
         for registro in registros:
             usuario = Usuario_nombre(
-                usuario_usuario = registro[0],
-                usuario_apaterno = registro[1],
-                usuario_amaterno = registro[2]
+                usuario_id = registro[0],
+                usuario_usuario = registro[1],
+                usuario_apaterno = registro[2],
+                usuario_amaterno = registro[3]
             )
             nombres.append(usuario)
         cursor.close()
