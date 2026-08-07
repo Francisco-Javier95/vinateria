@@ -52,7 +52,14 @@ def proveedores_list(regresar):
                     cells = [
                         ft.DataCell(ft.Text(proveedor_nombre_completo, color = "#0d1b2a", weight = ft.FontWeight.BOLD)),
                         ft.DataCell(ft.Text(proveedor.proveedor_telefono, color = "#0d1b2a")),
-                        ft.DataCell(ft.Text(proveedor.proveedor_direccion, color = "#0d1b2a", width = 350)),
+                        ft.DataCell(
+                            ft.Text(
+                                proveedor.proveedor_direccion, 
+                                color = "#0d1b2a", 
+                                overflow = ft.TextOverflow.ELLIPSIS,  # Agrega "..." al final
+                                width = 350
+                            )
+                        ),
                         ft.DataCell(ft.Text(proveedor.proveedor_correo, color = "#0d1b2a")),
                         ft.DataCell(
                             ft.Row(

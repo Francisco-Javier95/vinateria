@@ -12,7 +12,7 @@ class ProveedorDAO:
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
 
-        cursor.execute("SELECT * FROM proveedores ORDER BY proveedor_id ASC")
+        cursor.execute("SELECT * FROM proveedores WHERE proveedor_id != 1 ORDER BY proveedor_id ASC")
         registros = cursor.fetchall()
 
         proveedores = []
@@ -120,14 +120,43 @@ class ProveedorDAO:
         cursor.close()
         conexion.close()
 
-    def eliminar(self, proveedor_id):
+    # Metodo para cambiar los proveedores de los articulos que tengan el proveedor y despues eliminar al proveedor
+    def eliminar(self, proveedor):
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
-        cursor.execute(
-            "DELETE FROM proveedores WHERE proveedor_id = %s",
-            (proveedor_id.proveedor_id,)
-        )
-
-        conexion.commit()
-        cursor.close()
-        conexion.close()
+        
+        try:
+            # Iniciar transacción
+            conexion.autocommit = False
+            
+            # 1. Obtener el ID del proveedor a eliminar
+            proveedor_id = proveedor.proveedor_id
+            
+            # 2. ACTUALIZAR artículos que tienen este proveedor
+            cursor.execute(
+                "UPDATE articulos_1 SET articulo_proveedor = 1 WHERE articulo_proveedor = %s",
+                (proveedor_id,)
+            )
+            
+            registros_afectados = cursor.rowcount
+            print(f"{registros_afectados} artículos actualizados a 'Ninguno' (proveedor_id=1)")
+            
+            # 3. ELIMINAR el proveedor
+            cursor.execute(
+                "DELETE FROM proveedores WHERE proveedor_id = %s",
+                (proveedor_id,)
+            )
+            
+            # Confirmar transacción
+            conexion.commit()
+            print(f"Proveedor ID {proveedor_id} eliminado exitosamente")
+            
+        except Exception as error:
+            # Si hay error, deshacer todos los cambios
+            conexion.rollback()
+            print(f"Error al eliminar proveedor: {error}")
+            raise error
+            
+        finally:
+            cursor.close()
+            conexion.close()

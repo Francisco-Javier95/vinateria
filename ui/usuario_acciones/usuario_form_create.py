@@ -27,7 +27,11 @@ def usuario_form(regresar = None, formulario_visible = False, cerrando_modal = N
         hint_text = "José Gerardo",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
-        color = "#424955"
+        color = "#424955",
+
+        # Numero maximo de caracteres
+        max_length = 50, # Limita a 50 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container() # No mostrar contador
     )
     apaterno_input = ft.TextField(
         label = "Apellido paterno: ",
@@ -37,7 +41,11 @@ def usuario_form(regresar = None, formulario_visible = False, cerrando_modal = N
         hint_text = "Flores",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
-        color = "#424955"
+        color = "#424955",
+
+        # Numero maximo de caracteres
+        max_length = 25, # Limita a 25 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container() # No mostrar contador
     )
     amaterno_input = ft.TextField(
         label = "Apellido materno: ",
@@ -47,7 +55,11 @@ def usuario_form(regresar = None, formulario_visible = False, cerrando_modal = N
         hint_text = "Ortega",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
-        color = "#424955"
+        color = "#424955",
+
+        # Numero maximo de caracteres
+        max_length = 25, # Limita a 25 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container() # No mostrar contador
     )
 
     # Definir el valor inicial del campo Nuúmero de empleado
@@ -169,7 +181,11 @@ def usuario_form(regresar = None, formulario_visible = False, cerrando_modal = N
         hint_text = "ejemplo@gmail.com",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
-        color = "#424955"
+        color = "#424955",
+
+        # Numero maximo de caracteres
+        max_length = 65, # Limita a 65 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container() # No mostrar contador
     )
     contrasenia_input = ft.TextField(
         label = "Contraseña: ",
@@ -181,7 +197,11 @@ def usuario_form(regresar = None, formulario_visible = False, cerrando_modal = N
         hint_text = "********",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
-        color = "#424955"
+        color = "#424955",
+
+        # Numero maximo de caracteres
+        max_length = 16, # Limita a 16 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container() # No mostrar contador
     )
 
     # --------- Dropdown para categorìas ---------

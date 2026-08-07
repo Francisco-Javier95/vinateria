@@ -12,7 +12,7 @@ class CategoriaDAO:
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
 
-        cursor.execute("SELECT * FROM categorias ORDER BY categoria_id ASC")
+        cursor.execute("SELECT * FROM categorias WHERE categoria_id != 1 ORDER BY categoria_id ASC")
         registros = cursor.fetchall()
 
         categorias = []
@@ -111,14 +111,43 @@ class CategoriaDAO:
         cursor.close()
         conexion.close()
 
-    def eliminar(self, categoria_id):
+    # Metodo para cambiar los articulos que tengan la categoria asignada a eliminar al id de la categoria "Ninguna"
+    def eliminar(self, categoria):
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
-        cursor.execute(
-            "DELETE FROM categorias WHERE categoria_id = %s",
-            (categoria_id.categoria_id,)
-        )
 
-        conexion.commit()
-        cursor.close()
-        conexion.close()
+        try:
+            # Iniciar transacción
+            conexion.autocommit = False
+
+            # 1. Obtener el ID del proveedor a eliminar
+            categoria_id = categoria.categoria_id
+
+            # 2. ACTUALIZAR artículos que tienen esta categoría
+            cursor.execute(
+                "UPDATE articulos_1 SET articulo_categoria = 1 WHERE articulo_categoria = %s",
+                (categoria_id,)
+            )
+
+            registros_afectados = cursor.rowcount
+            print(f"{registros_afectados} artículos actualizados a 'Ninguna' (categoria_id = 1)")
+
+            # 3. ELIMINAR la categoría
+            cursor.execute(
+                "DELETE FROM categorias WHERE categoria_id = %s",
+                (categoria_id,)
+            )
+
+            # Confirmar transacción
+            conexion.commit()
+            print(f"Categoría ID {categoria_id} eliminada exitosamente")
+
+        except Exception as error:
+            # Si hay error, deshacer todos los cambios
+            conexion.rollback()
+            print(f"Error al eliminar categoría: {error}")
+            raise error
+
+        finally:
+            cursor.close()
+            conexion.close()

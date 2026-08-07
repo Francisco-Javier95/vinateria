@@ -13,15 +13,19 @@ def alerta_eliminar(regresar = None, tabla_categoria_visible = False, cerrando_m
     def confirmar(evento):
         # Recuperar el nombre de la categoria
         categoria_categoria = registro.get('nombre') if registro else ""
+        categoria_id = registro.get('id') if registro else None
 
-        mensaje.value = "Todos los campos son obligatorios"
-        mensaje.color = ft.Colors.RED
         try:
+            # Validar que no sea la categoria "Ninguno"
+            if categoria_id == 1:
+                print("No se puede eliminar la categoría 'Ninguna'")
+                evento.page.update()
+                return 
+            
             categoria_dao = CategoriaDAO()
-            categoria_id = registro.get('id') if registro else None
+            eliminar_categoria = Categoria_eliminar(categoria_id = categoria_id)
 
-            eliminar_categoria = Categoria_eliminar(categoria_id = categoria_id,)
-
+            # Ejecutar eliminación
             categoria_dao.eliminar(eliminar_categoria)
 
             mensaje.value = f"Categoría {categoria_categoria} ha sido eliminada exitosamente"
@@ -38,6 +42,7 @@ def alerta_eliminar(regresar = None, tabla_categoria_visible = False, cerrando_m
         except Exception as error:
             mensaje.value = f"Error al eliminar, causa: {error}"
             mensaje.value = ft.Colors.RED
+            print(f"Error al eliminar la categoría: {error}")
 
 
     contenido_alerta = ft.Column(

@@ -29,6 +29,10 @@ def usuario_form_edit(regresar = None, formulario_visible = False, cerrando_moda
         expand = True,
         color = "#424955",
 
+        # Numero maximo de caracteres
+        max_length = 50, # Limita a 50 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container(), # No mostrar contador
+
         value = registro.get('nombre') if registro else "" # Cargar datos
     )
     apaterno_input = ft.TextField(
@@ -41,6 +45,10 @@ def usuario_form_edit(regresar = None, formulario_visible = False, cerrando_moda
         expand = True,
         color = "#424955",
 
+        # Numero maximo de caracteres
+        max_length = 25, # Limita a 25 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container(), # No mostrar contador
+
         value = registro.get('apellido_paterno') if registro else "" # Cargar datos
     )
     amaterno_input = ft.TextField(
@@ -52,6 +60,10 @@ def usuario_form_edit(regresar = None, formulario_visible = False, cerrando_moda
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
         color = "#424955",
+
+        # Numero maximo de caracteres
+        max_length = 25, # Limita a 25 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container(), # No mostrar contador
 
         value = registro.get('apellido_materno') if registro else "" # Cargar datos
     )
@@ -178,6 +190,10 @@ def usuario_form_edit(regresar = None, formulario_visible = False, cerrando_moda
         expand = True,
         color = "#424955",
 
+        # Numero maximo de caracteres
+        max_length = 65, # Limita a 65 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container(), # No mostrar contador
+
         value = registro.get('correo') if registro else "" # Cargar datos
     )
     contrasenia_input = ft.TextField(
@@ -192,6 +208,10 @@ def usuario_form_edit(regresar = None, formulario_visible = False, cerrando_moda
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
         color = "#424955",
+
+        # Numero maximo de caracteres
+        max_length = 16, # Limita a 16 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container(), # No mostrar contador
 
         value = registro.get('contrasenia') if registro else "" # Cargar datos
     )

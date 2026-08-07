@@ -27,6 +27,10 @@ def proveedor_form_edit(regresar = None, formulario_visible = False, cerrando_mo
         expand = True,
         color = "#424955",
 
+        # Numero maximo de caracteres
+        max_length = 50, # Limita a 50 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container(), # No mostrar contador
+
         value = registro.get('nombre') if registro else "" # Cargar datos
     )
     apaterno_input = ft.TextField(
@@ -34,10 +38,14 @@ def proveedor_form_edit(regresar = None, formulario_visible = False, cerrando_mo
         label_style = estilo_de_label,
         on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(), # Estilo del label en focus
         on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(), # Estilo del label
-        hint_text = "Jared Alan",  # Esto es el placeholder
+        hint_text = "Pérez",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
         color = "#424955",
+
+        # Numero maximo de caracteres
+        max_length = 25, # Limita a 25 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container(), # No mostrar contador
 
         value = registro.get('apellido_paterno') if registro else "" # Cargar datos
     )
@@ -46,10 +54,14 @@ def proveedor_form_edit(regresar = None, formulario_visible = False, cerrando_mo
         label_style = estilo_de_label,
         on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(), # Estilo del label en focus
         on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(), # Estilo del label
-        hint_text = "Jared Alan",  # Esto es el placeholder
+        hint_text = "Pichardo",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
         color = "#424955",
+
+        # Numero maximo de caracteres
+        max_length = 25, # Limita a 25 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container(), # No mostrar contador
 
         value = registro.get('apellido_materno') if registro else "" # Cargar datos
     )
@@ -58,10 +70,14 @@ def proveedor_form_edit(regresar = None, formulario_visible = False, cerrando_mo
         label_style = estilo_de_label,
         on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(), # Estilo del label en focus
         on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(), # Estilo del label
-        hint_text = "Jared Alan",  # Esto es el placeholder
+        hint_text = "+52-247-124-####",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
         color = "#424955",
+
+        # Numero maximo de caracteres
+        max_length = 20, # Limita a 20 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container(), # No mostrar contador
 
         value = registro.get('telefono') if registro else "" # Cargar datos
     )
@@ -70,10 +86,14 @@ def proveedor_form_edit(regresar = None, formulario_visible = False, cerrando_mo
         label_style = estilo_de_label,
         on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(), # Estilo del label en focus
         on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(), # Estilo del label
-        hint_text = "Jared Alan",  # Esto es el placeholder
+        hint_text = "Olivos, Saragoza...",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
         color = "#424955",
+
+        # Numero maximo de caracteres
+        max_length = 100, # Limita a 100 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container(), # No mostrar contador
 
         value = registro.get('direccion') if registro else "" # Cargar datos
     )
@@ -82,10 +102,14 @@ def proveedor_form_edit(regresar = None, formulario_visible = False, cerrando_mo
         label_style = estilo_de_label,
         on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(), # Estilo del label en focus
         on_blur = lambda e: setattr(e.control, 'label_style', estilo_de_label) or e.control.update(), # Estilo del label
-        hint_text = "Jared Alan",  # Esto es el placeholder
+        hint_text = "ejemplo@gmail.com",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
         color = "#424955",
+
+        # Numero maximo de caracteres
+        max_length = 65, # Limita a 65 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container(), # No mostrar contador
 
         value = registro.get('correo') if registro else "" # Cargar datos
     )

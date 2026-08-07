@@ -25,7 +25,11 @@ def proveedor_form(regresar = None, formulario_visible = False, cerrando_modal =
         hint_text = "Jared Alan",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
-        color = "#424955"
+        color = "#424955",
+
+        # Numero maximo de caracteres
+        max_length = 50, # Limita a 50 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container() # No mostrar contador
     )
     apaterno_input = ft.TextField(
         label = "Apellido paterno: ",
@@ -35,7 +39,11 @@ def proveedor_form(regresar = None, formulario_visible = False, cerrando_modal =
         hint_text = "Pérez",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
-        color = "#424955"
+        color = "#424955",
+
+        # Numero maximo de caracteres
+        max_length = 25, # Limita a 25 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container() # No mostrar contador
     )
     amaterno_input = ft.TextField(
         label = "Apellido materno: ",
@@ -45,7 +53,11 @@ def proveedor_form(regresar = None, formulario_visible = False, cerrando_modal =
         hint_text = "Pichardo",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
-        color = "#424955"
+        color = "#424955",
+
+        # Numero maximo de caracteres
+        max_length = 25, # Limita a 25 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container() # No mostrar contador
     )
     telefono_input = ft.TextField(
         label = "Teléfono: ",
@@ -55,7 +67,11 @@ def proveedor_form(regresar = None, formulario_visible = False, cerrando_modal =
         hint_text = "+52-247-124-####",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
-        color = "#424955"
+        color = "#424955",
+
+        # Numero maximo de caracteres
+        max_length = 20, # Limita a 20 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container() # No mostrar contador
     )
     direccion_input = ft.TextField(
         label = "Dirección: ",
@@ -65,7 +81,11 @@ def proveedor_form(regresar = None, formulario_visible = False, cerrando_modal =
         hint_text = "Olivos, Saragoza...",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
-        color = "#424955"
+        color = "#424955",
+
+        # Numero maximo de caracteres
+        max_length = 100, # Limita a 100 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container() # No mostrar contador
     )
     correo_input = ft.TextField(
         label = "Correo eletrónico: ",
@@ -75,7 +95,11 @@ def proveedor_form(regresar = None, formulario_visible = False, cerrando_modal =
         hint_text = "ejemplo@gmail.com",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
-        color = "#424955"
+        color = "#424955",
+
+        # Numero maximo de caracteres
+        max_length = 65, # Limita a 65 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container() # No mostrar contador
     )
 
     mensaje = ft.Text(

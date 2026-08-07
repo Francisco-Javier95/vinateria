@@ -36,6 +36,10 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
         expand = True,
         color = "#424955",
 
+        # Número máximo de caracteres
+        max_length = 25, # Limita a 25 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container(), # No mostrar contador
+
         value = registro.get('nombre') if registro else "" # Cargar datos
     )
     codigo_input = ft.TextField(
@@ -48,11 +52,11 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
         expand = True,
         color = "#424955",
 
-        value = registro.get('codigo') if registro else "", # Cargar datos
-
         # Numero maximo de caracteres
         max_length = 10, # Limita a 10 caracteres / crea un contador y lo muestra debajo del input (campo)
-        counter = ft.Container() # No mostrar contador
+        counter = ft.Container(), # No mostrar contador
+
+        value = registro.get('codigo') if registro else "" # Cargar datos
     )
 
     # --------- Dropdown para categorìas ---------

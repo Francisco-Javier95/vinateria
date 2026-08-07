@@ -33,7 +33,11 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
         hint_text = "Champagne",  # Esto es el placeholder
         focused_border_color = "#c9a03d", # Borde al enfocar
         expand = True,
-        color = "#424955"
+        color = "#424955",
+
+        # Número máximo de caracteres
+        max_length = 25, # Limita a 25 caracteres / crea un contador y lo muestra debajo del input (campo)
+        counter = ft.Container() # No mostrar contador
     )
     codigo_input = ft.TextField(
         label = "Código: ",

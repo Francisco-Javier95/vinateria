@@ -12,32 +12,37 @@ def alerta_eliminar(regresar = None, formulario_visible = False, cerrando_modal 
 
     def confirmar(evento):
         # Recuperar el nombre del proveedor
-        proveedor_proveedor = registro.get('nombre') if registro else ""
+        proveedor_nombre = registro.get('nombre') if registro else ""
+        proveedor_id = registro.get('id') if registro else None
 
-        mensaje.value = "Todos los campos son obligatorios"
-        mensaje.color = ft.Colors.RED
         try:
+            # Validar que no sea el proveedor "Ninguno"
+            if proveedor_id == 1:
+                print("No se puede eliminar el proveedor 'Ninguno'")
+                evento.page.update()
+                return
+
             proveedor_dao = ProveedorDAO()
-            proveedor_id = registro.get('id') if registro else None
+            eliminar_proveedor = Proveedor_eliminar(proveedor_id=proveedor_id)
 
-            eliminar_proveedor = Proveedor_eliminar(proveedor_id = proveedor_id,)
-
+            # Ejecutar eliminación
             proveedor_dao.eliminar(eliminar_proveedor)
 
-            mensaje.value = f"Proveedor {proveedor_proveedor} ha sido eliminado exitosamente"
+            mensaje.value = f"Proveedor '{proveedor_nombre}' eliminado exitosamente"
             mensaje.color = ft.Colors.GREEN
-            print(f"Proveedor {proveedor_proveedor} ha sido eliminado exitosamente de ID {proveedor_id}")
+            print(f"Proveedor '{proveedor_nombre}' (ID: {proveedor_id}) eliminado")
 
-            # ------Cerrar el modal después de actualizar------
+            # Cerrar el modal después de actualizar
             if formulario_visible and cerrando_modal:
                 evento.page.update()
-                # Cerrar el modal
                 cerrando_modal()
                 return
 
         except Exception as error:
-            mensaje.value = f"Error al eliminar el: {error}"
-            mensaje.value = ft.Colors.RED
+            mensaje.value = f"Error al eliminar: {str(error)}"
+            mensaje.color = ft.Colors.RED
+            print(f"Error al eliminar proveedor: {error}")
+            evento.page.update()
 
 
     contenido_alerta = ft.Column(
