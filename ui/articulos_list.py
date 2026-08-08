@@ -231,7 +231,7 @@ def articulos_list(regresar):
 
     # GRID de las tarjetas de los productos
     def mostrar_articulos_en_grid(articulos):
-        """Muestra una lista de artículos en el grid de tarjetas"""
+        # Muestra una lista de artículos en el grid de tarjetas
         grid_articulos.controls.clear()
 
         for articulo in articulos:

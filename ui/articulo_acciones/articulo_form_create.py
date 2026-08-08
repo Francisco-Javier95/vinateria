@@ -418,7 +418,24 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
             # Actualizar la interfaz para mostrar el mensaje
             evento.page.update()
             return
+        
         try:
+            # Validar nombre duplicado
+            articulo_dao = ArticuloDAO()
+
+            # Varificar si el nombre ya existe
+            if articulo_dao.verificar_nombre_existente(articulo_articulo):
+                mensaje.value = f"El nombre '{articulo_articulo}' ya está registrado"
+                mensaje.color = "#ff0000"
+                evento.page.update()
+                return
+
+            if articulo_dao.verificar_codigo_existente(articulo_codigo):
+                mensaje.value = f"El código '{articulo_codigo}' ya está registrado"
+                mensaje.color = "#ff0000"
+                evento.page.update()
+                return 
+            
             # === COPIAR LA IMAGEN A LA CARPETA ASSETS ===
             ruta_destino = os.path.join(CARPETA_IMAGENES, nombre_archivo_destino)
             shutil.copy2(ruta_imagen_temporal, ruta_destino)

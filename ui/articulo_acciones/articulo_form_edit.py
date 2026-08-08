@@ -429,6 +429,7 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
         articulo_precio = precio_input.value
         articulo_stock = stock_input.value
         articulo_proveedor = proveedor_input.value # El valor seleccionado del Dropdown
+        articulo_id = registro.get('id') if registro else None
 
         # --- Manejo de la imagen ---
         imagen_final = None
@@ -441,16 +442,16 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
                 ruta_destino = os.path.join(CARPETA_IMAGENES, nombre_imagen_nueva)
                 try:
                     shutil.copy2(ruta_origen, ruta_destino)
-                    print(f"✅ Nueva imagen copiada: {ruta_destino}")
+                    print(f"Nueva imagen copiada: {ruta_destino}")
                     imagen_final = nombre_imagen_nueva
                 except Exception as error:
-                    print(f"❌ Error al copiar la nueva imagen: {error}")
+                    print(f"Error al copiar la nueva imagen: {error}")
                     mensaje.value = f"Error al copiar la imagen: {error}"
                     mensaje.color = ft.Colors.RED
                     evento.page.update()
                     return
             else:
-                mensaje.value = "❌ No se encontró el archivo de imagen temporal"
+                mensaje.value = "No se encontró el archivo de imagen temporal"
                 mensaje.color = ft.Colors.RED
                 evento.page.update()
                 return
@@ -461,9 +462,9 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
                 if os.path.exists(ruta_antigua):
                     try:
                         os.remove(ruta_antigua)
-                        print(f"🗑️ Imagen antigua eliminada: {ruta_antigua}")
+                        print(f"Imagen antigua eliminada: {ruta_antigua}")
                     except Exception as error:
-                        print(f"⚠️ No se pudo eliminar la imagen antigua: {error}")
+                        print(f"No se pudo eliminar la imagen antigua: {error}")
                 # Limpiar la bandera después de eliminar
                 eliminar_imagen_actual = False
         # Si no hay cambios en la imagen, mantener la existente
@@ -478,8 +479,21 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
             evento.page.update()
             return
         try:
+            # Validar nombre duplicado
             articulo_dao = ArticuloDAO()
-            articulo_id = registro.get('id') if registro else None
+
+            # Varificar si el nombre ya existe
+            if articulo_dao.verificar_nombre_existente(articulo_articulo, articulo_id):
+                mensaje.value = f"El nombre '{articulo_articulo}' ya está registrado"
+                mensaje.color = "#ff0000"
+                evento.page.update()
+                return
+
+            if articulo_dao.verificar_codigo_existente(articulo_codigo, articulo_id):
+                mensaje.value = f"El código '{articulo_codigo}' ya está registrado"
+                mensaje.color = "#ff0000"
+                evento.page.update()
+                return
 
             editar_articulo = Articulo_editar(
                 articulo_id = articulo_id,
