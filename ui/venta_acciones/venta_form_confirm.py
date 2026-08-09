@@ -6,8 +6,9 @@ from dao.venta_dao import VentaDAO
 from models.venta import Venta_confirmar
 from models.detalle_venta import DetalleVenta
 from dao.detalle_venta_dao import DetalleVentaDAO
-
 from dao.articulo_dao import ArticuloDAO
+
+import globals
 
 def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None, total=0.0, lista_articulos=None, lista_cantidades = None, usuario_id = None, limpiar_lista=None, venta_id_actual=None):
     # Estilos de los label
@@ -72,32 +73,14 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
             efectivo_texto = efectivo_input.value.strip() if efectivo_input.value else "0"
             efectivo = float(efectivo_texto) if efectivo_texto else 0.0
 
+            # Obtener la función de SnackBar
+            snackbar_func = globals.obtener_snackbar()
             
             # Validar que el pago sea suficiente
             if efectivo < total_actual:
                 print("El pago es insuficiente")
                 evento.page.update()
                 return
-            
-
-            # # === ACTUALIZAR STOCK Y VENDIDOS ===
-            # articulo_dao = ArticuloDAO()
-
-            # for i, id_articulo in enumerate(articulos_ids):
-            #     cantidad_vendida = articulos_cantidades[i]
-            #     articulo = articulo_dao.obtener_id_del_articulo(id_articulo)
-            #     if not articulo:
-            #         raise Exception(f"Producto ID {id_articulo} no encontrado")
-            #     if articulo.articulo_stock < cantidad_vendida:
-            #         raise Exception(f"Stock insuficiente para '{articulo.articulo_articulo}'. "
-            #                         f"Disponible: {articulo.articulo_stock}, solicitado: {cantidad_vendida}")
-            #     # Descontar stock y sumar vendidos
-            #     articulo.articulo_stock -= cantidad_vendida
-            #     articulo.articulo_vendidos += cantidad_vendida
-            #     articulo_dao.actualizar(articulo)
-            #     print(f"Stock actualizado: {articulo.articulo_articulo} → "
-            #         f"Stock: {articulo.articulo_stock}, Vendidos: {articulo.articulo_vendidos}")
-                
 
             # Guardar la venta
             venta_dao = VentaDAO()
@@ -130,6 +113,24 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
                     )
                     venta_dao.actualizar(venta_actualizada)
                     print(f"Venta {venta_existente.venta_venta} actualizada exitosamente")
+                                    
+                    # ===== MOSTRAR SNACKBAR DE ÉXITO =====
+                    if snackbar_func:
+                        snackbar_func(f"Venta '{venta_nombre}' confirmada exitosamente", "exito")
+                    
+                    # ===== AGREGAR NOTIFICACIÓN AL SISTEMA =====
+                    globals.agregar_notificacion(
+                        titulo=f"Venta '{venta_nombre}'",
+                        mensaje="confirmada exitosamente",
+                        tipo="exito"
+                    )
+
+                    # Actualizar el contador de notificaciones
+                    try:
+                        if evento.pila and hasattr(evento.pila, 'actualizar_contador'):
+                            evento.pila.actualizar_contador()
+                    except:
+                        pass
                 else:
                     print("No se encontró la venta a actualizar")
                     evento.page.update()
@@ -146,6 +147,24 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
                 )
                 venta_dao.insertar(nueva_venta)
                 print(f"Venta {venta_nombre} registrada exitosamente")
+                
+                # ===== MOSTRAR SNACKBAR DE ÉXITO =====
+                if snackbar_func:
+                    snackbar_func(f"Venta '{venta_nombre}' confirmada exitosamente", "exito")
+                    
+                # ===== AGREGAR NOTIFICACIÓN AL SISTEMA =====
+                globals.agregar_notificacion(
+                    titulo=f"Venta '{venta_nombre}'",
+                    mensaje="confirmada exitosamente",
+                    tipo="exito"
+                )
+
+                # Actualizar el contador de notificaciones
+                try:
+                    if evento.pila and hasattr(evento.pila, 'actualizar_contador'):
+                        evento.pila.actualizar_contador()
+                except:
+                    pass
 
                 # Obtener el ID de la venta recién insertada
                 venta_id = venta_dao.obtener_ultimo_id()

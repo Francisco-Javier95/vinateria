@@ -2,8 +2,9 @@ import flet as ft
 
 from models.venta import Venta_nombre_usuario
 from dao.venta_dao import VentaDAO
-
 from dao.usuario_dao import UsuarioDAO
+
+import globals
 
 def venta_form_edit(regresar = None, formulario_visible = False, cerrando_modal = None, registro = None):
     # Estilos de los label
@@ -106,6 +107,10 @@ def venta_form_edit(regresar = None, formulario_visible = False, cerrando_modal 
         # Recuperar los valores de los TextFile
         venta_venta = venta_input.value
         venta_usuario = usuario_input.value
+        venta_id = registro.get('id') if registro else None
+
+        # Obtener la función de SnackBar
+        snackbar_func = globals.obtener_snackbar()
 
         # Validación de campos vacíos
         if venta_venta == "" or venta_usuario == "":
@@ -114,12 +119,18 @@ def venta_form_edit(regresar = None, formulario_visible = False, cerrando_modal 
             # Actualizar la interfaz para mostrar el mensaje
             evento.page.update()
             return
+
         try:
             venta_nombre = f"VEN-{venta_venta}-VINATA"
 
             venta_dao = VentaDAO()
-            venta_id = registro.get('id') if registro else None
 
+            if venta_dao.verificar_nombre_existente(venta_nombre, venta_id):
+                mensaje.value = f"La venta '{venta_venta}' ya está registrada"
+                mensaje.color = "#ff0000"
+                evento.page.update()
+                return
+            
             venta = Venta_nombre_usuario(
                 venta_id = venta_id,
                 venta_venta = venta_nombre,
@@ -132,6 +143,24 @@ def venta_form_edit(regresar = None, formulario_visible = False, cerrando_modal 
 
             mensaje.value = f"Venta {venta_venta} ha sido editada exitosamente"
             mensaje.color = ft.Colors.GREEN
+                
+            # ===== MOSTRAR SNACKBAR DE ÉXITO =====
+            if snackbar_func:
+                snackbar_func(f"Venta '{venta_nombre}' editada exitosamente", "editar")
+                    
+            # ===== AGREGAR NOTIFICACIÓN AL SISTEMA =====
+            globals.agregar_notificacion(
+                titulo=f"Venta '{venta_nombre}'",
+                mensaje="editada exitosamente",
+                tipo="editar"
+            )
+
+            # Actualizar el contador de notificaciones
+            try:
+                if evento.pila and hasattr(evento.pila, 'actualizar_contador'):
+                    evento.pila.actualizar_contador()
+            except:
+                pass
             
             # limpiar_formualrio()
 

@@ -1,6 +1,7 @@
-# Declarar variable local
-venta_pendiente_global = None # Variable global que almacenara el valor del ID (venta_id) de la venta pendiente cuando se presiona el boton de "Continuar"
+# globals.py
 
+# Declarar variable local
+venta_pendiente_global = None
 
 # Variable global para almacenar la sesión del usuario
 sesion_usuario = None
@@ -9,6 +10,13 @@ notificaciones = []  # Lista para almacenar las notificaciones
 MAX_NOTIFICACIONES = 50  # Límite máximo de notificaciones
 
 _callback_actualizar_contador = None
+
+# Variable para la función de SnackBar
+mostrar_snackbar = None
+
+def obtener_snackbar():
+    """Retorna la función para mostrar SnackBars"""
+    return mostrar_snackbar
 
 def registrar_callback_contador(callback):
     """Registra un callback para actualizar el contador"""
@@ -22,16 +30,16 @@ def agregar_notificacion(titulo, mensaje, tipo="info", icono=None):
     iconos_por_tipo = {
         "info": "📢",
         "crear": "✅",
-        "editar": "edit",
-        "eliminar": "❌"
+        "editar": "✏️",
+        "eliminar": "🗑️"
     }
     
     # Colores por tipo
     colores_por_tipo = {
-        "info": {"bg": "#2196F3", "text": "#ffffff"},
-        "crear": {"bg": "#066945", "text": "#ffffff"},
-        "editar": {"bg": "#efb034", "text": "#000000"},
-        "eliminar": {"bg": "#de3b40", "text": "#ffffff"}
+        "crear": {"bg": "#4CAF50", "text": "#ffffff"},
+        "editar": {"bg": "#2196F3", "text": "#ffffff"},
+        "eliminar": {"bg": "#f44336", "text": "#ffffff"},
+        "info": {"bg": "#FF9800", "text": "#ffffff"}
     }
     
     # Crear la notificación
@@ -54,6 +62,11 @@ def agregar_notificacion(titulo, mensaje, tipo="info", icono=None):
         notificaciones.pop()
     
     print(f"Notificación agregada: {titulo}")
+    
+    # Actualizar el contador si hay callback registrado
+    if _callback_actualizar_contador:
+        _callback_actualizar_contador()
+    
     return notificacion
 
 def obtener_notificaciones(no_leidas=False):
@@ -90,38 +103,22 @@ def contar_notificaciones_no_leidas():
     """Cuenta cuántas notificaciones no leídas hay"""
     return len([n for n in notificaciones if not n["leida"]])
 
-# ========== TOAST NOTIFICATION ==========
-toast_manager = None  # Referencia al administrador de toasts
-
-def set_toast_manager(manager):
-    """Establece el administrador de toasts"""
-    global toast_manager
-    toast_manager = manager
-
-def mostrar_toast(titulo, mensaje, tipo="crear", duracion=7):
-    """Muestra un toast usando el administrador global"""
-    if toast_manager:
-        toast_manager.mostrar_toast(titulo, mensaje, tipo, duracion)
-    else:
-        print(f"Toast: {titulo} - {mensaje}")
-
-
 def establecer_sesion(usuario):
-    # Establece la sesión del usuario actual
+    """Establece la sesión del usuario actual"""
     global sesion_usuario
     sesion_usuario = usuario
     print(f"Sesión establecida para: {usuario.usuario_usuario}")
 
 def obtener_sesion():
-    # Obtiene la sesión del usuario actual
+    """Obtiene la sesión del usuario actual"""
     return sesion_usuario
 
 def limpiar_sesion():
-    # Limpia la sesión del usuario actual
+    """Limpia la sesión del usuario actual"""
     global sesion_usuario
     sesion_usuario = None
     print("Sesión limpiada")
 
 def usuario_autenticado():
-    # Verifica si hay un usuario autenticado
+    """Verifica si hay un usuario autenticado"""
     return sesion_usuario is not None

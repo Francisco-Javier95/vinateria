@@ -5,6 +5,8 @@ from models.usuario import Usuario
 from dao.usuario_dao import UsuarioDAO
 from dao.privilegio_dao import PrivilegioDAO
 
+import globals
+
 def usuario_form(regresar = None, formulario_visible = False, cerrando_modal = None):
     # Estilos de los label
     estilo_de_label = ft.TextStyle(
@@ -277,6 +279,9 @@ def usuario_form(regresar = None, formulario_visible = False, cerrando_modal = N
         usuario_contrasenia = contrasenia_input.value
         usuario_privilegio = privilegio_input.value # El valor seleccionado del Dropdown
 
+        # Obtener la función de SnackBar
+        snackbar_func = globals.obtener_snackbar()
+
         # Validación de campos vacíos
         if usuario_usuario == "" or usuario_apaterno == "" or usuario_amaterno == "" or usuario_nuempleado == "" or usuario_correo == "" or usuario_contrasenia == "" or usuario_privilegio == None:
             mensaje.value = "Todos los campos son obligatorios"
@@ -305,7 +310,7 @@ def usuario_form(regresar = None, formulario_visible = False, cerrando_modal = N
 
             #  Verificar si el correo electronico ya existe
             if usuario_dao.verificar_correo_existente(usuario_correo):
-                mensaje.value = f"El correo '{usuario_nuempleado}' ya está registrado"
+                mensaje.value = f"El correo '{usuario_correo}' ya está registrado"
                 mensaje.color = "#ff0000"
                 evento.page.update()
                 return
@@ -334,8 +339,26 @@ def usuario_form(regresar = None, formulario_visible = False, cerrando_modal = N
 
             usuario_dao.insertar(nuevo_usuario)
 
-            mensaje.value = f"Usuario {usuario_usuario} ha sido insertado exitosamente"
+            mensaje.value = ""
             mensaje.color = ft.Colors.GREEN
+
+            # ===== MOSTRAR SNACKBAR DE ÉXITO =====
+            if snackbar_func:
+                snackbar_func(f"Usuario '{usuario_usuario}' creado exitosamente", "crear")
+            
+            # ===== AGREGAR NOTIFICACIÓN AL SISTEMA =====
+            globals.agregar_notificacion(
+                titulo=f"Usuario '{usuario_usuario}'",
+                mensaje="creado exitosamente",
+                tipo="crear"
+            )
+
+            # Actualizar el contador de notificaciones
+            try:
+                if evento.page and hasattr(evento.page, 'actualizar_contador'):
+                    evento.page.actualizar_contador()
+            except:
+                pass
             
             limpiar_formulario()
 

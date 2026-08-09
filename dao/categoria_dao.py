@@ -89,6 +89,31 @@ class CategoriaDAO:
         cursor.close()
         conexion.close()
 
+    # Verificar si existe un proveedor con el mismo teléfono
+    def verificar_nombre_existente(self, nombre, categoria_id = None):
+        # Verificar si existe una categoría con el mismo nombre registrado
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+
+        if categoria_id:
+            # Para edición: excluir el proveedor actual
+            cursor.execute(
+                "SELECT COUNT(*) FROM categorias WHERE categoria_categoria = %s AND categoria_id != %s",
+                (nombre, categoria_id)
+            ) 
+        else:
+            # Para creación: verificar en toda la tabla
+            cursor.execute(
+                "SELECT COUNT(*) FROM categorias WHERE categoria_categoria = %s",
+                (nombre,)
+            )
+
+        count = cursor.fetchone()[0]
+        cursor.close()
+        conexion.close()
+
+        return count > 0
+
     def actualizar(self, categoria):
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()

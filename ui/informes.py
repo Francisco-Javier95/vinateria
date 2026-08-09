@@ -103,11 +103,6 @@ def informes(regresar):
 
 
     def obtener_ganancia_por_tipo(tipo):
-        """
-        Devuelve la ganancia total (ingresos) de productos
-        que pertenecen a categorías del tipo especificado.
-        Ganancia = precio * unidades_vendidas.
-        """
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
         cursor.execute("""
@@ -125,11 +120,6 @@ def informes(regresar):
 
 
     def dibujar_pastel(categorias, total):
-        """
-        Dibuja una gráfica de pastel con ft.Canvas.
-        categorias: lista de tuplas (nombre, cantidad)
-        total: suma de cantidades (para calcular porcentajes)
-        """
         colores = ["#6b1d41", "#c9a03d", "#926600", "#d30000", "#96C61B", "#AC0A32", "#33011C"]
         
         # Crear canvas
@@ -440,59 +430,6 @@ def informes(regresar):
     )
 
     # === GRÁFICA DE PASTEL (VENTAS POR CATEGORÍA) ===
-    # total_categorias = sum(cantidad for _, cantidad in ventas_por_categoria) or 1
-    # colores = ["#6b1d41", "#c9a03d", "#926600", "#de3b40", "#4CAF50"]
-
-    # pastel = ft.Column(
-    #     controls=[
-    #         ft.Row(
-    #             controls=[
-    #                 ft.Container(width=20, height=20, bgcolor=colores[i % len(colores)], border_radius=25),
-    #                 ft.Text(f"{nombre} ({cantidad})", size=12, color="#171a1f"),
-    #             ],
-    #             spacing=5,
-    #         ) for i, (nombre, cantidad) in enumerate(ventas_por_categoria)
-    #     ],
-    #     alignment=ft.MainAxisAlignment.CENTER,
-    #     height = 250,
-    #     scroll = ft.ScrollMode.AUTO,
-    #     spacing=10,
-    #     margin=ft.Margin.only(bottom=50),
-    # )
-
-    # pastel_visual = ft.Container(
-    #     width=250,
-    #     height=250,
-    #     margin=ft.Margin.only(bottom=50),
-
-    #     bgcolor="#000000",
-    #     border_radius=250,
-    #     content=ft.Stack(
-    #         controls=[
-    #             ft.Container(
-    #                 content=ft.Text("Ventas por\nCategoría", size=14, text_align=ft.TextAlign.CENTER),
-    #                 alignment=ft.MainAxisAlignment.CENTER,
-    #             )
-    #         ]
-    #     ),
-    # )
-
-    # contenedor_pastel = ft.Container(
-    #     content=ft.Column([
-    #         ft.Text("Ventas por Categoría", size=18, weight=ft.FontWeight.BOLD, color="#6b1d41"),
-    #         ft.Row([
-    #             pastel_visual,
-    #             pastel,
-    #         ], alignment=ft.MainAxisAlignment.CENTER, spacing=30),
-    #     ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-    #     bgcolor="#f9f6f0",
-    #     border=ft.Border.all(1, "#e2dcd5"),
-    #     border_radius=10,
-    #     padding=20,
-    #     expand=True,
-    # )
-
-    # === GRÁFICA DE PASTEL (VENTAS POR CATEGORÍA) ===
     total_categorias = sum(cantidad for _, cantidad in ventas_por_categoria) or 1
     colores = ["#6b1d41", "#c9a03d", "#926600", "#d30000", "#96C61B", "#AC0A32", "#33011C"]
 
@@ -548,7 +485,7 @@ def informes(regresar):
         rows=[
             ft.DataRow(
                 cells=[
-                    ft.DataCell(ft.Row( controls = [ ft.Text(f"{i+1}", color="#0d1b2a", weight=ft.FontWeight.BOLD), ft.Image(src = f"assets/imagenes/imagenes_DB/{imagen}", width=100, margin = ft.Margin.only(left = 80)) ])),
+                    ft.DataCell(ft.Text(f"{i+1}", color="#0d1b2a", weight=ft.FontWeight.BOLD)),
                     ft.DataCell(ft.Text(nombre, color="#0d1b2a")),
                     ft.DataCell(ft.Row(controls =[ft.Container(width=16, height=16, bgcolor=colores[i % len(colores)], border_radius=16), ft.Text(categoria, color="#0d1b2a") ])),
                     ft.DataCell(ft.Text(str(unidades), color="#0d1b2a", weight = ft.FontWeight.BOLD, text_align= ft.TextAlign.CENTER, width = 130, expand = True)),

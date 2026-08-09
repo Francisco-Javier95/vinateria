@@ -3,6 +3,8 @@ import flet as ft
 from models.venta import Venta_eliminar
 from dao.venta_dao import VentaDAO
 
+import globals
+
 def alerta_cancelar_2(regresar = None, formulario_visible = False, cerrando_modal = None, registro = None, limpiar_lista = None):
 
     mensaje = ft.Text(
@@ -13,6 +15,9 @@ def alerta_cancelar_2(regresar = None, formulario_visible = False, cerrando_moda
     def confirmar(evento):
         # Recuperar el nombre del articulo
         venta_venta = registro.get('nombre') if registro else ""
+
+        # Obtener la función de SnackBar
+        snackbar_func = globals.obtener_snackbar()
 
         try:
             venta_dao = VentaDAO()
@@ -28,6 +33,25 @@ def alerta_cancelar_2(regresar = None, formulario_visible = False, cerrando_moda
 
             mensaje.value = f"Venta {venta_venta} ha sido cancelada exitosamente"
             mensaje.color = ft.Colors.GREEN
+                
+            # ===== MOSTRAR SNACKBAR DE ÉXITO =====
+            if snackbar_func:
+                snackbar_func(f"Venta '{venta_venta}' cancelada exitosamente", "cancelar")
+                    
+            # ===== AGREGAR NOTIFICACIÓN AL SISTEMA =====
+            globals.agregar_notificacion(
+                titulo=f"Venta '{venta_venta}'",
+                mensaje="cancelada exitosamente",
+                tipo="cancelar"
+            )
+
+            # Actualizar el contador de notificaciones
+            try:
+                if evento.pila and hasattr(evento.pila, 'actualizar_contador'):
+                    evento.pila.actualizar_contador()
+            except:
+                pass
+            
             print(f"Venta {venta_venta} ha sido cancelada exitosamente de ID {venta_id}")
 
             # ------Cerrar el modal después de cancelar la venta------

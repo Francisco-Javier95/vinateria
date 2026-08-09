@@ -24,6 +24,94 @@ def main(page: ft.Page):
         height = 5000
     )
 
+    # ========== FUNCIÓN PARA MOSTRAR SNACKBAR ==========
+    def mostrar_snackbar(mensaje, tipo="exito", duracion=3000):
+        # Configuraciones según tipo
+        configs = {
+            "exito": {
+                "bg": "#ffffff", 
+                "icon": ft.Icons.CHECK_CIRCLE,
+                "icon_color": "#066945"
+            },
+            "guardar": {
+                "bg": "#ffffff", 
+                "icon": ft.Icons.SAVE,
+                "icon_color": "#004dd3"
+            },
+            "cancelar": {
+                "bg": "#ffffff", 
+                "icon": ft.Icons.CANCEL,
+                "icon_color": "#bd0000"
+            },
+            "crear": {
+                "bg": "#ffffff", 
+                "icon": ft.Icons.ADD_CIRCLE,
+                "icon_color": "#066945"
+            },
+            "editar": {
+                "bg": "#ffffff", 
+                "icon": ft.Icons.EDIT,
+                "icon_color": "#004dd3"
+            },
+            "eliminar": {
+                "bg": "#ffffff", 
+                "icon": ft.Icons.DELETE,
+                "icon_color": "#bd0000"
+            },
+            "error": {
+                "bg": "#ffffff", 
+                "icon": ft.Icons.ERROR,
+                "icon_color": "#ff0000"
+            },
+            "advertencia": {
+                "bg": "#ffffff", 
+                "icon": ft.Icons.WARNING,
+                "icon_color": "#FF9800"
+            },
+            "info": {
+                "bg": "#ffffff", 
+                "icon": ft.Icons.INFO,
+                "icon_color": "#2196F3"
+            }
+        }
+        
+        config = configs.get(tipo, configs["info"])
+        
+        # Crear el SnackBar
+        snackbar = ft.SnackBar(
+            content=ft.Row(
+                controls=[
+                    ft.Icon(
+                        config["icon"],
+                        color=config["icon_color"],
+                        size=24,
+                    ),
+                    ft.Text(
+                        mensaje,
+                        color="#6b1d41",
+                        size=16,
+                        weight=ft.FontWeight.W_500,
+                    ),
+                ],
+                spacing=10,
+                alignment=ft.MainAxisAlignment.START,
+            ),
+            bgcolor =config["bg"],
+            duration=duracion,
+            behavior=ft.SnackBarBehavior.FLOATING,
+            shape=ft.RoundedRectangleBorder(radius=10),
+            margin=ft.Margin.only(top=20, left=20, right=20),
+            width = 550,
+            elevation=6,
+        )
+        
+        page.overlay.append(snackbar)
+        snackbar.open = True
+        page.update()
+    
+    # Registrar la función en globals
+    globals.mostrar_snackbar = mostrar_snackbar
+
     # ============================================================
     # === FUNCIÓN PARA CERRAR SESIÓN ===
     # ============================================================

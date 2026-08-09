@@ -8,6 +8,8 @@ from dao.detalle_venta_dao import DetalleVentaDAO
 
 from dao.articulo_dao import ArticuloDAO
 
+import globals
+
 def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, total=0.0, lista_articulos=None, lista_cantidades=None,  usuario_id = None, limpiar_lista=None, venta_id_actual=None):
     # Estilos de los label
     estilo_de_label = ft.TextStyle(
@@ -19,6 +21,11 @@ def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, t
         color="#424955",
         weight=ft.FontWeight.BOLD,
         size=14
+    )
+
+    mensaje = ft.Text(
+        "",
+        color = ft.Colors.GREEN
     )
 
     # Variables de estado
@@ -55,6 +62,15 @@ def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, t
             # Insertar en la base de datos
             venta_dao = VentaDAO()
 
+            if venta_dao.verificar_nombre_existente(venta_nombre):
+                mensaje.value = f"La venta '{nombre}' ya está registrada"
+                mensaje.color = "#ff0000"
+                evento.page.update()
+                return
+
+            # Obtener la función de SnackBar
+            snackbar_func = globals.obtener_snackbar()
+
             # === VERIFICAR SI ES ACTUALIZACIÓN O INSERCIÓN ===
             if venta_id_actual is not None:
                 # === ACTUALIZAR VENTA EXISTENTE ===
@@ -71,6 +87,25 @@ def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, t
                     )
                     venta_dao.actualizar(venta_actualizada)
                     print(f"Venta {venta_nombre} actualizada exitosamente")
+                
+                    # ===== MOSTRAR SNACKBAR DE ÉXITO =====
+                    if snackbar_func:
+                        snackbar_func(f"Venta '{venta_nombre}' guardada exitosamente", "guardar")
+                    
+                    # ===== AGREGAR NOTIFICACIÓN AL SISTEMA =====
+                    globals.agregar_notificacion(
+                        titulo=f"Venta '{venta_nombre}'",
+                        mensaje="guardada exitosamente",
+                        tipo="guardar"
+                    )
+
+                    # Actualizar el contador de notificaciones
+                    try:
+                        if evento.pila and hasattr(evento.pila, 'actualizar_contador'):
+                            evento.pila.actualizar_contador()
+                    except:
+                        pass
+
                 else:
                     print("No se encontró la venta a actualizar")
                     evento.page.update()
@@ -88,6 +123,24 @@ def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, t
                 )
                 venta_dao.insertar(nueva_venta)
                 print(f"Venta {venta_nombre} guardada exitosamente")
+                
+                # ===== MOSTRAR SNACKBAR DE ÉXITO =====
+                if snackbar_func:
+                    snackbar_func(f"Venta '{venta_nombre}' guardada exitosamente", "guardar")
+                    
+                # ===== AGREGAR NOTIFICACIÓN AL SISTEMA =====
+                globals.agregar_notificacion(
+                    titulo=f"Venta '{venta_nombre}'",
+                    mensaje="guardada exitosamente",
+                    tipo="guardar"
+                )
+
+                # Actualizar el contador de notificaciones
+                try:
+                    if evento.pila and hasattr(evento.pila, 'actualizar_contador'):
+                        evento.pila.actualizar_contador()
+                except:
+                    pass
 
                 # Obtener el ID de la venta recién insertada
                 venta_id = venta_dao.obtener_ultimo_id()
@@ -265,6 +318,8 @@ def guardar_form(regresar=None, formulario_visible=False, cerrando_modal=None, t
             nombre_input,
 
             boton_guardar,
+
+            mensaje
         ],
         spacing=15,
         width=300,

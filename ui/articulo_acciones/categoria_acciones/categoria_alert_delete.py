@@ -3,6 +3,8 @@ import flet as ft
 from models.categoria import Categoria_eliminar
 from dao.categoria_dao import CategoriaDAO
 
+import globals
+
 def alerta_eliminar(regresar = None, tabla_categoria_visible = False, cerrando_modal = None, registro = None):
 
     mensaje = ft.Text(
@@ -14,6 +16,9 @@ def alerta_eliminar(regresar = None, tabla_categoria_visible = False, cerrando_m
         # Recuperar el nombre de la categoria
         categoria_categoria = registro.get('nombre') if registro else ""
         categoria_id = registro.get('id') if registro else None
+
+        # Obtener la función de SnackBar
+        snackbar_func = globals.obtener_snackbar()
 
         try:
             # Validar que no sea la categoria "Ninguno"
@@ -28,8 +33,27 @@ def alerta_eliminar(regresar = None, tabla_categoria_visible = False, cerrando_m
             # Ejecutar eliminación
             categoria_dao.eliminar(eliminar_categoria)
 
-            mensaje.value = f"Categoría {categoria_categoria} ha sido eliminada exitosamente"
+            mensaje.value = ""
             mensaje.color = ft.Colors.GREEN
+
+            # ===== SNACKBAR PARA ELIMINACIÓN FÍSICA =====
+            if snackbar_func:
+                snackbar_func(f"Categoría '{categoria_categoria}' eliminada exitosamente", "eliminar")
+                    
+            # ===== NOTIFICACIÓN PARA ELIMINACIÓN FÍSICA =====
+            globals.agregar_notificacion(
+                titulo=f"Categoría {categoria_categoria}",
+                mensaje="eliminada exitosamente",
+                tipo="eliminar"
+            )
+
+            # Actualizar el contador de notificaciones
+            try:
+                if evento.page and hasattr(evento.page, 'actualizar_contador'):
+                    evento.page.actualizar_contador()
+            except:
+                pass
+
             print(f"Categoria {categoria_categoria} ha sido eliminada exitosamente de ID {categoria_id}")
 
             # ------Cerrar el modal después de actualizar------

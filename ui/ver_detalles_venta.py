@@ -136,8 +136,8 @@ def ver_detalles(venta_id, regresar):
                         controls=[
                             ft.Text(f"- {item['nombre']}", size=12, color="#0d1b2a", expand=2),
                             ft.Text(f"{item['cantidad']}", size=12, color="#0d1b2a", expand=2, margin = ft.Margin.only(left = 25)),
-                            ft.Row( controls = [ ft.Icon(ft.Icons.ATTACH_MONEY, size = 18, color = "#c9a03d"), ft.Text(f"{item['precio_unitario']:.2f}", size=12, color="#0d1b2a", expand=1) ], spacing=0, margin = ft.Margin.only(right = 20)),
-                            ft.Row( controls = [ ft.Icon(ft.Icons.ATTACH_MONEY, size = 18, color = "#c9a03d"), ft.Text(f"{item['subtotal']:.2f}", size=12, color="#0d1b2a", expand=1) ], spacing=0),
+                            ft.Row( controls = [ ft.Icon(ft.Icons.ATTACH_MONEY, size = 18, color = "#c9a03d"), ft.Text(f"{item['precio_unitario']:,.2f}", size=12, color="#0d1b2a", expand=1) ], spacing=0, margin = ft.Margin.only(right = 20)),
+                            ft.Row( controls = [ ft.Icon(ft.Icons.ATTACH_MONEY, size = 18, color = "#c9a03d"), ft.Text(f"{item['subtotal']:,.2f}", size=12, color="#0d1b2a", expand=1) ], spacing=0),
                         ],
                         alignment = ft.MainAxisAlignment.SPACE_BETWEEN
                     ) 

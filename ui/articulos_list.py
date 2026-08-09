@@ -19,7 +19,7 @@ def articulos_list(regresar):
     # -------------- Contenedor de capas ---------------------
     pila = ft.Stack(expand = True) # ft.Stack permite superponer widgets (elementos)
     # 'expand = True' hace que ocupe todo el espacio disponible
-    
+
     # ======= CONTENEDOR PARA TARJETAS (GRID) =======
     # Grid de productos
 

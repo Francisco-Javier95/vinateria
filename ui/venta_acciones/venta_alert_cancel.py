@@ -4,6 +4,8 @@ from models.venta import Venta
 from models.venta import Venta_eliminar
 from dao.venta_dao import VentaDAO
 
+import globals
+
 def alerta_cancelar(regresar = None, formulario_visible = False, cerrando_modal = None, limpiar_lista = None):
 
     mensaje = ft.Text(
@@ -12,9 +14,31 @@ def alerta_cancelar(regresar = None, formulario_visible = False, cerrando_modal 
     )
 
     def confirmar(evento):
+        # Obtener la función de SnackBar
+        snackbar_func = globals.obtener_snackbar()
+
         try:
-            mensaje.value = f"Venta canclada exitosamente"
+            mensaje.value = f"Venta cancelada exitosamente"
             mensaje.color = ft.Colors.GREEN
+                
+            # ===== MOSTRAR SNACKBAR DE ÉXITO =====
+            if snackbar_func:
+                snackbar_func("Venta cancelada exitosamente", "cancelar")
+                    
+            # ===== AGREGAR NOTIFICACIÓN AL SISTEMA =====
+            globals.agregar_notificacion(
+                titulo=f"Venta",
+                mensaje="editada exitosamente",
+                tipo="cancelar"
+            )
+
+            # Actualizar el contador de notificaciones
+            try:
+                if evento.pila and hasattr(evento.pila, 'actualizar_contador'):
+                    evento.pila.actualizar_contador()
+            except:
+                pass
+
             print(f"Venta cancelada exitosamente")
 
             # Ejecutar el "llamado al metodo" de Limpiar_lista:

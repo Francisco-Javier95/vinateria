@@ -36,12 +36,7 @@ def panel_notificaciones(page=None, cerrar_panel=None):
                                 size=16,
                                 color="#9095a0",
                                 weight=ft.FontWeight.W_500,
-                            ),
-                            ft.Text(
-                                "Las notificaciones aparecerán aquí",
-                                size=12,
-                                color="#b0b5c0",
-                            ),
+                            )
                         ],
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                         spacing=10,
@@ -55,10 +50,22 @@ def panel_notificaciones(page=None, cerrar_panel=None):
             for notif in notificaciones:
                 # Determinar el icono según el tipo
                 iconos = {
-                    "info": ft.Icons.INFO,
+                    "exito": ft.Icons.CHECK_CIRCLE,
+                    "guardar": ft.Icons.SAVE,
+                    "cancelar": ft.Icons.CANCEL,
                     "crear": ft.Icons.ADD_CIRCLE,
                     "editar": ft.Icons.EDIT,
                     "eliminar": ft.Icons.DELETE,
+                }
+
+                # Y los colores:
+                colores = {
+                    "exito": "#066945",
+                    "guardar": "#004dd3",
+                    "cancelar": "#bd0000",
+                    "crear": "#066945",
+                    "editar": "#004dd3",
+                    "eliminar": "#bd0000",
                 }
                 
                 # Crear tarjeta de notificación
@@ -69,10 +76,11 @@ def panel_notificaciones(page=None, cerrar_panel=None):
                             ft.Container(
                                 content=ft.Icon(
                                     iconos.get(notif["tipo"], ft.Icons.NOTIFICATIONS),
-                                    color="#ffffff",
+                                    color= colores.get(notif["tipo"]),
                                     size=24,
                                 ),
-                                bgcolor=notif["color"]["bg"],
+                                bgcolor="#ffffff",
+                                border=ft.Border.all(width=1, color=colores.get(notif["tipo"])),
                                 border_radius=8,
                                 padding=8,
                                 width=36,

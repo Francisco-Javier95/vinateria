@@ -3,6 +3,8 @@ import flet as ft
 from models.proveedor import Proveedor
 from dao.proveedor_dao import ProveedorDAO
 
+import globals
+
 def proveedor_form(regresar = None, formulario_visible = False, cerrando_modal = None):
     # Estilos de los label
     estilo_de_label = ft.TextStyle(
@@ -125,6 +127,9 @@ def proveedor_form(regresar = None, formulario_visible = False, cerrando_modal =
         proveedor_direccion = direccion_input.value
         proveedor_correo = correo_input.value
 
+        # Obtener la función de SnackBar
+        snackbar_func = globals.obtener_snackbar()
+
         # Validación de campos vacíos
         if proveedor_proveedor == "" or proveedor_apaterno == "" or proveedor_amaterno == "" or proveedor_telefono == "" or proveedor_direccion == "" or proveedor_correo == "":
             mensaje.value = "Todos los campos son obligatorios"
@@ -168,8 +173,26 @@ def proveedor_form(regresar = None, formulario_visible = False, cerrando_modal =
 
             proveedor_dao.insertar(nuevo_proveedor)
 
-            mensaje.value = f"Proveedor {proveedor_proveedor} ha sido insertado exitosamente"
+            mensaje.value = ""
             mensaje.color = ft.Colors.GREEN
+
+            # ===== MOSTRAR SNACKBAR DE ÉXITO =====
+            if snackbar_func:
+                snackbar_func(f"Proveedor '{proveedor_proveedor}' creado exitosamente", "crear")
+            
+            # ===== AGREGAR NOTIFICACIÓN AL SISTEMA =====
+            globals.agregar_notificacion(
+                titulo=f"Proveedor '{proveedor_proveedor}'",
+                mensaje="creado exitosamente",
+                tipo="crear"
+            )
+
+            # Actualizar el contador de notificaciones
+            try:
+                if evento.page and hasattr(evento.page, 'actualizar_contador'):
+                    evento.page.actualizar_contador()
+            except:
+                pass
             
             limpiar_formulario()
 

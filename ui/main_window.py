@@ -135,9 +135,6 @@ def main_window(page: ft.Page, cerrar_sesion):
         on_click = cerrar_sesion,
     )
 
-    toast_manager = ToastNotification(page)
-    globals.set_toast_manager(toast_manager)
-
     # ========== VARIABLES DE ESTADO ==========
     panel_notificaciones_abierto = False
     overlay_notificaciones = None
@@ -177,7 +174,7 @@ def main_window(page: ft.Page, cerrar_sesion):
             except:
                 pass
         
-        print(f"🔔 Contador actualizado: {contador} notificaciones no leídas")
+        print(f"Contador actualizado: {contador} notificaciones no leídas")
     
     # Registrar el callback en globals
     globals.registrar_callback_contador(actualizar_contador)

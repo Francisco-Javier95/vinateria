@@ -5,6 +5,8 @@ from models.usuario import Usuario
 from dao.usuario_dao import UsuarioDAO
 from dao.privilegio_dao import PrivilegioDAO
 
+import globals
+
 def usuario_form_edit(regresar = None, formulario_visible = False, cerrando_modal = None, registro = None):
     # Estilos de los label
     estilo_de_label = ft.TextStyle(
@@ -299,6 +301,9 @@ def usuario_form_edit(regresar = None, formulario_visible = False, cerrando_moda
         usuario_privilegio = privilegio_input.value
         usuario_id = registro.get('id') if registro else None
 
+        # Obtener la función de SnackBar
+        snackbar_func = globals.obtener_snackbar()
+
         # Validación de campos vacíos
         if usuario_usuario == "" or usuario_apaterno == "" or usuario_amaterno == "" or usuario_nuempleado == "" or usuario_correo == "" or usuario_contrasenia == "" or usuario_privilegio == None:
             mensaje.value = "Todos los campos son obligatorios"
@@ -348,8 +353,26 @@ def usuario_form_edit(regresar = None, formulario_visible = False, cerrando_moda
 
             usuario_dao.actualizar(editar_usuario)
 
-            mensaje.value = f"Usuario {usuario_usuario} ha sido editado exitosamente"
+            mensaje.value = ""
             mensaje.color = ft.Colors.GREEN
+
+            # ===== MOSTRAR SNACKBAR DE ÉXITO =====
+            if snackbar_func:
+                snackbar_func(f"Usuario '{usuario_usuario}' editado exitosamente", "editar")
+            
+            # ===== AGREGAR NOTIFICACIÓN AL SISTEMA =====
+            globals.agregar_notificacion(
+                titulo=f"Usuario '{usuario_usuario}'",
+                mensaje="editado exitosamente",
+                tipo="editar"
+            )
+
+            # Actualizar el contador de notificaciones
+            try:
+                if evento.page and hasattr(evento.page, 'actualizar_contador'):
+                    evento.page.actualizar_contador()
+            except:
+                pass
             
             # limpiar_formualrio()
 

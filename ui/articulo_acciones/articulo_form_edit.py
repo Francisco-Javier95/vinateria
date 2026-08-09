@@ -12,6 +12,8 @@ from dao.articulo_dao import ArticuloDAO
 from dao.categoria_dao import CategoriaDAO
 from dao.proveedor_dao import ProveedorDAO
 
+import globals
+
 def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_modal = None, registro = None):
     # Estilos de los label
     estilo_de_label = ft.TextStyle(
@@ -422,14 +424,17 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
     def editar_articulo(evento):
         nonlocal nombre_imagen_antigua, nombre_imagen_nueva, eliminar_imagen_actual
 
-        # Recuperar los valores de los TextFile
+        # Recuperar los valores de los TextField
         articulo_articulo = articulo_input.value
         articulo_codigo = codigo_input.value
-        articulo_categoria = categoria_input.value # El valor seleccionado del Dropdown
+        articulo_categoria = categoria_input.value
         articulo_precio = precio_input.value
         articulo_stock = stock_input.value
-        articulo_proveedor = proveedor_input.value # El valor seleccionado del Dropdown
+        articulo_proveedor = proveedor_input.value
         articulo_id = registro.get('id') if registro else None
+
+        # Obtener la función de SnackBar
+        snackbar_func = globals.obtener_snackbar()
 
         # --- Manejo de la imagen ---
         imagen_final = None
@@ -437,7 +442,7 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
         # Si hay una nueva imagen seleccionada, la copiamos y eliminamos la antigua
         if nombre_imagen_nueva:
             # Copiar la nueva imagen a la carpeta assets
-            ruta_origen = imagen_previa.src  # Ruta temporal de la imagen seleccionada
+            ruta_origen = imagen_previa.src
             if os.path.exists(ruta_origen):
                 ruta_destino = os.path.join(CARPETA_IMAGENES, nombre_imagen_nueva)
                 try:
@@ -456,7 +461,7 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
                 evento.page.update()
                 return
 
-            # Eliminar la imagen antigua si existe y está marcada para eliminar
+            # Eliminar la imagen antigua si existe
             if eliminar_imagen_actual and nombre_imagen_antigua:
                 ruta_antigua = os.path.join(CARPETA_IMAGENES, nombre_imagen_antigua)
                 if os.path.exists(ruta_antigua):
@@ -465,24 +470,22 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
                         print(f"Imagen antigua eliminada: {ruta_antigua}")
                     except Exception as error:
                         print(f"No se pudo eliminar la imagen antigua: {error}")
-                # Limpiar la bandera después de eliminar
                 eliminar_imagen_actual = False
-        # Si no hay cambios en la imagen, mantener la existente
         else:
             imagen_final = nombre_imagen_antigua
 
         # Validación de campos vacíos
-        if articulo_articulo == "" or articulo_codigo == "" or articulo_categoria == None or articulo_precio == "" or articulo_stock == "" or articulo_proveedor == "":
+        if articulo_articulo == "" or articulo_codigo == "" or articulo_categoria is None or articulo_precio == "" or articulo_stock == "" or articulo_proveedor == "":
             mensaje.value = "Todos los campos son obligatorios"
             mensaje.color = ft.Colors.RED
-            # Actualizar la interfaz para mostrar el mensaje
             evento.page.update()
             return
+            
         try:
             # Validar nombre duplicado
             articulo_dao = ArticuloDAO()
 
-            # Varificar si el nombre ya existe
+            # Verificar si el nombre ya existe (excluyendo el artículo actual)
             if articulo_dao.verificar_nombre_existente(articulo_articulo, articulo_id):
                 mensaje.value = f"El artículo '{articulo_articulo}' ya está registrado"
                 mensaje.color = "#ff0000"
@@ -490,45 +493,61 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
                 return
 
             if articulo_dao.verificar_codigo_existente(articulo_codigo, articulo_id):
-                mensaje.value = f"El código '{articulo_codigo}' ya está registrado"
+                mensaje.value = f"El código '{articulo_codigo}' ya está registrada"
                 mensaje.color = "#ff0000"
                 evento.page.update()
                 return
 
-            editar_articulo = Articulo_editar(
+            editar_articulo_obj = Articulo_editar(
                 articulo_id = articulo_id,
                 articulo_articulo = articulo_articulo,
                 articulo_codigo = articulo_codigo,
-                articulo_categoria = int(articulo_categoria), # Convertir a entero
+                articulo_categoria = int(articulo_categoria),
                 articulo_imagen = imagen_final,
-                articulo_precio = float(articulo_precio), # Convertir a numero real
-                articulo_stock = int(articulo_stock), # Convertir a entero
-                articulo_proveedor = int(articulo_proveedor), # Convertir a entero
+                articulo_precio = float(articulo_precio),
+                articulo_stock = int(articulo_stock),
+                articulo_proveedor = int(articulo_proveedor),
             )
 
             print(articulo_id, articulo_articulo, articulo_codigo, articulo_categoria, imagen_final, articulo_precio, articulo_stock, articulo_proveedor)
 
-            articulo_dao.editar_form(editar_articulo)
+            articulo_dao.editar_form(editar_articulo_obj)
 
-            mensaje.value = f"Articulo {articulo_articulo} ha sido editado exitosamente"
+            mensaje.value = ""
             mensaje.color = ft.Colors.GREEN
             
-            # limpiar_formualrio()
+            # ===== MOSTRAR SNACKBAR DE ÉXITO =====
+            if snackbar_func:
+                snackbar_func(f"Producto '{articulo_articulo}' editado exitosamente", "editar")
+            
+            # ===== AGREGAR NOTIFICACIÓN AL SISTEMA =====
+            globals.agregar_notificacion(
+                titulo=f"Producto '{articulo_articulo}'",
+                mensaje="editado exitosamente",
+                tipo="editar"
+            )
 
-            # # ---------------------- Si el modal esta activo y si existe la función para cerrar
+            # Actualizar el contador de notificaciones
+            try:
+                if evento.page and hasattr(evento.page, 'actualizar_contador'):
+                    evento.page.actualizar_contador()
+            except:
+                pass
+
+            # Cerrar el modal después de editar
             # if formulario_visible and cerrando_modal:
             #     evento.page.update()
             #     cerrando_modal()
             #     return
 
-        except ValueError:
-            mensaje.value = "El campo 'categoria' debe ser un número entero"
-            mensaje.value = ft.Colors.RED
+        except ValueError as e:
+            mensaje.value = f"Error de formato: {e}"
+            mensaje.color = ft.Colors.RED
         except Exception as error:
-            mensaje.value = f"Error al insertar el articulo: {error}"
-            mensaje.value = ft.Colors.RED
+            mensaje.value = f"Error al editar el artículo: {error}"
+            mensaje.color = ft.Colors.RED
 
-        # Actualizar la interfaz para mostrar el mensaje 
+        # Actualizar la interfaz
         evento.page.update()
     
     # ------------- Construir el encabezado segun el modo ------------------

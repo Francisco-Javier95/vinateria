@@ -3,6 +3,8 @@ import flet as ft
 from models.categoria import Categoria
 from dao.categoria_dao import CategoriaDAO
 
+import globals
+
 def categoria_form_edit(regresar = None, tabla_categoria_visible = False, cerrando_modal = None, registro = None):
     # Estilos de los label
     estilo_de_label = ft.TextStyle(
@@ -98,6 +100,10 @@ def categoria_form_edit(regresar = None, tabla_categoria_visible = False, cerran
         categoria_categoria = categoria_input.value
         categoria_tipo = tipo_input.value
         categoria_descripcion = descripcion_input.value
+        categoria_id = registro.get('id') if registro else None
+
+        # Obtener la función de SnackBar
+        snackbar_func = globals.obtener_snackbar()
 
         # Validación de campos vacíos
         if categoria_categoria == "" or categoria_tipo == "" or categoria_descripcion == "":
@@ -106,10 +112,17 @@ def categoria_form_edit(regresar = None, tabla_categoria_visible = False, cerran
             # Actualizar la interfaz para mostrar el mensaje
             evento.page.update()
             return
+        
         try:
             categoria_dao = CategoriaDAO()
-            categoria_id = registro.get('id') if registro else None
 
+            # Verificar si el nombre ya existe (excluyendo la categoria actual)
+            if categoria_dao.verificar_nombre_existente(categoria_categoria, categoria_id):
+                mensaje.value = f"La categoría '{categoria_categoria}' ya está registrada"
+                mensaje.color = "#ff0000"
+                evento.page.update()
+                return
+            
             editar_categoria = Categoria(
                 categoria_id = categoria_id,
                 categoria_categoria = categoria_categoria,
@@ -121,8 +134,26 @@ def categoria_form_edit(regresar = None, tabla_categoria_visible = False, cerran
 
             categoria_dao.actualizar(editar_categoria)
 
-            mensaje.value = f"Categoria {categoria_categoria} ha sido editada exitosamente"
+            mensaje.value = ""
             mensaje.color = ft.Colors.GREEN
+
+            # ===== MOSTRAR SNACKBAR DE ÉXITO =====
+            if snackbar_func:
+                snackbar_func(f"Categoría '{categoria_categoria}' editada exitosamente", "editar")
+            
+            # ===== AGREGAR NOTIFICACIÓN AL SISTEMA =====
+            globals.agregar_notificacion(
+                titulo=f"Categoría '{categoria_categoria}'",
+                mensaje="editada exitosamente",
+                tipo="editar"
+            )
+
+            # Actualizar el contador de notificaciones
+            try:
+                if evento.page and hasattr(evento.page, 'actualizar_contador'):
+                    evento.page.actualizar_contador()
+            except:
+                pass
             
             # limpiar_formualrio()
 

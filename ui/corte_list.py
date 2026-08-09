@@ -10,6 +10,7 @@ from ui.venta_acciones.venta_form_edit import venta_form_edit
 from ui.venta_acciones.venta_alert_cancel_2 import alerta_cancelar_2
 
 from ui.ver_detalles_venta import ver_detalles
+import globals
 
 def ventas_list(regresar):
     # ---------------- Variables de estado -------------------
@@ -598,6 +599,9 @@ def ventas_list(regresar):
         from database.conexion import Conexion
 
         try:
+            # Obtener la función de SnackBar
+            snackbar_func = globals.obtener_snackbar()
+
             carpeta_backup = "backups"
             if not os.path.exists(carpeta_backup):
                 os.makedirs(carpeta_backup)
@@ -636,12 +640,31 @@ def ventas_list(regresar):
             cursor.close()
             conexion.close()
 
-            mensaje.value = f"✅ {len(datos)} ventas exportadas a {nombre_archivo}"
+            mensaje.value = f"{len(datos)} ventas exportadas a {nombre_archivo}"
             mensaje.color = ft.Colors.GREEN
+                            
+            # ===== MOSTRAR SNACKBAR DE ÉXITO =====
+            if snackbar_func:
+                snackbar_func("Ventas exportadas exitosamente", "guardar")
+                    
+            # ===== AGREGAR NOTIFICACIÓN AL SISTEMA =====
+            globals.agregar_notificacion(
+                titulo="Ventas exportadas a",
+                mensaje=f"{nombre_archivo} exitosamente",
+                tipo="editar"
+            )
+
+            # Actualizar el contador de notificaciones
+            try:
+                if pila and hasattr(pila, 'actualizar_contador'):
+                    pila.actualizar_contador()
+            except:
+                pass
+
             pila.update()
 
         except Exception as error:
-            mensaje.value = f"❌ Error al exportar: {error}"
+            mensaje.value = f"Error al exportar: {error}"
             mensaje.color = ft.Colors.RED
             pila.update()
 

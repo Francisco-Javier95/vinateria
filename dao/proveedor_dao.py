@@ -154,7 +154,7 @@ class ProveedorDAO:
         if proveedor_id:
             # Para edición: excluir el proveedor actual
             cursor.execute(
-                "SELECT COUNT(*) FROM proveedores WHERE proveedor_correo = %s AND proveedor_id = %s",
+                "SELECT COUNT(*) FROM proveedores WHERE proveedor_correo = %s AND proveedor_id != %s",
                 (correo, proveedor_id)
             )
         else:

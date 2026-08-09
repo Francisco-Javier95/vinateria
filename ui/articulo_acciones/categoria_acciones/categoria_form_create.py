@@ -3,6 +3,8 @@ import flet as ft
 from models.categoria import Categoria
 from dao.categoria_dao import CategoriaDAO
 
+import globals
+
 def categoria_form_create(regresar = None, tabla_categoria_visible = False, cerrando_modal = None):
     # Estilos de los label
     estilo_de_label = ft.TextStyle(
@@ -95,6 +97,10 @@ def categoria_form_create(regresar = None, tabla_categoria_visible = False, cerr
         categoria_categoria = categoria_input.value
         categoria_tipo = tipo_input.value
         categoria_descripcion = descripcion_input.value
+        categoria_id = None
+
+        # Obtener la función de SnackBar
+        snackbar_func = globals.obtener_snackbar()
 
         # Validación de campos vacíos
         if categoria_categoria == "" or categoria_tipo == "" or categoria_descripcion == "":
@@ -105,7 +111,14 @@ def categoria_form_create(regresar = None, tabla_categoria_visible = False, cerr
             return
         try:
             categoria_dao = CategoriaDAO()
-            categoria_id = None
+
+            # Verificar si el nombre ya existe
+            if categoria_dao.verificar_nombre_existente(categoria_categoria):
+                mensaje.value = f"La categoría '{categoria_categoria}' ya está registrada"
+                mensaje.color = "#ff0000"
+                evento.page.update()
+                return
+            
 
             nueva_categoria = Categoria(
                 categoria_id = categoria_id,
@@ -116,8 +129,26 @@ def categoria_form_create(regresar = None, tabla_categoria_visible = False, cerr
 
             categoria_dao.insertar(nueva_categoria)
 
-            mensaje.value = f"Categoría {categoria_categoria} ha sido insertada exitosamente"
+            mensaje.value = ""
             mensaje.color = ft.Colors.GREEN
+
+            # ===== MOSTRAR SNACKBAR DE ÉXITO =====
+            if snackbar_func:
+                snackbar_func(f"Categoría '{categoria_categoria}' creada exitosamente", "crear")
+            
+            # ===== AGREGAR NOTIFICACIÓN AL SISTEMA =====
+            globals.agregar_notificacion(
+                titulo=f"Categoría '{categoria_categoria}'",
+                mensaje="creada exitosamente",
+                tipo="crear"
+            )
+
+            # Actualizar el contador de notificaciones
+            try:
+                if evento.page and hasattr(evento.page, 'actualizar_contador'):
+                    evento.page.actualizar_contador()
+            except:
+                pass
             
             limpiar_formulario()
 

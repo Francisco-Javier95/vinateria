@@ -3,6 +3,8 @@ import flet as ft
 from models.proveedor import Proveedor
 from dao.proveedor_dao import ProveedorDAO
 
+import globals
+
 def proveedor_form_edit(regresar = None, formulario_visible = False, cerrando_modal = None, registro = None):
     # Estilos de los label
     estilo_de_label = ft.TextStyle(
@@ -139,6 +141,9 @@ def proveedor_form_edit(regresar = None, formulario_visible = False, cerrando_mo
         proveedor_correo = correo_input.value
         proveedor_id = registro.get('id') if registro else None
 
+        # Obtener la función de SnackBar
+        snackbar_func = globals.obtener_snackbar()
+
         # Validación de campos vacíos
         if proveedor_proveedor == "" or proveedor_apaterno == "" or proveedor_amaterno == "" or proveedor_telefono == "" or proveedor_direccion == "" or proveedor_correo == "":
             mensaje.value = "Todos los campos son obligatorios"
@@ -181,9 +186,27 @@ def proveedor_form_edit(regresar = None, formulario_visible = False, cerrando_mo
 
             proveedor_dao.actualizar(editar_proveedor)
 
-            mensaje.value = f"Proveedor {proveedor_proveedor} ha sido editado exitosamente"
+            mensaje.value = ""
             mensaje.color = ft.Colors.GREEN
+
+            # ===== MOSTRAR SNACKBAR DE ÉXITO =====
+            if snackbar_func:
+                snackbar_func(f"Proveedor '{proveedor_proveedor}' editado exitosamente", "editar")
             
+            # ===== AGREGAR NOTIFICACIÓN AL SISTEMA =====
+            globals.agregar_notificacion(
+                titulo=f"Proveedor '{proveedor_proveedor}'",
+                mensaje="editado exitosamente",
+                tipo="editar"
+            )
+
+            # Actualizar el contador de notificaciones
+            try:
+                if evento.page and hasattr(evento.page, 'actualizar_contador'):
+                    evento.page.actualizar_contador()
+            except:
+                pass
+
             # limpiar_formualrio()
 
             # # ---------------------- Si el modal esta activo y si existe la función para cerrar

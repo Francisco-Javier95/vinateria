@@ -407,17 +407,19 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
         # Recuperar los valores de los TextFile
         articulo_articulo = articulo_input.value
         articulo_codigo = codigo_input.value
-        articulo_categoria = categoria_input.value # El valor seleccionado del Dropdown
+        articulo_categoria = categoria_input.value
         articulo_precio = precio_input.value
         articulo_stock = stock_input.value
         articulo_proveedor = proveedor_input.value
         articulo_vendidos = 0
 
+        # Obtener la función de SnackBar
+        snackbar_func = globals.obtener_snackbar()
+
         # Validación de campos vacíos
         if (articulo_articulo == "" or articulo_codigo == "" or articulo_categoria is None or articulo_precio == "" or articulo_stock == "" or articulo_proveedor == "" or ruta_imagen_temporal is None or nombre_archivo_destino is None):
             mensaje.value = "Todos los campos son obligatorios"
             mensaje.color = ft.Colors.RED
-            # Actualizar la interfaz para mostrar el mensaje
             evento.page.update()
             return
         
@@ -425,7 +427,6 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
             # Validar nombre duplicado
             articulo_dao = ArticuloDAO()
 
-            # Varificar si el nombre ya existe
             if articulo_dao.verificar_nombre_existente(articulo_articulo):
                 mensaje.value = f"El artículo '{articulo_articulo}' ya está registrado"
                 mensaje.color = "#ff0000"
@@ -436,7 +437,7 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
                 mensaje.value = f"El código '{articulo_codigo}' ya está registrado"
                 mensaje.color = "#ff0000"
                 evento.page.update()
-                return 
+                return
             
             # === COPIAR LA IMAGEN A LA CARPETA ASSETS ===
             ruta_destino = os.path.join(CARPETA_IMAGENES, nombre_archivo_destino)
@@ -450,36 +451,36 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
                 articulo_id = articulo_id,
                 articulo_articulo = articulo_articulo,
                 articulo_codigo = articulo_codigo,
-                articulo_categoria = int(articulo_categoria), # Convertir a entero
-                articulo_imagen = nombre_archivo_destino, # Solo se guarda el nombre de la imagen
-                articulo_precio = float(articulo_precio), # Convertir a numero real
-                articulo_stock = int(articulo_stock), # Convertir a numero entero
-                articulo_proveedor = int(articulo_proveedor), # Convertir a numero entero
+                articulo_categoria = int(articulo_categoria),
+                articulo_imagen = nombre_archivo_destino,
+                articulo_precio = float(articulo_precio),
+                articulo_stock = int(articulo_stock),
+                articulo_proveedor = int(articulo_proveedor),
                 articulo_vendidos = articulo_vendidos
             )
 
             articulo_dao.insertar(nuevo_articulo)
-
-            # AGREGAR NOTIFICACIÓN DE ÉXITO
-            usuario_actual = globals.obtener_sesion()
-            nombre_usuario = usuario_actual.usuario_usuario if usuario_actual else "Usuario"
             
+            mensaje.value = ""
+            mensaje.color = ft.Colors.GREEN
+            
+            # ===== MOSTRAR SNACKBAR DE ÉXITO =====
+            if snackbar_func:
+                snackbar_func(f"Producto '{articulo_articulo}' creado exitosamente", "crear")
+            
+            # ===== AGREGAR NOTIFICACIÓN AL SISTEMA =====
             globals.agregar_notificacion(
                 titulo=f"Producto '{articulo_articulo}'",
                 mensaje="creado exitosamente",
                 tipo="crear"
             )
 
-            # Mostrar TOAST de éxito
-            globals.mostrar_toast(
-                titulo="Producto Creado",
-                mensaje=f"'{articulo_articulo}' ha sido creado exitosamente",
-                tipo="crear",
-                duracion=7
-            )
-
-            mensaje.value = f"Articulo {articulo_articulo} ha sido insertado exitosamente"
-            mensaje.color = ft.Colors.GREEN
+            # Actualizar el contador de notificaciones
+            try:
+                if evento.page and hasattr(evento.page, 'actualizar_contador'):
+                    evento.page.actualizar_contador()
+            except:
+                pass
             
             limpiar_formualrio()
 
@@ -495,29 +496,20 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
             ruta_imagen_temporal = None
             nombre_archivo_destino = None
 
-            # # ---------------------- Si el modal esta activo y si existe la función para cerrar
+            # # Cerrar el modal después de guardar
             # if formulario_visible and cerrando_modal:
             #     evento.page.update()
             #     cerrando_modal()
             #     return
 
         except ValueError:
-            mensaje.value = "El campo 'categoria' debe ser un número entero"
-            mensaje.value = ft.Colors.RED
+            mensaje.value = "Error: El campo 'categoria' debe ser un número entero"
+            mensaje.color = ft.Colors.RED
         except Exception as error:
             mensaje.value = f"Error al insertar el articulo: {error}"
-            mensaje.value = ft.Colors.RED
+            mensaje.color = ft.Colors.RED
 
-        try:
-            if evento.page and hasattr(evento.page, 'contador_notificaciones'):
-                contador = globals.contar_notificaciones_no_leidas()
-                evento.page.contador_notificaciones.value = str(contador) if contador > 0 else ""
-                evento.page.contador_notificaciones.visible = contador > 0
-                evento.page.update()
-        except:
-            pass
-
-        # Actualizar la interfaz para mostrar el mensaje 
+        # Actualizar la interfaz
         evento.page.update()
     
     # ------------- Construir el encabezado segun el modo ------------------

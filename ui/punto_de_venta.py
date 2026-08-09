@@ -127,6 +127,9 @@ def punto_de_venta(regresar=None):
         
         venta_id = globals.venta_pendiente_global
         globals.venta_pendiente_global = None
+
+        # Obtener la función de SnackBar
+        snackbar_func = globals.obtener_snackbar()
         
         if venta_id is None:
             print("No hay venta pendiente para cargar")
@@ -176,6 +179,24 @@ def punto_de_venta(regresar=None):
                     lista_compra.append(item)
                     print(f"Artículo cargado: {articulo.articulo_articulo} x{detalle.detalle_cantidad}")
             
+            # ===== MOSTRAR SNACKBAR DE ÉXITO =====
+            if snackbar_func:
+                snackbar_func(f"Venta '{venta.venta_venta}' cargada exitosamente", "exito")
+            
+            # ===== AGREGAR NOTIFICACIÓN AL SISTEMA =====
+            globals.agregar_notificacion(
+                titulo=f"Venta '{venta.venta_venta}'",
+                mensaje="cargada exitosamente",
+                tipo="exito"
+            )
+
+            # Actualizar el contador de notificaciones
+            try:
+                if pila and hasattr(pila, 'actualizar_contador'):
+                    pila.actualizar_contador()
+            except:
+                pass
+
             # Actualizar la interfaz
             actualizar_lista_compra()
             actualizar_resumen()

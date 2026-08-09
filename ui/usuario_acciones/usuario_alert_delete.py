@@ -3,6 +3,8 @@ import flet as ft
 from models.usuario import Usuario_eliminar
 from dao.usuario_dao import UsuarioDAO
 
+import globals
+
 def alerta_eliminar(regresar = None, formulario_visible = False, cerrando_modal = None, registro = None):
 
     mensaje = ft.Text(
@@ -14,6 +16,9 @@ def alerta_eliminar(regresar = None, formulario_visible = False, cerrando_modal 
         # Recuperar el nombre del usuario
         usuario_usuario = registro.get('nombre') if registro else ""
 
+        # Obtener la función de SnackBar
+        snackbar_func = globals.obtener_snackbar()
+
         mensaje.value = "Todos los campos son obligatorios"
         mensaje.color = ft.Colors.RED
         try:
@@ -24,8 +29,27 @@ def alerta_eliminar(regresar = None, formulario_visible = False, cerrando_modal 
 
             usuario_dao.eliminar(eliminar_usuario)
 
-            mensaje.value = f"Usuario {usuario_usuario} ha sido eliminado exitosamente"
+            mensaje.value = ""
             mensaje.color = ft.Colors.GREEN
+
+            # ===== SNACKBAR PARA ELIMINACIÓN FÍSICA =====
+            if snackbar_func:
+                snackbar_func(f"Proveedor '{usuario_usuario}' eliminado exitosamente", "eliminar")
+                    
+            # ===== NOTIFICACIÓN PARA ELIMINACIÓN FÍSICA =====
+            globals.agregar_notificacion(
+                titulo=f"Proveedor {usuario_usuario}",
+                mensaje="eliminado exitosamente",
+                tipo="eliminar"
+            )
+
+            # Actualizar el contador de notificaciones
+            try:
+                if evento.page and hasattr(evento.page, 'actualizar_contador'):
+                    evento.page.actualizar_contador()
+            except:
+                pass
+
             print(f"Usuario {usuario_usuario} ha sido eliminado exitosamente de ID {usuario_id}")
 
             # ------Cerrar el modal después de actualizar------

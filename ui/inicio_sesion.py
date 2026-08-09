@@ -64,6 +64,9 @@ def inicio_sesion(page: ft.Page, on_restablecer, on_exito):
         correo = correo_input.value.strip() if correo_input.value else ""
         contrasenia = contrasenia_input.value.strip() if contrasenia_input.value else ""
 
+        # Obtener la función de SnackBar
+        snackbar_func = globals.obtener_snackbar()
+
         if not correo or not contrasenia:
             mensaje.value = "Todos los campos son obligatorios"
             mensaje.color = ft.Colors.RED
@@ -89,6 +92,18 @@ def inicio_sesion(page: ft.Page, on_restablecer, on_exito):
 
             mensaje.value = "¡Bienvenido! Redirigiendo..."
             mensaje.color = ft.Colors.GREEN
+
+            # ===== MOSTRAR SNACKBAR DE ÉXITO =====
+            if snackbar_func:
+                snackbar_func(f"Bienvenido {usuario.usuario_usuario} al software de Wine POS", "exito")
+
+            # Actualizar el contador de notificaciones
+            try:
+                if page and hasattr(page, 'actualizar_contador'):
+                    page.actualizar_contador()
+            except:
+                pass
+
             page.update()
 
             # === GUARDAR USUARIO EN VARIABLE GLOBAL ===

@@ -3,6 +3,8 @@ import flet as ft
 from models.proveedor import Proveedor_eliminar
 from dao.proveedor_dao import ProveedorDAO
 
+import globals
+
 def alerta_eliminar(regresar = None, formulario_visible = False, cerrando_modal = None, registro = None):
 
     mensaje = ft.Text(
@@ -14,6 +16,9 @@ def alerta_eliminar(regresar = None, formulario_visible = False, cerrando_modal 
         # Recuperar el nombre del proveedor
         proveedor_nombre = registro.get('nombre') if registro else ""
         proveedor_id = registro.get('id') if registro else None
+
+        # Obtener la función de SnackBar
+        snackbar_func = globals.obtener_snackbar()
 
         try:
             # Validar que no sea el proveedor "Ninguno"
@@ -28,8 +33,27 @@ def alerta_eliminar(regresar = None, formulario_visible = False, cerrando_modal 
             # Ejecutar eliminación
             proveedor_dao.eliminar(eliminar_proveedor)
 
-            mensaje.value = f"Proveedor '{proveedor_nombre}' eliminado exitosamente"
+            mensaje.value = ""
             mensaje.color = ft.Colors.GREEN
+
+            # ===== SNACKBAR PARA ELIMINACIÓN FÍSICA =====
+            if snackbar_func:
+                snackbar_func(f"Proveedor '{proveedor_nombre}' eliminado exitosamente", "eliminar")
+                    
+            # ===== NOTIFICACIÓN PARA ELIMINACIÓN FÍSICA =====
+            globals.agregar_notificacion(
+                titulo=f"Proveedor {proveedor_nombre}",
+                mensaje="eliminado exitosamente",
+                tipo="eliminar"
+            )
+
+            # Actualizar el contador de notificaciones
+            try:
+                if evento.page and hasattr(evento.page, 'actualizar_contador'):
+                    evento.page.actualizar_contador()
+            except:
+                pass
+
             print(f"Proveedor '{proveedor_nombre}' (ID: {proveedor_id}) eliminado")
 
             # Cerrar el modal después de actualizar

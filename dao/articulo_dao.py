@@ -19,6 +19,7 @@ class ArticuloDAO:
             FROM articulos_1 a
             INNER JOIN categorias c ON a.articulo_categoria = c.categoria_id
             INNER JOIN proveedores p ON a.articulo_proveedor = p.proveedor_id
+            WHERE a.articulo_activo = TRUE
             ORDER BY a.articulo_id ASC
         """)
         registros = cursor.fetchall()
@@ -33,7 +34,8 @@ class ArticuloDAO:
                 articulo_precio=reg[5],
                 articulo_stock=reg[6],
                 articulo_proveedor=reg[7],
-                articulo_vendidos=reg[8]
+                articulo_vendidos=reg[8],
+                articulo_activo=reg[9] if len(reg) > 9 else True
             )
             articulos.append(articulo)
         cursor.close()
@@ -45,7 +47,7 @@ class ArticuloDAO:
         cursor = conexion.cursor()
 
         cursor.execute(
-            "SELECT articulo_id, articulo_articulo, articulo_codigo, articulo_categoria, articulo_imagen, articulo_precio, articulo_stock, articulo_proveedor, articulo_vendidos FROM articulos_1 WHERE articulo_id = %s",
+            "SELECT articulo_id, articulo_articulo, articulo_codigo, articulo_categoria, articulo_imagen, articulo_precio, articulo_stock, articulo_proveedor, articulo_vendidos, articulo_activo FROM articulos_1 WHERE articulo_id = %s",
             (articulo_id,)
         )
 
@@ -61,7 +63,8 @@ class ArticuloDAO:
                 articulo_precio = datos_articulo[5],
                 articulo_stock = datos_articulo[6],
                 articulo_proveedor = datos_articulo[7],
-                articulo_vendidos = datos_articulo[8]
+                articulo_vendidos = datos_articulo[8],
+                articulo_activo=datos_articulo[9] if len(datos_articulo) > 9 else True
             )
 
         conexion.commit()
@@ -197,54 +200,126 @@ class ArticuloDAO:
         cursor.close()
         conexion.close()
 
-    def eliminar(self, articulo_id):
-        # Elimina un artículo de la base de datos y su imagen asociada
+    def tiene_ventas_asociadas(self, articulo_id):
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+        
+        try:
+            cursor.execute(
+                "SELECT COUNT(*) FROM detalles_venta WHERE detalle_articulo_id = %s",
+                (articulo_id,)
+            )
+            count = cursor.fetchone()[0]
+            cursor.close()
+            conexion.close()
+
+            print(count)
+
+            return count > 0
+            
+        except Exception as error:
+            print(f"Error al verificar ventas asociadas: {error}")
+            return False
+            
+        finally:
+            cursor.close()
+            conexion.close()
+
+    def eliminar_logico(self, articulo_id):
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
 
         try:
-            # 1. Obtener el nombre de la imagen antes de eliminar el registro
+            # 1. Obtener el nombre del artículo antes de desactivarlo
             cursor.execute(
-                "SELECT articulo_imagen FROM articulos_1 WHERE articulo_id = %s",
-                (articulo_id.articulo_id,)
+                "SELECT articulo_articulo FROM articulos_1 WHERE articulo_id = %s",
+                (articulo_id,)
             )
             resultado = cursor.fetchone()
 
-            if resultado:
-                nombre_imagen = resultado[0]
-                print(f"Imagen a eliminar: {nombre_imagen}")
-
-                # 2. Eliminar el registro de la base de datos
-                cursor.execute(
-                    "DELETE FROM articulos_1 WHERE articulo_id = %s",
-                    (articulo_id.articulo_id,)
-                )
-
-                # 3. Eliminar el archivo de imagen si existe
-                if nombre_imagen:
-                    ruta_imagen = f"assets/imagenes/imagenes_DB/{nombre_imagen}"
-
-                    # Varificar si el archivo existe y no es la imagen por defecto
-                    if os.path.exists(ruta_imagen):
-                        # Varificar que no sea una imagen por defecto del sistema
-                        if nombre_imagen not in ["imagen_default_campo_imagen.png", "botella_negra_default_Punto_de_Venta.jpg"]:
-                            os.remove(ruta_imagen)
-                            print(f"Imagen eliminada: {ruta_imagen}")
-                        else: 
-                            print(f"Imagen por defecto no eliminada: {nombre_imagen}")
-                    else:
-                        print(f"Archivo de imagen no encontrado: {ruta_imagen}")
-            else:
+            if not resultado:
                 print(f"No se encontró el artículo con ID: {articulo_id}")
                 return False
 
+            nombre_articulo = resultado[0]
+
+            # 2. Marcar el artículo como inactivo
+            cursor.execute(
+                "UPDATE articulos_1 SET articulo_activo = FALSE WHERE articulo_id = %s",
+                (articulo_id,)
+            )
+
             conexion.commit()
-            print(f"Articulo ID {articulo_id} eliminado existosamente")
+            print(f"Artículo '{nombre_articulo}' (ID: {articulo_id}) desactivado exitosamente")
             return True
 
         except Exception as error:
             conexion.rollback()
-            print(f"Error al eliminar artículo: {error}")
+            print(f"Error al desactivar artículo: {error}")
+            raise error
+
+        finally:
+            cursor.close()
+            conexion.close()
+
+    # Modificar el método eliminar para que intente eliminación física,
+    # pero si falla por FK, haga eliminación lógica
+    def eliminar_fisico(self, articulo_id):
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+
+        try:
+            # 1. Obtener el nombre del artículo
+            cursor.execute(
+                "SELECT articulo_articulo, articulo_imagen FROM articulos_1 WHERE articulo_id = %s",
+                (articulo_id,)
+            )
+            resultado = cursor.fetchone()
+
+            if not resultado:
+                print(f"No se encontró el artículo con ID: {articulo_id}")
+                return False
+
+            nombre_articulo = resultado[0]
+            nombre_imagen = resultado[1]
+
+            # 2. Intentar eliminar físicamente
+            try:
+                cursor.execute(
+                    "DELETE FROM articulos_1 WHERE articulo_id = %s",
+                    (articulo_id,)
+                )
+                conexion.commit()
+                print(f"Artículo '{nombre_articulo}' eliminado físicamente")
+
+                # Eliminar la imagen si existe
+                if nombre_imagen:
+                    ruta_imagen = f"assets/imagenes/imagenes_DB/{nombre_imagen}"
+                    if os.path.exists(ruta_imagen):
+                        if nombre_imagen not in ["imagen_default_campo_imagen.png", "botella_negra_default_Punto_de_Venta.jpg"]:
+                            os.remove(ruta_imagen)
+                            print(f"Imagen eliminada: {ruta_imagen}")
+
+                return True
+
+            except Exception as fk_error:
+                # Si el error es por llave foránea, hacer eliminación lógica
+                if "viola la llave foránea" in str(fk_error):
+                    print(f"El artículo tiene ventas asociadas. Realizando eliminación lógica...")
+                    cursor.execute(
+                        "UPDATE articulos_1 SET articulo_activo = FALSE WHERE articulo_id = %s",
+                        (articulo_id,)
+                    )
+                    conexion.commit()
+                    print(f"Artículo '{nombre_articulo}' desactivado (eliminación lógica)")
+                    return True
+                else:
+                    # Otro tipo de error
+                    raise fk_error
+
+        except Exception as error:
+            conexion.rollback()
+            print(f"Error al eliminar/desactivar artículo: {error}")
             raise error
 
         finally:

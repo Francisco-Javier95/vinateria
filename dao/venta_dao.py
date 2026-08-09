@@ -140,7 +140,7 @@ class VentaDAO:
         conexion.close()
         return ultimo_id
 
-    def verificar_nombre_existente(self, nombre, venta_id):
+    def verificar_nombre_existente(self, nombre, venta_id = None):
         # Verificar si ya existe una venta con el mismo nombre.
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()

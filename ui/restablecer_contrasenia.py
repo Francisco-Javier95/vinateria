@@ -2,6 +2,8 @@ import flet as ft
 from dao.usuario_dao import UsuarioDAO
 import hashlib
 
+import globals
+
 def restablecer_contrasenia(page: ft.Page, on_volver):
 
     # Estilos de los label
@@ -91,6 +93,9 @@ def restablecer_contrasenia(page: ft.Page, on_volver):
         nueva_contrasenia = nueva_contrasenia_input.value.strip() if nueva_contrasenia_input.value else ""
         confirmar_contrasenia = confirmar_contrasenia_input.value.strip() if confirmar_contrasenia_input.value else ""
 
+        # Obtener la función de SnackBar
+        snackbar_func = globals.obtener_snackbar()
+
         if not correo or not nuempleado or not nueva_contrasenia or not confirmar_contrasenia:
             mensaje.value = "Todos los campos son obligatorios"
             mensaje.color = ft.Colors.RED
@@ -122,8 +127,27 @@ def restablecer_contrasenia(page: ft.Page, on_volver):
             nuevo_hash = hashlib.sha256(nueva_contrasenia.encode()).hexdigest()
             usuario_dao.actualizar_contrasenia(usuario.usuario_id, nuevo_hash)
 
-            mensaje.value = "Contraseña actualizada exitosamente"
+            # mensaje.value = "Contraseña actualizada exitosamente"
             mensaje.color = ft.Colors.GREEN
+
+            # ===== MOSTRAR SNACKBAR DE ÉXITO =====
+            if snackbar_func:
+                snackbar_func(f"Contraseña restablecida exitosamente", "exito")
+            
+            # ===== AGREGAR NOTIFICACIÓN AL SISTEMA =====
+            globals.agregar_notificacion(
+                titulo=f"Contraseña de '{usuario.usuario_usuario}'",
+                mensaje="restablecida exitosamente",
+                tipo="exito"
+            )
+
+            # Actualizar el contador de notificaciones
+            try:
+                if page and hasattr(page, 'actualizar_contador'):
+                    page.actualizar_contador()
+            except:
+                pass
+
             page.update()
 
             import time
