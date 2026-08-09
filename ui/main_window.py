@@ -8,6 +8,8 @@ from ui.proveedores_list import proveedores_list
 from ui.informes import informes
 from ui.usuarios_list import usuarios_list
 from ui.corte_list import ventas_list
+from ui.notificaciones import panel_notificaciones
+from ui.toast_notification import ToastNotification
 
 def main_window(page: ft.Page, cerrar_sesion):
     # Definir configuración de la página principal
@@ -133,6 +135,154 @@ def main_window(page: ft.Page, cerrar_sesion):
         on_click = cerrar_sesion,
     )
 
+    toast_manager = ToastNotification(page)
+    globals.set_toast_manager(toast_manager)
+
+    # ========== VARIABLES DE ESTADO ==========
+    panel_notificaciones_abierto = False
+    overlay_notificaciones = None
+
+    # Crear el contenedor del contador
+    contenedor_contador = ft.Container(
+        content=ft.Text(
+            "0",
+            size=11,
+            color="#ffffff",
+            weight=ft.FontWeight.BOLD,
+            text_align=ft.TextAlign.CENTER,
+        ),
+        bgcolor="#c9a03d",
+        border_radius=10,
+        padding=ft.Padding.symmetric(horizontal=6, vertical=2),
+        visible=False,
+        animate=ft.Animation(200, ft.AnimationCurve.EASE_IN_OUT),
+    )
+
+    # Función para actualizar el contador
+    def actualizar_contador():
+        """Actualiza el contador de notificaciones no leídas"""
+        contador = globals.contar_notificaciones_no_leidas()
+        
+        if contador > 0:
+            contenedor_contador.content.value = str(contador)
+            contenedor_contador.visible = True
+            contenedor_contador.bgcolor = "#c9a03d"
+        else:
+            contenedor_contador.visible = False
+        
+        # Actualizar la página
+        if page:
+            try:
+                page.update()
+            except:
+                pass
+        
+        print(f"🔔 Contador actualizado: {contador} notificaciones no leídas")
+    
+    # Registrar el callback en globals
+    globals.registrar_callback_contador(actualizar_contador)
+    
+    # Guardar referencia en la página para actualizar desde otros lugares
+    page.actualizar_contador = actualizar_contador
+
+    # ========== FUNCIONES DEL PANEL DE NOTIFICACIONES ==========
+    def abrir_panel_notificaciones(e):
+        nonlocal panel_notificaciones_abierto, overlay_notificaciones
+        
+        if panel_notificaciones_abierto:
+            cerrar_panel_notificaciones(e)
+            return
+        
+        # Crear el panel de notificaciones
+        panel = panel_notificaciones(
+            page=page,
+            cerrar_panel=lambda: cerrar_panel_notificaciones(None)
+        )
+        
+        # Crear overlay (capa oscura)
+        overlay = ft.Container(
+            content=ft.Row(
+                controls=[
+                    ft.Container(expand=True),  # Espacio para hacer clic y cerrar
+                    panel,
+                ],
+                spacing=0,
+                expand=True,
+            ),
+            bgcolor=ft.Colors.with_opacity(0.4, ft.Colors.BLACK),
+            expand=True,
+            animate=ft.Animation(300, ft.AnimationCurve.EASE_IN_OUT),
+            on_click=lambda e: cerrar_panel_notificaciones(e),
+        )
+        
+        # Guardar referencia
+        overlay_notificaciones = overlay
+        panel_notificaciones_abierto = True
+        
+        # Agregar a la página
+        page.overlay.append(overlay)
+        
+        # Marcar todas como leídas al abrir (opcional)
+        # globals.marcar_todas_como_leidas()
+        # actualizar_contador()
+        
+        page.update()
+
+    # ========== BOTÓN DE NOTIFICACIONES ==========
+    boton_notificaciones = ft.IconButton(
+        icon = ft.Icons.NOTIFICATIONS_OUTLINED,
+        style = ft.ButtonStyle(
+            bgcolor = {
+                ft.ControlState.DEFAULT: "#1e1e1e",
+                ft.ControlState.HOVERED: "#c9a03d",
+            },
+            side = {
+                ft.ControlState.DEFAULT: ft.BorderSide(width=2, color="#c9a03d"),
+                ft.ControlState.HOVERED: ft.BorderSide(width=2, color="#926600"),
+            },
+            icon_color = {
+                ft.ControlState.DEFAULT: "#ffffff",
+                ft.ControlState.HOVERED: "#1e1e1e",
+            },
+            shape = ft.RoundedRectangleBorder(radius = 10),
+            padding = ft.Padding.symmetric(horizontal = 8, vertical = 8)
+        ),
+        height = 50,
+        width = 50,
+        align = ft.Alignment.CENTER,
+        tooltip = "Notificaciones",
+        on_click = abrir_panel_notificaciones,
+        icon_size = 28,
+    )
+    
+    # Stack para superponer el contador sobre el botón
+    # El contador se posiciona en la esquina superior derecha del botón
+    btn_notificaciones_con_contador = ft.Stack(
+        controls=[
+            boton_notificaciones,
+            ft.Container(
+                content=contenedor_contador,
+                bottom=-4,
+                left=-4,
+            ),
+        ],
+        width=50,
+        height=50,
+    )
+    
+    def cerrar_panel_notificaciones(e):
+        nonlocal panel_notificaciones_abierto, overlay_notificaciones
+        
+        if overlay_notificaciones and overlay_notificaciones in page.overlay:
+            page.overlay.remove(overlay_notificaciones)
+        
+        panel_notificaciones_abierto = False
+        overlay_notificaciones = None
+        
+        # Actualizar contador al cerrar
+        actualizar_contador()
+        page.update()
+
     boton_inicio = ft.IconButton(
         icon = ft.Icons.HOUSE,
         style = ft.ButtonStyle(
@@ -179,9 +329,11 @@ def main_window(page: ft.Page, cerrar_sesion):
 
             ft.Container(content = ft.Text(""), height = 20, width = 1, bgcolor = "#c9a03d"),
 
-            boton_cerrar_sesion
+            boton_cerrar_sesion,
+            btn_notificaciones_con_contador
+
         ],
-        width = 300,
+        width = 400,
         alignment = ft.MainAxisAlignment.SPACE_BETWEEN
     )
 

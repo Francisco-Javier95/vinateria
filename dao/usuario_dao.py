@@ -99,6 +99,79 @@ class UsuarioDAO:
         cursor.close()
         conexion.close()
 
+    # Verificar nombre completo
+    def verificar_nombre_completo_existente(self, nombre, apellido_p, apellido_m, usuario_id = None):
+        # Verificar si existe un usuario con el mismo nombre
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+
+        if usuario_id:
+            # Para edición: excluir el usuario actual
+            cursor.execute(
+                "SELECT COUNT(*) FROM usuarios WHERE usuario_usuario = %s AND usuario_apaterno = %s AND usuario_amaterno = %s AND usuario_id != %s",
+                (nombre, apellido_p, apellido_m, usuario_id)
+            )
+        else:
+            # Para creación: verificar en toda la tabla
+            cursor.execute(
+                "SELECT COUNT(*) FROM usuarios WHERE usuario_usuario = %s AND usuario_apaterno = %s AND usuario_amaterno = %s",
+                (nombre, apellido_p, apellido_m,)
+            )
+
+        count = cursor.fetchone()[0]
+        cursor.close()
+        conexion.close()
+
+        return count > 0
+
+    def verificar_numero_empleado_existente(self, numero_empleado, usuario_id = None):
+        # Verificar si existe un usuario con el mismo número de empleado
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+
+        if usuario_id:
+            # Para edición: excluir el usuario actual
+            cursor.execute(
+                "SELECT COUNT(*) FROM usuarios WHERE usuario_nuempleado = %s AND usuario_id != %s",
+                (numero_empleado, usuario_id)
+            )
+        else:
+            # Para creación: verificar en toda la tabla
+            cursor.execute(
+                "SELECT COUNT(*) FROM usuarios WHERE usuario_nuempleado = %s",
+                (numero_empleado,)
+            )
+
+        count = cursor.fetchone()[0]
+        cursor.close()
+        conexion.close()
+
+        return count > 0
+
+    def verificar_correo_existente(self, correo, usuario_id = None):
+        # Verificar si existe un usuario con el mismo correo electronico
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+
+        if usuario_id:
+            # Para edición: excluir el usuario actual
+            cursor.execute(
+                "SELECT COUNT(*) FROM usuarios WHERE usuario_correo = %s AND usuario_id != %s",
+                (correo, usuario_id)
+            )
+        else:
+            # Para creación: Verificar en toda la tabla
+            cursor.execute(
+                "SELECT COUNT(*) FROM usuarios WHERE usuario_correo = %s",
+                (correo,)
+            )
+
+        count = cursor.fetchone()[0]
+        cursor.close()
+        conexion.close()
+
+        return count > 0
+
     def actualizar(self, usuario):
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()

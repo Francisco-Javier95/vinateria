@@ -5,6 +5,107 @@ venta_pendiente_global = None # Variable global que almacenara el valor del ID (
 # Variable global para almacenar la sesión del usuario
 sesion_usuario = None
 
+notificaciones = []  # Lista para almacenar las notificaciones
+MAX_NOTIFICACIONES = 50  # Límite máximo de notificaciones
+
+_callback_actualizar_contador = None
+
+def registrar_callback_contador(callback):
+    """Registra un callback para actualizar el contador"""
+    global _callback_actualizar_contador
+    _callback_actualizar_contador = callback
+
+def agregar_notificacion(titulo, mensaje, tipo="info", icono=None):
+    from datetime import datetime
+    
+    # Diccionario de iconos por tipo
+    iconos_por_tipo = {
+        "info": "📢",
+        "crear": "✅",
+        "editar": "edit",
+        "eliminar": "❌"
+    }
+    
+    # Colores por tipo
+    colores_por_tipo = {
+        "info": {"bg": "#2196F3", "text": "#ffffff"},
+        "crear": {"bg": "#066945", "text": "#ffffff"},
+        "editar": {"bg": "#efb034", "text": "#000000"},
+        "eliminar": {"bg": "#de3b40", "text": "#ffffff"}
+    }
+    
+    # Crear la notificación
+    notificacion = {
+        "id": len(notificaciones) + 1,
+        "titulo": titulo,
+        "mensaje": mensaje,
+        "tipo": tipo,
+        "icono": icono or iconos_por_tipo.get(tipo, "📢"),
+        "color": colores_por_tipo.get(tipo, {"bg": "#2196F3", "text": "#ffffff"}),
+        "fecha": datetime.now().strftime("%d/%m/%Y %H:%M"),
+        "leida": False
+    }
+    
+    # Agregar al inicio de la lista (más reciente primero)
+    notificaciones.insert(0, notificacion)
+    
+    # Limitar el número de notificaciones
+    if len(notificaciones) > MAX_NOTIFICACIONES:
+        notificaciones.pop()
+    
+    print(f"Notificación agregada: {titulo}")
+    return notificacion
+
+def obtener_notificaciones(no_leidas=False):
+    """Obtiene la lista de notificaciones"""
+    if no_leidas:
+        return [n for n in notificaciones if not n["leida"]]
+    return notificaciones
+
+def marcar_como_leida(notificacion_id):
+    """Marca una notificación como leída"""
+    for notificacion in notificaciones:
+        if notificacion["id"] == notificacion_id:
+            notificacion["leida"] = True
+            return True
+    return False
+
+def marcar_todas_como_leidas():
+    """Marca todas las notificaciones como leídas"""
+    for notificacion in notificaciones:
+        notificacion["leida"] = True
+
+def eliminar_notificacion(notificacion_id):
+    """Elimina una notificación específica"""
+    global notificaciones
+    notificaciones = [n for n in notificaciones if n["id"] != notificacion_id]
+    return True
+
+def limpiar_notificaciones():
+    """Limpia todas las notificaciones"""
+    global notificaciones
+    notificaciones = []
+
+def contar_notificaciones_no_leidas():
+    """Cuenta cuántas notificaciones no leídas hay"""
+    return len([n for n in notificaciones if not n["leida"]])
+
+# ========== TOAST NOTIFICATION ==========
+toast_manager = None  # Referencia al administrador de toasts
+
+def set_toast_manager(manager):
+    """Establece el administrador de toasts"""
+    global toast_manager
+    toast_manager = manager
+
+def mostrar_toast(titulo, mensaje, tipo="crear", duracion=7):
+    """Muestra un toast usando el administrador global"""
+    if toast_manager:
+        toast_manager.mostrar_toast(titulo, mensaje, tipo, duracion)
+    else:
+        print(f"Toast: {titulo} - {mensaje}")
+
+
 def establecer_sesion(usuario):
     # Establece la sesión del usuario actual
     global sesion_usuario

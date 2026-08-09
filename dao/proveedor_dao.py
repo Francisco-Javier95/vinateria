@@ -95,6 +95,81 @@ class ProveedorDAO:
         cursor.close()
         conexion.close()
 
+    # Verificar si existe un proveedor con el mismo nombre
+    def verificar_nombre_completo_existente(self, nombre, apellido_p, apellido_m, proveedor_id = None):
+        # Varificar si existe un proveedor con el mismo nombre, apellido paterno y apellido materno
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+
+        if proveedor_id:
+            # Para edición: excluir el proveedor actual
+            cursor.execute(
+                "SELECT COUNT(*) FROM proveedores WHERE proveedor_proveedor = %s AND proveedor_apaterno = %s AND proveedor_amaterno = %s AND proveedor_id != %s",
+                (nombre, apellido_p, apellido_m, proveedor_id)
+            )
+        else:
+            # Para creación: verificar en toda la tabla
+            cursor.execute(
+                "SELECT COUNT(*) FROM proveedores WHERE proveedor_proveedor = %s AND proveedor_apaterno = %s AND proveedor_amaterno = %s",
+                (nombre, apellido_p, apellido_m,)
+            )
+
+        count = cursor.fetchone()[0]
+        cursor.close()
+        conexion.close()
+
+        return count > 0
+
+    # Verificar si existe un proveedor con el mismo teléfono
+    def verificar_telefono_existente(self, telefono, proveedor_id = None):
+        # Verificar si existe un número telefonico registrado igual al que se quiere ingresar
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+
+        if proveedor_id:
+            # Para edición: excluir el proveedor actual
+            cursor.execute(
+                "SELECT COUNT(*) FROM proveedores WHERE proveedor_telefono = %s AND proveedor_id != %s",
+                (telefono, proveedor_id)
+            ) 
+        else:
+            # Para creación: verificar en toda la tabla
+            cursor.execute(
+                "SELECT COUNT(*) FROM proveedores WHERE proveedor_telefono = %s",
+                (telefono,)
+            )
+
+        count = cursor.fetchone()[0]
+        cursor.close()
+        conexion.close()
+
+        return count > 0
+
+    # Verificar si existe un proveedor con el mismo correo electrónico
+    def verificar_correo_existente(self, correo, proveedor_id = None):
+        # Verificar si existe un correo electrónico registrado en otro proveedor en la base de datos
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+
+        if proveedor_id:
+            # Para edición: excluir el proveedor actual
+            cursor.execute(
+                "SELECT COUNT(*) FROM proveedores WHERE proveedor_correo = %s AND proveedor_id = %s",
+                (correo, proveedor_id)
+            )
+        else:
+            # Para creación: verificar en toda la tabla
+            cursor.execute(
+                "SELECT COUNT(*) FROM proveedores WHERE proveedor_correo = %s",
+                (correo,)
+            )
+
+        count = cursor.fetchone()[0]
+        cursor.close()
+        conexion.close()
+
+        return count > 0
+
     def actualizar(self, proveedor):
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()

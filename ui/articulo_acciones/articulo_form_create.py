@@ -10,6 +10,8 @@ from dao.articulo_dao import ArticuloDAO
 from dao.categoria_dao import CategoriaDAO
 from dao.proveedor_dao import ProveedorDAO
 
+import globals
+
 def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = None):
 
     # Estilos de los label
@@ -425,7 +427,7 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
 
             # Varificar si el nombre ya existe
             if articulo_dao.verificar_nombre_existente(articulo_articulo):
-                mensaje.value = f"El nombre '{articulo_articulo}' ya está registrado"
+                mensaje.value = f"El artículo '{articulo_articulo}' ya está registrado"
                 mensaje.color = "#ff0000"
                 evento.page.update()
                 return
@@ -458,6 +460,24 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
 
             articulo_dao.insertar(nuevo_articulo)
 
+            # AGREGAR NOTIFICACIÓN DE ÉXITO
+            usuario_actual = globals.obtener_sesion()
+            nombre_usuario = usuario_actual.usuario_usuario if usuario_actual else "Usuario"
+            
+            globals.agregar_notificacion(
+                titulo=f"Producto '{articulo_articulo}'",
+                mensaje="creado exitosamente",
+                tipo="crear"
+            )
+
+            # Mostrar TOAST de éxito
+            globals.mostrar_toast(
+                titulo="Producto Creado",
+                mensaje=f"'{articulo_articulo}' ha sido creado exitosamente",
+                tipo="crear",
+                duracion=7
+            )
+
             mensaje.value = f"Articulo {articulo_articulo} ha sido insertado exitosamente"
             mensaje.color = ft.Colors.GREEN
             
@@ -487,6 +507,15 @@ def articulo_form(regresar = None, formulario_visible = False, cerrando_modal = 
         except Exception as error:
             mensaje.value = f"Error al insertar el articulo: {error}"
             mensaje.value = ft.Colors.RED
+
+        try:
+            if evento.page and hasattr(evento.page, 'contador_notificaciones'):
+                contador = globals.contar_notificaciones_no_leidas()
+                evento.page.contador_notificaciones.value = str(contador) if contador > 0 else ""
+                evento.page.contador_notificaciones.visible = contador > 0
+                evento.page.update()
+        except:
+            pass
 
         # Actualizar la interfaz para mostrar el mensaje 
         evento.page.update()

@@ -297,6 +297,7 @@ def usuario_form_edit(regresar = None, formulario_visible = False, cerrando_moda
         usuario_correo = correo_input.value
         usuario_contrasenia = contrasenia_input.value
         usuario_privilegio = privilegio_input.value
+        usuario_id = registro.get('id') if registro else None
 
         # Validación de campos vacíos
         if usuario_usuario == "" or usuario_apaterno == "" or usuario_amaterno == "" or usuario_nuempleado == "" or usuario_correo == "" or usuario_contrasenia == "" or usuario_privilegio == None:
@@ -305,16 +306,30 @@ def usuario_form_edit(regresar = None, formulario_visible = False, cerrando_moda
             # Actualizar la interfaz para mostrar el mensaje
             evento.page.update()
             return
-
-        if len(usuario_contrasenia) < 8:
-            mensaje.value = "La contraseña debe tener al menos 8 caracteres"
-            mensaje.color = ft.Colors.RED
-            evento.page.update()
-            return
         
         try:
             usuario_dao = UsuarioDAO()
-            usuario_id = registro.get('id') if registro else None
+
+            # Verificar si el nombre ya existe
+            if usuario_dao.verificar_nombre_completo_existente(usuario_usuario, usuario_apaterno, usuario_amaterno, usuario_id):
+                mensaje.value = f"El usuario '{usuario_usuario} {usuario_apaterno} {usuario_apaterno}' ya está registrado"
+                mensaje.color = "#ff0000"
+                evento.page.update()
+                return
+
+            # Verificar si el numero de empleado ya existe
+            if usuario_dao.verificar_numero_empleado_existente(usuario_nuempleado, usuario_id):
+                mensaje.value = f"El número de empleado '{usuario_nuempleado}' ya está registrado"
+                mensaje.color = "#ff0000"
+                evento.page.update()
+                return
+
+            #  Verificar si el correo electronico ya existe
+            if usuario_dao.verificar_correo_existente(usuario_correo, usuario_id):
+                mensaje.value = f"El correo '{usuario_correo}' ya está registrado"
+                mensaje.color = "#ff0000"
+                evento.page.update()
+                return
 
             nueva_contrasenia = hashlib.sha256(usuario_contrasenia.encode()).hexdigest()
 

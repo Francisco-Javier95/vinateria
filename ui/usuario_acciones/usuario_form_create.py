@@ -284,14 +284,38 @@ def usuario_form(regresar = None, formulario_visible = False, cerrando_modal = N
             # Actualizar la interfaz para mostrar el mensaje
             evento.page.update()
             return
-
-        if len(usuario_contrasenia) < 8:
-            mensaje.value = "La contraseña debe tener al menos 8 caracteres"
-            mensaje.color = ft.Colors.RED
-            evento.page.update()
-            return
         
         try:
+            # Validar nombre de usuario
+            usuario_dao = UsuarioDAO()
+
+            # Verificar si el nombre ya existe
+            if usuario_dao.verificar_nombre_completo_existente(usuario_usuario, usuario_apaterno, usuario_amaterno):
+                mensaje.value = f"El usuario '{usuario_usuario} {usuario_apaterno} {usuario_apaterno}' ya está registrado"
+                mensaje.color = "#ff0000"
+                evento.page.update()
+                return
+
+            # Verificar si el numero de empleado ya existe
+            if usuario_dao.verificar_numero_empleado_existente(usuario_nuempleado):
+                mensaje.value = f"El número de empleado '{usuario_nuempleado}' ya está registrado"
+                mensaje.color = "#ff0000"
+                evento.page.update()
+                return
+
+            #  Verificar si el correo electronico ya existe
+            if usuario_dao.verificar_correo_existente(usuario_correo):
+                mensaje.value = f"El correo '{usuario_nuempleado}' ya está registrado"
+                mensaje.color = "#ff0000"
+                evento.page.update()
+                return
+
+            if len(usuario_contrasenia) < 8:
+                mensaje.value = "La contraseña debe tener al menos 8 caracteres"
+                mensaje.color = ft.Colors.RED
+                evento.page.update()
+                return
+
             usuario_dao = UsuarioDAO()
             usuario_id = None
 

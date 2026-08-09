@@ -132,9 +132,29 @@ def proveedor_form(regresar = None, formulario_visible = False, cerrando_modal =
             # Actualizar la interfaz para mostrar el mensaje
             evento.page.update()
             return
+        
         try:
             proveedor_dao = ProveedorDAO()
             proveedor_id = None
+
+            # Validar nombre completo duplicado
+            if proveedor_dao.verificar_nombre_completo_existente(proveedor_proveedor, proveedor_apaterno, proveedor_amaterno):
+                mensaje.value = f"El proveedor '{proveedor_proveedor} {proveedor_apaterno} {proveedor_amaterno}' ya está registrado"
+                mensaje.color = "#ff0000"
+                evento.page.update()
+                return
+
+            if proveedor_dao.verificar_telefono_existente(proveedor_telefono):
+                mensaje.value = f"El teléfono '{proveedor_telefono}' ya está registrado"
+                mensaje.color = "#ff0000"
+                evento.page.update()
+                return
+
+            if proveedor_dao.verificar_correo_existente(proveedor_correo):
+                mensaje.value = f"El correo '{proveedor_correo}' ya está registrado"
+                mensaje.color = "#ff0000"
+                evento.page.update()
+                return
 
             nuevo_proveedor = Proveedor(
                 proveedor_id = proveedor_id,

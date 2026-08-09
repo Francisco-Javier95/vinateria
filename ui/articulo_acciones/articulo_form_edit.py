@@ -484,7 +484,7 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
 
             # Varificar si el nombre ya existe
             if articulo_dao.verificar_nombre_existente(articulo_articulo, articulo_id):
-                mensaje.value = f"El nombre '{articulo_articulo}' ya está registrado"
+                mensaje.value = f"El artículo '{articulo_articulo}' ya está registrado"
                 mensaje.color = "#ff0000"
                 evento.page.update()
                 return

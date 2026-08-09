@@ -137,6 +137,7 @@ def proveedor_form_edit(regresar = None, formulario_visible = False, cerrando_mo
         proveedor_telefono = telefono_input.value
         proveedor_direccion = direccion_input.value
         proveedor_correo = correo_input.value
+        proveedor_id = registro.get('id') if registro else None
 
         # Validación de campos vacíos
         if proveedor_proveedor == "" or proveedor_apaterno == "" or proveedor_amaterno == "" or proveedor_telefono == "" or proveedor_direccion == "" or proveedor_correo == "":
@@ -147,7 +148,24 @@ def proveedor_form_edit(regresar = None, formulario_visible = False, cerrando_mo
             return
         try:
             proveedor_dao = ProveedorDAO()
-            proveedor_id = registro.get('id') if registro else None
+
+            if proveedor_dao.verificar_nombre_completo_existente(proveedor_proveedor, proveedor_apaterno, proveedor_amaterno, proveedor_id):
+                mensaje.value = f"El proveedor '{proveedor_proveedor} {proveedor_apaterno} {proveedor_amaterno}' ya está registrado"
+                mensaje.color = "#ff0000"
+                evento.page.update()
+                return
+
+            if proveedor_dao.verificar_telefono_existente(proveedor_telefono, proveedor_id):
+                mensaje.value = f"El teléfono '{proveedor_telefono}' ya está registrado"
+                mensaje.color = "#ff0000"
+                evento.page.update()
+                return
+
+            if proveedor_dao.verificar_correo_existente(proveedor_correo, proveedor_id):
+                mensaje.value = f"El correo '{proveedor_correo}' ya está registrado"
+                mensaje.color = "#ff0000"
+                evento.page.update()
+                return
 
             editar_proveedor = Proveedor(
                 proveedor_id = proveedor_id,

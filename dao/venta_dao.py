@@ -140,7 +140,30 @@ class VentaDAO:
         conexion.close()
         return ultimo_id
 
+    def verificar_nombre_existente(self, nombre, venta_id):
+        # Verificar si ya existe una venta con el mismo nombre.
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
 
+        if venta_id:
+            # Para edición: excluir el artículo actual
+            cursor.execute(
+                "SELECT COUNT(*) FROM ventas WHERE venta_venta = %s AND venta_id != %s",
+                (nombre, venta_id)
+            )
+        else:
+            # Para creación: verificar en toda la tabla
+            cursor.execute(
+                "SELECT COUNT(*) FROM ventas WHERE venta_venta = %s",
+                (nombre,)
+            )
+
+        count = cursor.fetchone()[0]
+        cursor.close()
+        conexion.close()
+        
+        return count > 0
+        
 
     def actualizar(self, venta):
         conexion = Conexion.obtener_conexion()

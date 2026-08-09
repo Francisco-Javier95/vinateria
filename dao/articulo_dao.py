@@ -97,10 +97,7 @@ class ArticuloDAO:
         conexion.close()
 
     def verificar_nombre_existente(self, nombre, articulo_id=None):
-        """
-        Verifica si ya existe un artículo con el mismo nombre.
-        Si se proporciona articulo_id, excluye ese artículo de la verificación.
-        """
+        # Verifica si ya existe un artículo con el mismo nombre.
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
         
@@ -124,10 +121,7 @@ class ArticuloDAO:
         return count > 0
     
     def verificar_codigo_existente(self, codigo, articulo_id=None):
-        """
-        Verifica si ya existe un artículo con el mismo código.
-        Si se proporciona articulo_id, excluye ese artículo de la verificación.
-        """
+        # Verifica si ya existe un artículo con el mismo código.
         conexion = Conexion.obtener_conexion()
         cursor = conexion.cursor()
         
