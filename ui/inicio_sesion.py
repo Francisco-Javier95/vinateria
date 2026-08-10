@@ -20,7 +20,7 @@ def inicio_sesion(page: ft.Page, on_restablecer, on_exito):
     correo_input = ft.TextField(
         label="Correo electrónico",
         hint_text="ejemplo@gmail.com",
-        value = "ejemplo@gmail.com",
+        value = "javsani95@gmail.com",
 
         label_style = estilo_de_label,
         on_focus = lambda e: setattr(e.control, 'label_style', estilo_del_label_focus) or e.control.update(), # Estilo del label en focus

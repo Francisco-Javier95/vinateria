@@ -35,7 +35,7 @@ def ventas_list(regresar):
             ft.DataColumn(ft.Text("Ganancia", color = "#926600", weight = ft.FontWeight.BOLD)), # Columna 3
             ft.DataColumn(ft.Text("Empleado", color = "#926600", weight = ft.FontWeight.BOLD)), # Columna 4
             ft.DataColumn(ft.Text("Estado", color = "#926600", weight = ft.FontWeight.BOLD)), # Columna 5
-            ft.DataColumn(ft.Text("Acciones", color = "#926600",text_align = ft.TextAlign.CENTER, weight = ft.FontWeight.BOLD, width = 170)) # Columna 5
+            ft.DataColumn(ft.Text("Acciones", color = "#926600",text_align = ft.TextAlign.CENTER, weight = ft.FontWeight.BOLD, width = 180)) # Columna 5
         ],
         expand = True,
         rows = []
@@ -116,7 +116,7 @@ def ventas_list(regresar):
                     shape = ft.RoundedRectangleBorder(radius = 10),
                     padding = ft.Padding.symmetric(horizontal = 0, vertical = 8)
                 ),
-                width = 90,
+                width = 110,
 
                 on_click = abrir_alerta_cancelar_venta # Al hacer clic, sobre el boton de "Cancelar" se abrira el modal
             )
@@ -157,7 +157,7 @@ def ventas_list(regresar):
             boton_secundario = ft.OutlinedButton( # Boton Editar
 
                 #f"Editar ID:{venta.venta_id}",
-                "Editar",
+                "Editar nombre",
                 data = venta.venta_id,
 
                 style = ft.ButtonStyle(
@@ -179,7 +179,7 @@ def ventas_list(regresar):
                     shape = ft.RoundedRectangleBorder(radius = 10),
                     padding = ft.Padding.symmetric(horizontal = 0, vertical = 8)
                 ),
-                width = 90,
+                width = 110,
 
                 on_click = abrir_formulario_editar_venta # Al hacer clic, sobre el boton de "Editar" se abrira el modal
             )

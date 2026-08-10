@@ -116,11 +116,11 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
                                     
                     # ===== MOSTRAR SNACKBAR DE ÉXITO =====
                     if snackbar_func:
-                        snackbar_func(f"Venta '{venta_nombre}' confirmada exitosamente", "exito")
+                        snackbar_func(f"Venta '{venta_existente.venta_venta}' confirmada exitosamente", "exito")
                     
                     # ===== AGREGAR NOTIFICACIÓN AL SISTEMA =====
                     globals.agregar_notificacion(
-                        titulo=f"Venta '{venta_nombre}'",
+                        titulo=f"Venta '{venta_existente.venta_venta}'",
                         mensaje="confirmada exitosamente",
                         tipo="exito"
                     )

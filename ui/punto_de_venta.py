@@ -162,7 +162,7 @@ def punto_de_venta(regresar=None):
             # Cargar los artículos con sus cantidades
             articulo_dao = ArticuloDAO()
             for detalle in detalles:
-                articulo = articulo_dao.obtener_id_del_articulo(detalle.detalle_articulo_id)
+                articulo = articulo_dao.obtener_id_del_articulo_punto_v(detalle.detalle_articulo_id)
                 if articulo:
                     item = Articulo(
                         articulo_id=articulo.articulo_id,
@@ -923,7 +923,6 @@ def punto_de_venta(regresar=None):
             actualizar_resumen()
 
         imagen_rotada = ft.Container(
-            rotate=ft.Rotate(angle=-math.pi/2, alignment=ft.Alignment.CENTER),
             content=ft.Image(src=f"imagenes/imagenes_DB/{item.articulo_imagen}", width=110, height=110),
             bgcolor="#000000",
             border_radius = 5

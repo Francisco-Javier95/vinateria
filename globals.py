@@ -11,7 +11,6 @@ MAX_NOTIFICACIONES = 50  # Límite máximo de notificaciones
 
 _callback_actualizar_contador = None
 
-# Variable para la función de SnackBar
 mostrar_snackbar = None
 
 def obtener_snackbar():

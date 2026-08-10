@@ -2,72 +2,70 @@ import flet as ft
 import globals
 
 from ui.punto_de_venta import punto_de_venta
-
 from ui.articulos_list import articulos_list
 from ui.proveedores_list import proveedores_list
 from ui.informes import informes
 from ui.usuarios_list import usuarios_list
 from ui.corte_list import ventas_list
 from ui.notificaciones import panel_notificaciones
-from ui.toast_notification import ToastNotification
 
 def main_window(page: ft.Page, cerrar_sesion):
     # Definir configuración de la página principal
-    # page.title = "Sistema de Punto de Venta 'La Vinata'"
     page.expand = True
     page.padding = 0
     page.bgcolor = "#F9F6F0"
 
-    # Ejemplo de widget: Text
-    titulo = ft.Text(
-        "Sistema de Punto de Venta",
-        size = 24,
-        weight = ft.FontWeight.BOLD,
-        color = ft.Colors.PURPLE_800
-    )
-
-    subtitulo = ft.Text(
-        "Seleccione una opción del menú",
-        size = 24,
-        color = ft.Colors.PINK_900
-    )
+    # Obtener el usuario actual
+    usuario_actual = globals.obtener_sesion()
+    
+    # Obtener el privilegio del usuario (por defecto 3 si no hay sesión)
+    privilegio = usuario_actual.usuario_privilegio if usuario_actual else 3
 
     # Widget container
     contenido = ft.Container(
-        padding = 5,
-        expand = True
+        padding=5,
+        expand=True
     )
     
-    def mostrar_inicio(e = None):
+    def mostrar_inicio(e=None):
         contenido.content = punto_de_venta()
         page.update()
 
-    def mostrar_lista_articulos(e = None):
+    def mostrar_lista_articulos(e=None):
         contenido.content = articulos_list(mostrar_inicio)
         page.update()
 
-    def mostrar_lista_proveedores(e = None):
+    def mostrar_lista_proveedores(e=None):
         contenido.content = proveedores_list(mostrar_inicio)
         page.update()
 
-    def mostrar_informes(e = None):
+    def mostrar_informes(e=None):
         contenido.content = informes(mostrar_inicio)
         page.update()
 
-    def mostrar_lista_usuarios(e = None):
+    def mostrar_lista_usuarios(e=None):
         contenido.content = usuarios_list(mostrar_inicio)
         page.update()
 
-    def mostrar_lista_corte(e = None):
+    def mostrar_lista_corte(e=None):
         contenido.content = ventas_list(mostrar_inicio)
         page.update()
 
-
-    usuario_actual = globals.obtener_sesion()
+    # ========== DEFINIR PERMISOS POR PRIVILEGIO ==========
+    # Privilegios:
+    # 1 = Administrador (Acceso total)
+    # 2 = Supervisor de almacén (Punto de venta, Inventario, Proveedores)
+    # 3 = Cajero (Punto de venta, Inventario)
+    
+    # Función para verificar si el usuario tiene acceso a un módulo
+    def tiene_acceso(privilegio_requerido):
+        # Si el usuario es administrador (1), tiene acceso a todo
+        if privilegio == 1:
+            return True
+        # Si no es administrador, verificar si su privilegio coincide con el requerido
+        return privilegio == privilegio_requerido
 
     def crear_avatar(nombre_usuario, size=40):
-        # Crea un avatar circular con las iniciales del usuario
-        # Obtener iniciales del nombre
         if nombre_usuario:
             partes = nombre_usuario.split()
             iniciales = "".join([parte[0].upper() for parte in partes[:2]])
@@ -75,26 +73,137 @@ def main_window(page: ft.Page, cerrar_sesion):
             iniciales = "?"
         
         return ft.Container(
-            content = ft.Text(
-                iniciales,
-                color = "#ffffff",
-                weight = ft.FontWeight.BOLD,
-                size = 17
-            ),
-            bgcolor = "#1e1e1e",
-            border = ft.Border.all(
-                2,
-                "#ffffff"
-            ),
-            border_radius = 35,
-            width = 35,
-            height = 35,
-            alignment = ft.Alignment.CENTER,
-
-            tooltip = nombre_usuario
+            content=ft.Text(iniciales, color="#ffffff", weight=ft.FontWeight.BOLD, size=17),
+            bgcolor="#1e1e1e",
+            border=ft.Border.all(2, "#ffffff"),
+            border_radius=35,
+            width=35,
+            height=35,
+            alignment=ft.Alignment.CENTER,
+            tooltip=nombre_usuario
         )
 
+    # ========== CONSTRUIR MENÚ LATERAL SEGÚN PRIVILEGIO ==========
+    def construir_menu_lateral():
+        """Construye el menú lateral según el privilegio del usuario"""
+        
+        # Diccionario de botones con sus configuraciones
+        botones_menu = {
+            "punto_venta": {
+                "texto": "Punto de venta",
+                "icono": ft.Icons.POINT_OF_SALE,
+                "on_click": mostrar_inicio,
+                "privilegio_minimo": 3  # Accesible para todos
+            },
+            "inventario": {
+                "texto": "Inventario",
+                "icono": ft.Icons.WINE_BAR,
+                "on_click": mostrar_lista_articulos,
+                "privilegio_minimo": 3  # Accesible para todos
+            },
+            "proveedores": {
+                "texto": "Proveedores",
+                "icono": ft.Icons.LOCAL_SHIPPING,
+                "on_click": mostrar_lista_proveedores,
+                "privilegio_minimo": 2  # Solo Supervisor y Admin
+            },
+            "informes": {
+                "texto": "Informes",
+                "icono": ft.Icons.TRENDING_UP,
+                "on_click": mostrar_informes,
+                "privilegio_minimo": 1  # Solo Admin
+            },
+            "usuarios": {
+                "texto": "Usuarios",
+                "icono": ft.Icons.PERSON,
+                "on_click": mostrar_lista_usuarios,
+                "privilegio_minimo": 1  # Solo Admin
+            },
+            "corte": {
+                "texto": "Corte",
+                "icono": ft.Icons.ATTACH_MONEY,
+                "on_click": mostrar_lista_corte,
+                "privilegio_minimo": 1  # Solo Admin
+            }
+        }
+        
+        # Obtener el nombre del rol según privilegio
+        nombres_roles = {
+            1: "Administrador",
+            2: "Supervisor de almacén",
+            3: "Cajero"
+        }
+        nombre_rol = nombres_roles.get(privilegio, "Usuario")
+        
+        # Crear la lista de botones permitidos
+        botones_permitidos = []
+        
+        for clave, config in botones_menu.items():
+            # Verificar si el usuario tiene acceso a este módulo
+            if privilegio <= config["privilegio_minimo"]:
+                botones_permitidos.append(
+                    ft.ElevatedButton(
+                        config["texto"],
+                        style=ft.ButtonStyle(
+                            side={
+                                ft.ControlState.DEFAULT: ft.BorderSide(width=2, color="#6b1d41"),
+                                ft.ControlState.HOVERED: ft.BorderSide(width=2, color="#6c4e07")
+                            },
+                            bgcolor={
+                                ft.ControlState.DEFAULT: "#ffffff",
+                                ft.ControlState.HOVERED: "#efb034",
+                            },
+                            color={
+                                ft.ControlState.DEFAULT: "#efb034",
+                                ft.ControlState.HOVERED: "#ffffff",
+                            },
+                            icon_color={
+                                ft.ControlState.DEFAULT: "#efb034",
+                                ft.ControlState.HOVERED: "#ffffff",
+                            },
+                            padding=20,
+                            shape=ft.RoundedRectangleBorder(radius=10)
+                        ),
+                        icon=config["icono"],
+                        width=250,
+                        on_click=config["on_click"]
+                    )
+                )
+        
+        # Construir el menú completo
+        return ft.Container(
+            width=220,
+            bgcolor="#F9F6F0",
+            border=ft.Border.all(1, "#e2dcd5"),
+            padding=10,
+            content=ft.Column(
+                controls=[
+                    # Botones del menú
+                    ft.Column(
+                        controls=botones_permitidos,
+                        spacing=5,
+                    ),
+                    
+                    # Logo al final
+                    ft.Column(
+                        controls=[
+                            ft.Divider(color="#CCC9C5"),
+                            ft.Image(
+                                src="imagenes/logotipo_La_Vinata.png",
+                                width=200,
+                                height=200,
+                                border_radius=10
+                            )
+                        ],
+                        spacing=3
+                    )
+                ],
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                spacing=10
+            )
+        )
 
+    # ========== BARRA DE USUARIO ==========
     if usuario_actual:
         nombre_usuario = usuario_actual.usuario_usuario
         avatar = crear_avatar(nombre_usuario)
@@ -106,11 +215,16 @@ def main_window(page: ft.Page, cerrar_sesion):
                     controls=[
                         ft.Text(
                             nombre_usuario,
-                            size = 14,
-                            weight = ft.FontWeight.BOLD,
-                            color = "#ffffff",
-                            overflow = ft.TextOverflow.ELLIPSIS,  # Agrega "..." al final
-                            width = 125,  # Ancho aproximado para 20 caracteres
+                            size=14,
+                            weight=ft.FontWeight.BOLD,
+                            color="#ffffff",
+                            overflow=ft.TextOverflow.ELLIPSIS,
+                            width=125,
+                        ),
+                        ft.Text(
+                            f"Rol: {['', 'Admin', 'Supervisor', 'Cajero'][privilegio if privilegio <= 3 else 0]}",
+                            size=10,
+                            color="#c9a03d",
                         ),
                     ],
                     spacing=0,
@@ -122,32 +236,24 @@ def main_window(page: ft.Page, cerrar_sesion):
     else:
         barra_usuario = ft.Text("Usuario no autenticado", size=14, color="#9095a0")
 
-
     # Botón de cerrar sesión
     boton_cerrar_sesion = ft.ElevatedButton(
         "Salir",
-        icon = ft.Icons.LOGOUT,
-        style = ft.ButtonStyle(
-            bgcolor = "#1e1e1e",
-            color = "#ffffff",
-            shape = ft.RoundedRectangleBorder(radius = 10),
+        icon=ft.Icons.LOGOUT,
+        style=ft.ButtonStyle(
+            bgcolor="#1e1e1e",
+            color="#ffffff",
+            shape=ft.RoundedRectangleBorder(radius=10),
         ),
-        on_click = cerrar_sesion,
+        on_click=cerrar_sesion,
     )
 
-    # ========== VARIABLES DE ESTADO ==========
+    # ========== NOTIFICACIONES ==========
     panel_notificaciones_abierto = False
     overlay_notificaciones = None
 
-    # Crear el contenedor del contador
     contenedor_contador = ft.Container(
-        content=ft.Text(
-            "0",
-            size=11,
-            color="#ffffff",
-            weight=ft.FontWeight.BOLD,
-            text_align=ft.TextAlign.CENTER,
-        ),
+        content=ft.Text("0", size=11, color="#ffffff", weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER),
         bgcolor="#c9a03d",
         border_radius=10,
         padding=ft.Padding.symmetric(horizontal=6, vertical=2),
@@ -155,9 +261,7 @@ def main_window(page: ft.Page, cerrar_sesion):
         animate=ft.Animation(200, ft.AnimationCurve.EASE_IN_OUT),
     )
 
-    # Función para actualizar el contador
     def actualizar_contador():
-        """Actualiza el contador de notificaciones no leídas"""
         contador = globals.contar_notificaciones_no_leidas()
         
         if contador > 0:
@@ -167,7 +271,6 @@ def main_window(page: ft.Page, cerrar_sesion):
         else:
             contenedor_contador.visible = False
         
-        # Actualizar la página
         if page:
             try:
                 page.update()
@@ -176,13 +279,9 @@ def main_window(page: ft.Page, cerrar_sesion):
         
         print(f"Contador actualizado: {contador} notificaciones no leídas")
     
-    # Registrar el callback en globals
     globals.registrar_callback_contador(actualizar_contador)
-    
-    # Guardar referencia en la página para actualizar desde otros lugares
     page.actualizar_contador = actualizar_contador
 
-    # ========== FUNCIONES DEL PANEL DE NOTIFICACIONES ==========
     def abrir_panel_notificaciones(e):
         nonlocal panel_notificaciones_abierto, overlay_notificaciones
         
@@ -190,17 +289,15 @@ def main_window(page: ft.Page, cerrar_sesion):
             cerrar_panel_notificaciones(e)
             return
         
-        # Crear el panel de notificaciones
         panel = panel_notificaciones(
             page=page,
             cerrar_panel=lambda: cerrar_panel_notificaciones(None)
         )
         
-        # Crear overlay (capa oscura)
         overlay = ft.Container(
             content=ft.Row(
                 controls=[
-                    ft.Container(expand=True),  # Espacio para hacer clic y cerrar
+                    ft.Container(expand=True),
                     panel,
                 ],
                 spacing=0,
@@ -212,48 +309,49 @@ def main_window(page: ft.Page, cerrar_sesion):
             on_click=lambda e: cerrar_panel_notificaciones(e),
         )
         
-        # Guardar referencia
         overlay_notificaciones = overlay
         panel_notificaciones_abierto = True
-        
-        # Agregar a la página
         page.overlay.append(overlay)
-        
-        # Marcar todas como leídas al abrir (opcional)
-        # globals.marcar_todas_como_leidas()
-        # actualizar_contador()
-        
         page.update()
 
-    # ========== BOTÓN DE NOTIFICACIONES ==========
+    def cerrar_panel_notificaciones(e):
+        nonlocal panel_notificaciones_abierto, overlay_notificaciones
+        
+        if overlay_notificaciones and overlay_notificaciones in page.overlay:
+            page.overlay.remove(overlay_notificaciones)
+        
+        panel_notificaciones_abierto = False
+        overlay_notificaciones = None
+        actualizar_contador()
+        page.update()
+
+    # Botón de notificaciones
     boton_notificaciones = ft.IconButton(
-        icon = ft.Icons.NOTIFICATIONS_OUTLINED,
-        style = ft.ButtonStyle(
-            bgcolor = {
+        icon=ft.Icons.NOTIFICATIONS_OUTLINED,
+        style=ft.ButtonStyle(
+            bgcolor={
                 ft.ControlState.DEFAULT: "#1e1e1e",
                 ft.ControlState.HOVERED: "#c9a03d",
             },
-            side = {
+            side={
                 ft.ControlState.DEFAULT: ft.BorderSide(width=2, color="#c9a03d"),
                 ft.ControlState.HOVERED: ft.BorderSide(width=2, color="#926600"),
             },
-            icon_color = {
+            icon_color={
                 ft.ControlState.DEFAULT: "#ffffff",
                 ft.ControlState.HOVERED: "#1e1e1e",
             },
-            shape = ft.RoundedRectangleBorder(radius = 10),
-            padding = ft.Padding.symmetric(horizontal = 8, vertical = 8)
+            shape=ft.RoundedRectangleBorder(radius=10),
+            padding=ft.Padding.symmetric(horizontal=8, vertical=8)
         ),
-        height = 50,
-        width = 50,
-        align = ft.Alignment.CENTER,
-        tooltip = "Notificaciones",
-        on_click = abrir_panel_notificaciones,
-        icon_size = 28,
+        height=50,
+        width=50,
+        align=ft.Alignment.CENTER,
+        tooltip="Notificaciones",
+        on_click=abrir_panel_notificaciones,
+        icon_size=28,
     )
     
-    # Stack para superponer el contador sobre el botón
-    # El contador se posiciona en la esquina superior derecha del botón
     btn_notificaciones_con_contador = ft.Stack(
         controls=[
             boton_notificaciones,
@@ -266,456 +364,157 @@ def main_window(page: ft.Page, cerrar_sesion):
         width=50,
         height=50,
     )
-    
-    def cerrar_panel_notificaciones(e):
-        nonlocal panel_notificaciones_abierto, overlay_notificaciones
-        
-        if overlay_notificaciones and overlay_notificaciones in page.overlay:
-            page.overlay.remove(overlay_notificaciones)
-        
-        panel_notificaciones_abierto = False
-        overlay_notificaciones = None
-        
-        # Actualizar contador al cerrar
-        actualizar_contador()
-        page.update()
 
     boton_inicio = ft.IconButton(
-        icon = ft.Icons.HOUSE,
-        style = ft.ButtonStyle(
-            bgcolor = {
+        icon=ft.Icons.HOUSE,
+        style=ft.ButtonStyle(
+            bgcolor={
                 ft.ControlState.DEFAULT: "#1e1e1e",
                 ft.ControlState.HOVERED: "#c9a03d",
             },
-            side = {
+            side={
                 ft.ControlState.DEFAULT: ft.BorderSide(width=2, color="#c9a03d"),
                 ft.ControlState.HOVERED: ft.BorderSide(width=2, color="#926600"),
             },
-            icon_color = {
+            icon_color={
                 ft.ControlState.DEFAULT: "#ffffff",
                 ft.ControlState.HOVERED: "#1e1e1e",
             },
-            shape = ft.RoundedRectangleBorder(radius = 10),
-            padding = ft.Padding.symmetric(horizontal = 8, vertical = 8)
+            shape=ft.RoundedRectangleBorder(radius=10),
+            padding=ft.Padding.symmetric(horizontal=8, vertical=8)
         ),
-        height = 50,
-        width = 50,
-        align = ft.Alignment.CENTER,
-        tooltip = "Punto de Venta",
-
-        on_click = mostrar_inicio
+        height=50,
+        width=50,
+        align=ft.Alignment.CENTER,
+        tooltip="Punto de Venta",
+        on_click=mostrar_inicio
     )
 
     imagen_vinateria = ft.Image(
-        src = f"imagenes/La_Vinata_Vinos_y_Licores_HEADER.png",
-        expand = True
+        src="imagenes/La_Vinata_Vinos_y_Licores_HEADER.png",
+        expand=True
+    )
+
+    imagen_wine_pos = ft.Image(
+        src="imagenes/Nombre_software.png",
+        expand=True
     )
 
     inicio_imagen = ft.Row(
-        controls = [
+        controls=[
             boton_inicio,
-            imagen_vinateria
+            imagen_wine_pos
         ],
-        height = 50,
-        alignment = ft.MainAxisAlignment.SPACE_BETWEEN
+        height=50,
+        alignment=ft.MainAxisAlignment.SPACE_BETWEEN
     )
 
     avatar_y_cerrar_sesion = ft.Row(
-        controls = [
+        controls=[
             barra_usuario,
-
-            ft.Container(content = ft.Text(""), height = 20, width = 1, bgcolor = "#c9a03d"),
-
+            ft.Container(content=ft.Text(""), height=20, width=1, bgcolor="#c9a03d"),
             boton_cerrar_sesion,
             btn_notificaciones_con_contador
-
         ],
-        width = 400,
-        alignment = ft.MainAxisAlignment.SPACE_BETWEEN
+        width=400,
+        alignment=ft.MainAxisAlignment.SPACE_BETWEEN
     )
 
-    menu_lateral = ft.Container(
-        width = 220,
-        bgcolor = "#F9F6F0",
-        border = ft.Border.all(
-            1,
-            "#e2dcd5"
-        ),
-        padding = 10,
-        content = ft.Column(
-            controls = [
-                # # === BARRA DE USUARIO EN EL MENÚ ===
-                # ft.Container(
-                #     content=barra_usuario,
-                #     padding=ft.Padding.symmetric(vertical=10, horizontal=5),
-                #     border=ft.Border.only(
-                #         bottom=ft.BorderSide(width=1, color="#e2dcd5")
-                #     ),
-                # ),
-                ft.Column(
-                    controls = [
-                        ft.ElevatedButton(
-                            "Punto de venta",
-                            style = ft.ButtonStyle(
-                                # Borde sólido vino-caramelo de 2 píxeles por defecto
-                                side = {
-                                    ft.ControlState.DEFAULT: 
-                                        ft.BorderSide(
-                                            width = 2,
-                                            color = "#6b1d41"
-                                        ),
-                                    # Borde rojo de 2 píxeles al pasar el mouse
-                                    ft.ControlState.HOVERED:
-                                        ft.BorderSide(
-                                            width = 2,
-                                            color = "#6c4e07"
-                                    )
-                                },
-                                bgcolor = {
-                                    ft.ControlState.DEFAULT: "#ffffff",
-                                    ft.ControlState.HOVERED: "#efb034",
-                                },
-                                color = {
-                                    ft.ControlState.DEFAULT: "#efb034",
-                                    ft.ControlState.HOVERED: "#ffffff",
-                                },
-                                icon_color = {
-                                    ft.ControlState.DEFAULT: "#efb034",
-                                    ft.ControlState.HOVERED: "#ffffff",
-                                },
-                                padding = 20,
-                                shape = ft.RoundedRectangleBorder(radius = 10)
-                            ),
-                            icon = ft.Icons.POINT_OF_SALE,
-                            width = 250,
-                            on_click = mostrar_inicio
-                        ),
-                        ft.ElevatedButton(
-                            "Inventario",
-                            style = ft.ButtonStyle(
-                                # Borde sólido vino-caramelo de 2 píxeles por defecto
-                                side = {
-                                    ft.ControlState.DEFAULT: 
-                                        ft.BorderSide(
-                                            width = 2,
-                                            color = "#6b1d41"
-                                        ),
-                                    # Borde rojo de 2 píxeles al pasar el mouse
-                                    ft.ControlState.HOVERED:
-                                        ft.BorderSide(
-                                            width = 2,
-                                            color = "#6c4e07"
-                                    )
-                                },
-                                bgcolor = {
-                                    ft.ControlState.DEFAULT: "#ffffff",
-                                    ft.ControlState.HOVERED: "#efb034",
-                                },
-                                color = {
-                                    ft.ControlState.DEFAULT: "#efb034",
-                                    ft.ControlState.HOVERED: "#ffffff",
-                                },
-                                icon_color = {
-                                    ft.ControlState.DEFAULT: "#efb034",
-                                    ft.ControlState.HOVERED: "#ffffff",
-                                },
-                                padding = 20,
-                                shape = ft.RoundedRectangleBorder(radius = 10)
-                            ),
-                            icon = ft.Icons.WINE_BAR,
-                            width = 250,
-                            on_click = mostrar_lista_articulos # No se le coloca () ya que esto indica que es una acción que se ejecutara de forma automatica, sin la opión de que el usuario oprima el botón de "Invetario"
-                        ),
-                        ft.ElevatedButton(
-                            "Proveedores",
-                            style = ft.ButtonStyle(
-                                # Borde sólido vino-caramelo de 2 píxeles por defecto
-                                side = {
-                                    ft.ControlState.DEFAULT: 
-                                        ft.BorderSide(
-                                            width = 2,
-                                            color = "#6b1d41"
-                                        ),
-                                    # Borde rojo de 2 píxeles al pasar el mouse
-                                    ft.ControlState.HOVERED:
-                                        ft.BorderSide(
-                                            width = 2,
-                                            color = "#6c4e07"
-                                    )
-                                },
-                                bgcolor = {
-                                    ft.ControlState.DEFAULT: "#ffffff",
-                                    ft.ControlState.HOVERED: "#efb034",
-                                },
-                                color = {
-                                    ft.ControlState.DEFAULT: "#efb034",
-                                    ft.ControlState.HOVERED: "#ffffff",
-                                },
-                                icon_color = {
-                                    ft.ControlState.DEFAULT: "#efb034",
-                                    ft.ControlState.HOVERED: "#ffffff",
-                                },
-                                padding = 20,
-                                shape = ft.RoundedRectangleBorder(radius = 10)
-                            ),
-                            icon = ft.Icons.LOCAL_SHIPPING,
-                            width = 250,
-                            on_click = mostrar_lista_proveedores # Traer el contenido de "proveedores_list.py"
-                        ),
-                        ft.ElevatedButton(
-                            "Informes",
-                            style = ft.ButtonStyle(
-                                # Borde sólido vino-caramelo de 2 píxeles por defecto
-                                side = {
-                                    ft.ControlState.DEFAULT: 
-                                        ft.BorderSide(
-                                            width = 2,
-                                            color = "#6b1d41"
-                                        ),
-                                    # Borde rojo de 2 píxeles al pasar el mouse
-                                    ft.ControlState.HOVERED:
-                                        ft.BorderSide(
-                                            width = 2,
-                                            color = "#6c4e07"
-                                    )
-                                },
-                                bgcolor = {
-                                    ft.ControlState.DEFAULT: "#ffffff",
-                                    ft.ControlState.HOVERED: "#efb034",
-                                },
-                                color = {
-                                    ft.ControlState.DEFAULT: "#efb034",
-                                    ft.ControlState.HOVERED: "#ffffff",
-                                },
-                                icon_color = {
-                                    ft.ControlState.DEFAULT: "#efb034",
-                                    ft.ControlState.HOVERED: "#ffffff",
-                                },
-                                padding = 20,
-                                shape = ft.RoundedRectangleBorder(radius = 10)
-                            ),
-                            icon = ft.Icons.TRENDING_UP,
-                            width = 250,
-                            on_click = mostrar_informes # Traer el contenido de "informes.py"
-                        ),
-                        ft.ElevatedButton(
-                            "Usuarios",
-                            style = ft.ButtonStyle(
-                                # Borde sólido vino-caramelo de 2 píxeles por defecto
-                                side = {
-                                    ft.ControlState.DEFAULT: 
-                                        ft.BorderSide(
-                                            width = 2,
-                                            color = "#6b1d41"
-                                        ),
-                                    # Borde rojo de 2 píxeles al pasar el mouse
-                                    ft.ControlState.HOVERED:
-                                        ft.BorderSide(
-                                            width = 2,
-                                            color = "#6c4e07"
-                                    )
-                                },
-                                bgcolor = {
-                                    ft.ControlState.DEFAULT: "#ffffff",
-                                    ft.ControlState.HOVERED: "#efb034",
-                                },
-                                color = {
-                                    ft.ControlState.DEFAULT: "#efb034",
-                                    ft.ControlState.HOVERED: "#ffffff",
-                                },
-                                icon_color = {
-                                    ft.ControlState.DEFAULT: "#efb034",
-                                    ft.ControlState.HOVERED: "#ffffff",
-                                },
-                                padding = 20,
-                                shape = ft.RoundedRectangleBorder(radius = 10)
-                            ),
-                            icon = ft.Icons.PERSON,
-                            width = 250,
-                            on_click = mostrar_lista_usuarios # Traer el contenido de "usuarios_list.py"
-                        ),
-                        ft.ElevatedButton(
-                            "Corte",
-                            style = ft.ButtonStyle(
-                                # Borde sólido vino-caramelo de 2 píxeles por defecto
-                                side = {
-                                    ft.ControlState.DEFAULT: 
-                                        ft.BorderSide(
-                                            width = 2,
-                                            color = "#6b1d41"
-                                        ),
-                                    # Borde rojo de 2 píxeles al pasar el mouse
-                                    ft.ControlState.HOVERED:
-                                        ft.BorderSide(
-                                            width = 2,
-                                            color = "#6c4e07"
-                                    )
-                                },
-                                bgcolor = {
-                                    ft.ControlState.DEFAULT: "#ffffff",
-                                    ft.ControlState.HOVERED: "#efb034",
-                                },
-                                color = {
-                                    ft.ControlState.DEFAULT: "#efb034",
-                                    ft.ControlState.HOVERED: "#ffffff",
-                                },
-                                icon_color = {
-                                    ft.ControlState.DEFAULT: "#efb034",
-                                    ft.ControlState.HOVERED: "#ffffff",
-                                },
-                                padding = 20,
-                                shape = ft.RoundedRectangleBorder(radius = 10)
-                            ),
-                            icon = ft.Icons.ATTACH_MONEY,
-                            width = 250,
-                            on_click = mostrar_lista_corte
-                        )
-                    ]
-                ),
+    # ========== CONSTRUIR MENÚ LATERAL ==========
+    menu_lateral = construir_menu_lateral()
 
-                ft.Column(
-                    controls = [
-                        ft.Divider(color = "#CCC9C5"),
-
-                        ft.Image(
-                            src = f"imagenes/logotipo_La_Vinata.png",
-                            width = 200,
-                            height = 200,
-                            border_radius = 10
-                        )
-                    ],
-                    spacing = 3
-                )
-            ],
-            alignment = ft.MainAxisAlignment.SPACE_BETWEEN,
-            spacing = 10
-        )
-    )
-
+    # ========== FOOTER ==========
     copyright = ft.Column(
-        controls = [
+        controls=[
             ft.Text(
-                spans = [
-                    ft.TextSpan(
-                        "2026 © ",
-                        ft.TextStyle(color = "#ffffff", size = 12) # Texto en blanco
-                    ),
-                    ft.TextSpan(
-                        "La Vinata",
-                        ft.TextStyle(color = "#c9a03d", size = 12) # Texto color mostaza
-                    )
+                spans=[
+                    ft.TextSpan("2026 © ", ft.TextStyle(color="#ffffff", size=12)),
+                    ft.TextSpan("La Vinata", ft.TextStyle(color="#c9a03d", size=12))
                 ],
             ),
-            ft.Text(
-                "Todos los derechos reservados",
-                color = "#ffffff",
-                size = 12
-            )
+            ft.Text("Todos los derechos reservados", color="#ffffff", size=12)
         ],
-        spacing = 0
+        spacing=0
     )
 
     telefono = "522471242745"
 
     contacto = ft.Container(
-        content = ft.Row(
-            controls = [
-                ft.Icon(
-                    ft.Icons.PHONE,
-                    color = "#ffffff",
-                    size = 30
-                ),
-
+        content=ft.Row(
+            controls=[
+                ft.Icon(ft.Icons.PHONE, color="#ffffff", size=30),
                 ft.Container(
-                    content = ft.Row(
-                        controls = [
-                            ft.Text(
-                                "Contacto:",
-                                color = "#ffffff",
-                                weight = ft.FontWeight.BOLD,
-                                size = 18
-                            ),
+                    content=ft.Row(
+                        controls=[
+                            ft.Text("Contacto:", color="#ffffff", weight=ft.FontWeight.BOLD, size=18),
                             ft.Text(
                                 "+52 247 124 2745",
-                                style = ft.TextStyle(
-                                    decoration = ft.TextDecoration.UNDERLINE,
-                                    decoration_color = "#c9a03d", # Color del subrayado
-                                    decoration_thickness = 1, # Grosor del subrayado
+                                style=ft.TextStyle(
+                                    decoration=ft.TextDecoration.UNDERLINE,
+                                    decoration_color="#c9a03d",
+                                    decoration_thickness=1,
                                 ),
-                                color = "#c9a03d",
-                                size = 20,
+                                color="#c9a03d",
+                                size=20,
                             )
                         ]
                     ),
-                    url = f"https://wa.me/{telefono}",
-                    tooltip = "Hablar con el equipo"
+                    url=f"https://wa.me/{telefono}",
+                    tooltip="Hablar con el equipo"
                 )
             ]
         )
     )
-    
 
     footer = ft.Row(
-        controls = [
+        controls=[
             copyright,
-
-            ft.Container(
-                content = imagen_vinateria,
-                height = 50
-            ),
-
+            ft.Container(content=imagen_vinateria, height=50),
             contacto
         ],
-        expand = True,
-        alignment = ft.MainAxisAlignment.SPACE_BETWEEN
+        expand=True,
+        alignment=ft.MainAxisAlignment.SPACE_BETWEEN
     )
 
+    # ========== LAYOUT PRINCIPAL ==========
     layout = ft.Container(
-        content = ft.Column(
-            controls = [ 
-                # Primer nivel (HEADER)
+        content=ft.Column(
+            controls=[
+                # Header
                 ft.Container(
-                    content = ft.Row(
-                        controls = [
+                    content=ft.Row(
+                        controls=[
                             inicio_imagen,
                             avatar_y_cerrar_sesion
                         ],
-                        expand = True,
-                        alignment = ft.MainAxisAlignment.SPACE_BETWEEN
+                        expand=True,
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN
                     ),
-                    bgcolor = "#1e1e1e",
-                    padding = 10
+                    bgcolor="#1e1e1e",
+                    padding=10
                 ),
-
-                # Segundo nivel (Menú lateral y contenido)
+                # Contenido principal
                 ft.Container(
-                    content = ft.Row(
-                        controls = [
+                    content=ft.Row(
+                        controls=[
                             menu_lateral,
                             contenido
                         ],
-                        expand = True
+                        expand=True
                     ),
-                    expand = True,
-                    bgcolor = "#F9F6F0"
+                    expand=True,
+                    bgcolor="#F9F6F0"
                 ),
-
-                # Tercer nivel (Footer)
+                # Footer
                 ft.Container(
-                    content = ft.Row(
-                        controls = [
-                            footer
-                        ],
-                        expand = True,
-                    ),
-                    bgcolor = "#1e1e1e",
-                    padding = 10
+                    content=ft.Row(controls=[footer], expand=True),
+                    bgcolor="#1e1e1e",
+                    padding=10
                 )
             ],
-            spacing = 0,
+            spacing=0,
         )
     )
 
     mostrar_inicio()
-
     return layout

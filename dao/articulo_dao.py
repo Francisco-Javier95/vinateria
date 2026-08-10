@@ -72,6 +72,44 @@ class ArticuloDAO:
         conexion.close()
 
         return None
+
+    def obtener_id_del_articulo_punto_v(self, articulo_id):
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+
+        cursor.execute(
+            """SELECT
+                a.articulo_id, a.articulo_articulo, a.articulo_codigo,
+                c.categoria_categoria, a.articulo_imagen, a.articulo_precio,
+                a.articulo_stock, p.proveedor_proveedor, a.articulo_vendidos
+            FROM articulos_1 a
+                INNER JOIN categorias c ON a.articulo_categoria = c.categoria_id
+                INNER JOIN proveedores p ON a.articulo_proveedor = p.proveedor_id
+            WHERE a.articulo_id = %s""",
+            (articulo_id,)
+        )
+
+        datos_articulo = cursor.fetchone()
+
+        if datos_articulo:
+            return Articulo(
+                articulo_id = datos_articulo[0],
+                articulo_articulo = datos_articulo[1],
+                articulo_codigo = datos_articulo[2],
+                articulo_categoria = datos_articulo[3],
+                articulo_imagen = datos_articulo[4],
+                articulo_precio = datos_articulo[5],
+                articulo_stock = datos_articulo[6],
+                articulo_proveedor = datos_articulo[7],
+                articulo_vendidos = datos_articulo[8],
+                articulo_activo=datos_articulo[9] if len(datos_articulo) > 9 else True
+            )
+
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+
+        return None
     
     def insertar(self, articulo):
         conexion = Conexion.obtener_conexion()

@@ -55,7 +55,7 @@ def articulo_form_edit(regresar = None, formulario_visible = False, cerrando_mod
         color = "#424955",
 
         # Numero maximo de caracteres
-        max_length = 10, # Limita a 10 caracteres / crea un contador y lo muestra debajo del input (campo)
+        max_length = 11, # Limita a 10 caracteres / crea un contador y lo muestra debajo del input (campo)
         counter = ft.Container(), # No mostrar contador
 
         value = registro.get('codigo') if registro else "" # Cargar datos

@@ -96,12 +96,12 @@ def main(page: ft.Page):
                 spacing=10,
                 alignment=ft.MainAxisAlignment.START,
             ),
-            bgcolor =config["bg"],
+            bgcolor=config["bg"],
             duration=duracion,
             behavior=ft.SnackBarBehavior.FLOATING,
             shape=ft.RoundedRectangleBorder(radius=10),
             margin=ft.Margin.only(top=20, left=20, right=20),
-            width = 550,
+            width=550,
             elevation=6,
         )
         
@@ -109,8 +109,8 @@ def main(page: ft.Page):
         snackbar.open = True
         page.update()
     
-    # Registrar la función en globals
-    globals.mostrar_snackbar = mostrar_snackbar
+    # ===== REGISTRAR LA FUNCIÓN EN GLOBALS =====
+    globals.mostrar_snackbar = mostrar_snackbar  # <-- Asegurar que esto está aquí
 
     # ============================================================
     # === FUNCIÓN PARA CERRAR SESIÓN ===
