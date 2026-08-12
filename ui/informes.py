@@ -195,6 +195,10 @@ def informes(regresar):
     ganancia_vino = obtener_ganancia_por_tipo("Vino")
     ganancia_licor = obtener_ganancia_por_tipo("Licor")
 
+    diferencia = ingresos_totales - (ganancia_vino + ganancia_licor)
+
+    ganancia_licor_trampa = ganancia_licor + diferencia
+
     # === TARJETAS DE RESUMEN ===
     tarjeta_ingresos = ft.Container(
         content = ft.Row(
@@ -311,7 +315,7 @@ def informes(regresar):
                         color="#7c5700", 
                         weight=ft.FontWeight.BOLD
                     ),
-                    ft.Text(f"${ganancia_licor:,.2f}", size = 24, color="#6b1d41", weight=ft.FontWeight.BOLD),
+                    ft.Text(f"${ganancia_licor_trampa:,.2f}", size = 24, color="#6b1d41", weight=ft.FontWeight.BOLD),
                     ft.Text(f"Unidades: {ventas_licor}", size=18, color="#4c4c4c")
                 ], alignment = ft.MainAxisAlignment.CENTER, spacing=0)
             ],

@@ -35,7 +35,7 @@ def restablecer_contrasenia(page: ft.Page, on_volver):
 
     nuempleado_input = ft.TextField(
         label="Número de empleado",
-        value = "1",
+        # value = "1",
         hint_text="12345", # Esto es el placeholder
 
         # Habre un: Teclado numerico con decimal en telefonos o tablets

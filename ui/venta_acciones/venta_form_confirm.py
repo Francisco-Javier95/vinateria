@@ -82,38 +82,60 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
                 evento.page.update()
                 return
 
-            # Guardar la venta
             venta_dao = VentaDAO()
-            # articulos_array = "{" + ",".join(str(id) for id in articulos_ids) + "}"
-            
-            
-            # Crear el nombre de la venta con timestamp
-            venta_nombre = f"VEN-{datetime.now().strftime('%Y%m%d_%H%M%S')}-VINATA"
-
-            # Estado de la venta (al confirmarse es utomaticamente "Concluida")
-            estado = "Concluida"
-            
-            # Insertar en la base de datos
-            venta_dao = VentaDAO()
+            detalle_dao = DetalleVentaDAO()
+            articulo_dao = ArticuloDAO()
 
             # === VERIFICAR SI ES ACTUALIZACIÓN O INSERCIÓN ===
             if venta_id_actual is not None:
                 # === ACTUALIZAR VENTA EXISTENTE ===
                 venta_existente = venta_dao.obtener_id_de_la_venta(venta_id_actual)
                 if venta_existente:
-                    # Crear objeto con los datos actualizados
+                    # 1. Actualizar la venta principal
                     venta_actualizada = Venta(
-                        venta_id = venta_id_actual,
-                        venta_venta = venta_existente.venta_venta,  # Mantener el nombre original
-                        venta_fecha = None,
-                        venta_ganancia = total_actual,
-                        venta_usuario = usuario_actual,
-                        venta_articulo = None,
-                        venta_estado = estado
+                        venta_id=venta_id_actual,
+                        venta_venta=venta_existente.venta_venta,
+                        venta_fecha=None,
+                        venta_ganancia=total_actual,
+                        venta_usuario=usuario_actual,
+                        venta_articulo=None,
+                        venta_estado="Concluida"
                     )
                     venta_dao.actualizar(venta_actualizada)
                     print(f"Venta {venta_existente.venta_venta} actualizada exitosamente")
-                                    
+                    
+                    # ===== ELIMINAR DETALLES ANTIGUOS =====
+                    # Primero eliminar los detalles existentes de esta venta
+                    detalle_dao.eliminar_por_venta(venta_id_actual)
+                    print(f"Detalles antiguos eliminados para venta ID: {venta_id_actual}")
+                    
+                    # ===== INSERTAR NUEVOS DETALLES =====
+                    venta_id = venta_id_actual
+                    
+                    # Guardar los nuevos detalles de la venta
+                    for i, id_articulo in enumerate(articulos_ids):
+                        cantidad = articulos_cantidades[i]
+                        
+                        # Obtener el precio del artículo
+                        articulo = articulo_dao.obtener_id_del_articulo(id_articulo)
+                        precio_unitario = articulo.articulo_precio
+                        subtotal = precio_unitario * cantidad
+                        
+                        detalle = DetalleVenta(
+                            detalle_id=None,
+                            detalle_venta_id=venta_id,
+                            detalle_articulo_id=id_articulo,
+                            detalle_cantidad=cantidad,
+                            detalle_precio_unitario=precio_unitario,
+                            detalle_subtotal=subtotal
+                        )
+                        detalle_dao.insertar(detalle)
+
+                        # Actualizar stock y vendidos
+                        articulo.articulo_stock -= cantidad
+                        articulo.articulo_vendidos += cantidad
+                        articulo_dao.actualizar(articulo)
+                    
                     # ===== MOSTRAR SNACKBAR DE ÉXITO =====
                     if snackbar_func:
                         snackbar_func(f"Venta '{venta_existente.venta_venta}' confirmada exitosamente", "exito")
@@ -124,28 +146,51 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
                         mensaje="confirmada exitosamente",
                         tipo="exito"
                     )
-
-                    # Actualizar el contador de notificaciones
-                    try:
-                        if evento.pila and hasattr(evento.pila, 'actualizar_contador'):
-                            evento.pila.actualizar_contador()
-                    except:
-                        pass
                 else:
                     print("No se encontró la venta a actualizar")
                     evento.page.update()
                     return
             else:
                 # === CREAR NUEVA VENTA ===
+                venta_nombre = f"VEN-{datetime.now().strftime('%Y%m%d_%H%M%S')}-VINATA"
+                
                 nueva_venta = Venta_confirmar(
-                    venta_id = None,
-                    venta_venta = venta_nombre,
-                    venta_ganancia = total_actual,
-                    venta_usuario = usuario_actual,
-                    venta_articulo = None,
-                    venta_estado = estado
+                    venta_id=None,
+                    venta_venta=venta_nombre,
+                    venta_ganancia=total_actual,
+                    venta_usuario=usuario_actual,
+                    venta_articulo=None,
+                    venta_estado="Concluida"
                 )
                 venta_dao.insertar(nueva_venta)
+                
+                # Obtener el ID de la venta recién insertada
+                venta_id = venta_dao.obtener_ultimo_id()
+
+                # Guardar los detalles de la venta
+                for i, id_articulo in enumerate(articulos_ids):
+                    cantidad = articulos_cantidades[i]
+                    
+                    # Obtener el precio del artículo
+                    articulo = articulo_dao.obtener_id_del_articulo(id_articulo)
+                    precio_unitario = articulo.articulo_precio
+                    subtotal = precio_unitario * cantidad
+                    
+                    detalle = DetalleVenta(
+                        detalle_id=None,
+                        detalle_venta_id=venta_id,
+                        detalle_articulo_id=id_articulo,
+                        detalle_cantidad=cantidad,
+                        detalle_precio_unitario=precio_unitario,
+                        detalle_subtotal=subtotal
+                    )
+                    detalle_dao.insertar(detalle)
+
+                    # Actualizar stock y vendidos
+                    articulo.articulo_stock -= cantidad
+                    articulo.articulo_vendidos += cantidad
+                    articulo_dao.actualizar(articulo)
+
                 print(f"Venta {venta_nombre} registrada exitosamente")
                 
                 # ===== MOSTRAR SNACKBAR DE ÉXITO =====
@@ -159,43 +204,12 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
                     tipo="exito"
                 )
 
-                # Actualizar el contador de notificaciones
-                try:
-                    if evento.pila and hasattr(evento.pila, 'actualizar_contador'):
-                        evento.pila.actualizar_contador()
-                except:
-                    pass
-
-                # Obtener el ID de la venta recién insertada
-                venta_id = venta_dao.obtener_ultimo_id()
-
-                # Guardar los detalles de la venta
-                detalle_dao = DetalleVentaDAO()
-                for i, id_articulo in enumerate(articulos_ids):
-                    cantidad = articulos_cantidades[i]
-                    
-                    # Obtener el precio del artículo
-                    articulo_dao = ArticuloDAO()
-                    articulo = articulo_dao.obtener_id_del_articulo(id_articulo)
-                    precio_unitario = articulo.articulo_precio
-                    subtotal = precio_unitario * cantidad
-                    
-                    detalle = DetalleVenta(
-                        detalle_id = None,
-                        detalle_venta_id = venta_id,
-                        detalle_articulo_id = id_articulo,
-                        detalle_cantidad = cantidad,
-                        detalle_precio_unitario = precio_unitario,
-                        detalle_subtotal = subtotal
-                    )
-                    detalle_dao.insertar(detalle)
-
-                    # Actualizar stock y vendidos (como ya tenías)
-                    articulo.articulo_stock -= cantidad
-                    articulo.articulo_vendidos += cantidad
-                    articulo_dao.actualizar(articulo)
-
-                print(f"Venta {venta_nombre} registrada exitosamente")
+            # Actualizar el contador de notificaciones
+            try:
+                if evento.page and hasattr(evento.page, 'actualizar_contador'):
+                    evento.page.actualizar_contador()
+            except:
+                pass
 
             evento.page.update()
 
@@ -213,6 +227,8 @@ def confirmar_form(regresar=None, formulario_visible=False, cerrando_modal=None,
             
         except Exception as error:
             print(f"Error al registrar la venta: {error}")
+            import traceback
+            traceback.print_exc()
             evento.page.update()
 
 

@@ -164,6 +164,7 @@ def punto_de_venta(regresar=None):
             for detalle in detalles:
                 articulo = articulo_dao.obtener_id_del_articulo_punto_v(detalle.detalle_articulo_id)
                 if articulo:
+                    # Crear un objeto temporal con la cantidad del detalle
                     item = Articulo(
                         articulo_id=articulo.articulo_id,
                         articulo_articulo=articulo.articulo_articulo,
@@ -175,7 +176,8 @@ def punto_de_venta(regresar=None):
                         articulo_proveedor=articulo.articulo_proveedor,
                         articulo_vendidos=articulo.articulo_vendidos,
                     )
-                    item.cantidad = detalle.detalle_cantidad  # Usar la cantidad del detalle
+                    # Agregar atributo cantidad al objeto
+                    item.cantidad = detalle.detalle_cantidad
                     lista_compra.append(item)
                     print(f"Artículo cargado: {articulo.articulo_articulo} x{detalle.detalle_cantidad}")
             

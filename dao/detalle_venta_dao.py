@@ -48,3 +48,23 @@ class DetalleVentaDAO:
             )
             detalles.append(detalle)
         return detalles
+
+    def eliminar_por_venta(self, venta_id):
+        conexion = Conexion.obtener_conexion()
+        cursor = conexion.cursor()
+        
+        try:
+            cursor.execute(
+                "DELETE FROM detalles_venta WHERE detalle_venta_id = %s",
+                (venta_id,)
+            )
+            conexion.commit()
+            print(f"Detalles eliminados para venta ID: {venta_id}")
+            return True
+        except Exception as error:
+            conexion.rollback()
+            print(f"Error al eliminar detalles: {error}")
+            return False
+        finally:
+            cursor.close()
+            conexion.close()
